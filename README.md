@@ -1,2 +1,9 @@
-# Voronoi_DCC_Analyser
-Based on the NEPER software (https://github.com/neperfepx) output, this Python code creates the Combinatorial Discrete Cell Complex as a set of Adjacency and Incidence matrices for all its elements 
+# microstructure-evolution
+
+```
+conda create --name neper-env --file requirements.txt
+conda activate neper-env
+python3 matgen\sparsemat.py filepath directory [-o]
+```
+
+
