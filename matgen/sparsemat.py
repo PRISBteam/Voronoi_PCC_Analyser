@@ -91,14 +91,16 @@ def write_matrices(
     """
 
     nc_filename = 'number_of_cells.txt'
-
+    euler_c = 0
     for line in f:
         if '**vertex' in line:
             n = int(f.readline().rstrip('\n').lstrip())
+            euler_c += n
             with open(os.path.join(directory, nc_filename), 'w') as f_n:
                 f_n.write(str(n) + '\n')
         if '**edge' in line:
             n = int(f.readline().rstrip('\n').lstrip())
+            euler_c -= n
             with open(os.path.join(directory, nc_filename), 'a') as f_n:
                 f_n.write(str(n) + '\n')
             d = {}
@@ -114,6 +116,7 @@ def write_matrices(
                     d = _write_matrices(arcs, node, is_signed, d, A_out, B_out)
         if '**face' in line:
             n = int(f.readline().rstrip('\n').lstrip())
+            euler_c += n
             with open(os.path.join(directory, nc_filename), 'a') as f_n:
                 f_n.write(str(n) + '\n')
             d = {}
@@ -131,6 +134,7 @@ def write_matrices(
                     d = _write_matrices(arcs, node, is_signed, d, A_out, B_out)
         if '**polyhedron' in line:
             n = int(f.readline().rstrip('\n').lstrip())
+            euler_c -= n
             with open(os.path.join(directory, nc_filename), 'a') as f_n:
                 f_n.write(str(n) + '\n')
             d = {}
@@ -143,7 +147,9 @@ def write_matrices(
                     d = _write_matrices(arcs, node, is_signed, d, A_out, B_out)
         if '**domain' in line:
             break
-
+        
+    if not euler_c == 1:
+        print('Euler characteristic is not equal to 1!')
 
 def main() -> None:
     start = time.perf_counter_ns()
