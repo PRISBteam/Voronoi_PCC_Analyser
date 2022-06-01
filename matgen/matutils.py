@@ -1,4 +1,9 @@
 """
+https://networkx.org/documentation/stable/tutorial.html
+
+https://docs.scipy.org/doc/scipy/reference/sparse.html
+https://docs.scipy.org/doc/scipy/reference/sparse.csgraph.html#module-scipy.sparse.csgraph
+https://docs.scipy.org/doc/scipy/reference/sparse.linalg.html#module-scipy.sparse.linalg
 """
 
 import numpy as np
