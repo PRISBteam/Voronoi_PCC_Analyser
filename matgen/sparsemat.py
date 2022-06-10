@@ -21,6 +21,11 @@ import time
 from typing import Dict, TextIO
 import numpy as np
 
+def extract_seeds(        
+        f: str,
+        directory: str,
+        is_signed: bool) -> None:
+    pass
 
 def _write_matrices(
         arcs: np.array,
@@ -47,9 +52,9 @@ def _write_matrices(
 
 
 def write_matrices(
-        f: str,
-        directory: str,
-        is_signed: bool) -> None:
+        f: str = 'complex.tess',
+        directory: str = '.',
+        is_signed: bool = False) -> None:
     """Write A and B matrices from a .tess file.
 
     Writes following matrices:
@@ -155,11 +160,13 @@ def main() -> None:
     start = time.perf_counter_ns()
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "filepath",
+        "--file",
+        default='complex.tess',
         help="Filepath to .tess file with a tesselation (Neper output)"
     )
     parser.add_argument(
-        "destination_folder",
+        "--dir",
+        default='.',
         help="Path to folder which will contain generated matrices"
     )
     parser.add_argument(
@@ -169,11 +176,11 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    if not os.path.exists(args.destination_folder):
-        os.mkdir(args.destination_folder)
+    if not os.path.exists(args.dir):
+        os.mkdir(args.dir)
 
-    with open(args.filepath, "r", encoding="utf-8") as f:
-        write_matrices(f, args.destination_folder, args.is_signed)
+    with open(args.file, "r", encoding="utf-8") as f:
+        write_matrices(f, args.dir, args.is_signed)
     print('Time elapsed:', (time.perf_counter_ns() - start) / 1000000, 'ms')
 
 
