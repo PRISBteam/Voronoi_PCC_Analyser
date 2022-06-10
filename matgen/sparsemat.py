@@ -192,6 +192,7 @@ def main() -> None:
         nargs='?',
         const='complex.stpoly',
         default=False,
+        metavar='VOLUMES_FILE',
         help="Average volume of 3-cells"
     )
 
