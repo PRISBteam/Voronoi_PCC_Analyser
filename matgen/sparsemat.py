@@ -32,7 +32,7 @@ def extract_seeds(
             if '**cell' in line:
                 n = int(f.readline().rstrip('\n').lstrip())
             if '*seed' in line:
-                with open(os.path.join(directory, 'seeds'), 'w') as f_seeds:
+                with open(os.path.join(directory, 'seeds.txt'), 'w') as f_seeds:
                     for i in range(n):
                         row = f.readline().split()
                         f_seeds.write(' '.join(row[1:4]) + '\n')
@@ -122,7 +122,7 @@ def write_matrices(
                 with open(os.path.join(directory, nc_filename), 'a') as f_n:
                     f_n.write(str(n) + '\n')
                 d = {}
-                with open(os.path.join(directory, 'B01.txt'), 'w') as B_out,\
+                with open(os.path.join(directory, 'B1.txt'), 'w') as B_out,\
                         open(os.path.join(directory, 'A1.txt'), 'w') as A_out,\
                         open(os.path.join(directory, 'A0.txt'), 'w') as A0_out:
                     for i in range(n):
@@ -138,13 +138,13 @@ def write_matrices(
                 with open(os.path.join(directory, nc_filename), 'a') as f_n:
                     f_n.write(str(n) + '\n')
                 d = {}
-                with open(os.path.join(directory, 'B12.txt'), 'w') as B_out,\
+                with open(os.path.join(directory, 'B2.txt'), 'w') as B_out,\
                         open(os.path.join(directory, 'A2.txt'), 'w') as A_out,\
-                        open(os.path.join(directory, 'Normal.txt'), 'w') as N_out:
+                        open(os.path.join(directory, 'normals.txt'), 'w') as N_out:
                     for i in range(n):
-                        node = f.readline().rstrip('\n').lstrip().split()[0]
-                        row = f.readline().rstrip('\n').lstrip().split()
-                        face_normal = f.readline().rstrip('\n').lstrip().split()
+                        node = f.readline().split()[0]
+                        row = f.readline().split()
+                        face_normal = f.readline().split()
                         face_row = face_normal[1:]
                         _ = f.readline()
                         N_out.write(node + ' ' + ' '.join(face_row) + '\n')
@@ -156,10 +156,10 @@ def write_matrices(
                 with open(os.path.join(directory, nc_filename), 'a') as f_n:
                     f_n.write(str(n) + '\n')
                 d = {}
-                with open(os.path.join(directory, 'B23.txt'), 'w') as B_out,\
+                with open(os.path.join(directory, 'B3.txt'), 'w') as B_out,\
                         open(os.path.join(directory, 'A3.txt'), 'w') as A_out:
                     for i in range(n):
-                        row = f.readline().rstrip('\n').lstrip().split()
+                        row = f.readline().split()
                         node = row[0]
                         arcs = np.array(row[2:], dtype=int)
                         d = _write_matrices(arcs, node, is_signed, d, A_out, B_out)
