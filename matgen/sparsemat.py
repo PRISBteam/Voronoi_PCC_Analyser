@@ -16,16 +16,28 @@ Functions
 """
 
 import argparse
+from ast import Return
 import os
 import time
 from typing import Dict, TextIO
 import numpy as np
 
 def extract_seeds(        
-        f: str,
-        directory: str,
-        is_signed: bool) -> None:
-    pass
+        filename: str = 'complex.tess',
+        directory: str = '.') -> None:
+    """
+    """
+    with open(filename, 'r', encoding="utf-8") as f:
+        for line in f:
+            if '**cell' in line:
+                n = int(f.readline().rstrip('\n').lstrip())
+            if '*seed' in line:
+                with open(os.path.join(directory, 'seeds'), 'w') as f_seeds:
+                    for i in range(n):
+                        row = f.readline().split()
+                        f_seeds.write(' '.join(row[1:4]) + '\n')
+                return
+
 
 def _write_matrices(
         arcs: np.array,
@@ -52,7 +64,7 @@ def _write_matrices(
 
 
 def write_matrices(
-        f: str = 'complex.tess',
+        filename: str = 'complex.tess',
         directory: str = '.',
         is_signed: bool = False) -> None:
     """Write A and B matrices from a .tess file.
@@ -84,7 +96,7 @@ def write_matrices(
 
     Parameters
     ----------
-    f
+    filename
 
     directory
 
@@ -97,61 +109,62 @@ def write_matrices(
 
     nc_filename = 'number_of_cells.txt'
     euler_c = 0
-    for line in f:
-        if '**vertex' in line:
-            n = int(f.readline().rstrip('\n').lstrip())
-            euler_c += n
-            with open(os.path.join(directory, nc_filename), 'w') as f_n:
-                f_n.write(str(n) + '\n')
-        if '**edge' in line:
-            n = int(f.readline().rstrip('\n').lstrip())
-            euler_c -= n
-            with open(os.path.join(directory, nc_filename), 'a') as f_n:
-                f_n.write(str(n) + '\n')
-            d = {}
-            with open(os.path.join(directory, 'B01.txt'), 'w') as B_out,\
-                    open(os.path.join(directory, 'A1.txt'), 'w') as A_out,\
-                    open(os.path.join(directory, 'A0.txt'), 'w') as A0_out:
-                for i in range(n):
-                    row = f.readline().rstrip('\n').lstrip().split()
-                    A0_out.write(row[1] + ' ' + row[2] + ' 1\n')
-                    A0_out.write(row[2] + ' ' + row[1] + ' 1\n')
-                    arcs = np.array(row[1:-1], dtype=int)
-                    node = row[0]
-                    d = _write_matrices(arcs, node, is_signed, d, A_out, B_out)
-        if '**face' in line:
-            n = int(f.readline().rstrip('\n').lstrip())
-            euler_c += n
-            with open(os.path.join(directory, nc_filename), 'a') as f_n:
-                f_n.write(str(n) + '\n')
-            d = {}
-            with open(os.path.join(directory, 'B12.txt'), 'w') as B_out,\
-                    open(os.path.join(directory, 'A2.txt'), 'w') as A_out,\
-                    open(os.path.join(directory, 'Normal.txt'), 'w') as N_out:
-                for i in range(n):
-                    node = f.readline().rstrip('\n').lstrip().split()[0]
-                    row = f.readline().rstrip('\n').lstrip().split()
-                    face_normal = f.readline().rstrip('\n').lstrip().split()
-                    face_row = face_normal[1:]
-                    _ = f.readline()
-                    N_out.write(node + ' ' + ' '.join(face_row) + '\n')
-                    arcs = np.array(row[1:], dtype=int)
-                    d = _write_matrices(arcs, node, is_signed, d, A_out, B_out)
-        if '**polyhedron' in line:
-            n = int(f.readline().rstrip('\n').lstrip())
-            euler_c -= n
-            with open(os.path.join(directory, nc_filename), 'a') as f_n:
-                f_n.write(str(n) + '\n')
-            d = {}
-            with open(os.path.join(directory, 'B23.txt'), 'w') as B_out,\
-                    open(os.path.join(directory, 'A3.txt'), 'w') as A_out:
-                for i in range(n):
-                    row = f.readline().rstrip('\n').lstrip().split()
-                    node = row[0]
-                    arcs = np.array(row[2:], dtype=int)
-                    d = _write_matrices(arcs, node, is_signed, d, A_out, B_out)
-        if '**domain' in line:
-            break
+    with open(filename, 'r', encoding="utf-8") as f:
+        for line in f:
+            if '**vertex' in line:
+                n = int(f.readline().rstrip('\n').lstrip())
+                euler_c += n
+                with open(os.path.join(directory, nc_filename), 'w') as f_n:
+                    f_n.write(str(n) + '\n')
+            if '**edge' in line:
+                n = int(f.readline().rstrip('\n').lstrip())
+                euler_c -= n
+                with open(os.path.join(directory, nc_filename), 'a') as f_n:
+                    f_n.write(str(n) + '\n')
+                d = {}
+                with open(os.path.join(directory, 'B01.txt'), 'w') as B_out,\
+                        open(os.path.join(directory, 'A1.txt'), 'w') as A_out,\
+                        open(os.path.join(directory, 'A0.txt'), 'w') as A0_out:
+                    for i in range(n):
+                        row = f.readline().rstrip('\n').lstrip().split()
+                        A0_out.write(row[1] + ' ' + row[2] + ' 1\n')
+                        A0_out.write(row[2] + ' ' + row[1] + ' 1\n')
+                        arcs = np.array(row[1:-1], dtype=int)
+                        node = row[0]
+                        d = _write_matrices(arcs, node, is_signed, d, A_out, B_out)
+            if '**face' in line:
+                n = int(f.readline().rstrip('\n').lstrip())
+                euler_c += n
+                with open(os.path.join(directory, nc_filename), 'a') as f_n:
+                    f_n.write(str(n) + '\n')
+                d = {}
+                with open(os.path.join(directory, 'B12.txt'), 'w') as B_out,\
+                        open(os.path.join(directory, 'A2.txt'), 'w') as A_out,\
+                        open(os.path.join(directory, 'Normal.txt'), 'w') as N_out:
+                    for i in range(n):
+                        node = f.readline().rstrip('\n').lstrip().split()[0]
+                        row = f.readline().rstrip('\n').lstrip().split()
+                        face_normal = f.readline().rstrip('\n').lstrip().split()
+                        face_row = face_normal[1:]
+                        _ = f.readline()
+                        N_out.write(node + ' ' + ' '.join(face_row) + '\n')
+                        arcs = np.array(row[1:], dtype=int)
+                        d = _write_matrices(arcs, node, is_signed, d, A_out, B_out)
+            if '**polyhedron' in line:
+                n = int(f.readline().rstrip('\n').lstrip())
+                euler_c -= n
+                with open(os.path.join(directory, nc_filename), 'a') as f_n:
+                    f_n.write(str(n) + '\n')
+                d = {}
+                with open(os.path.join(directory, 'B23.txt'), 'w') as B_out,\
+                        open(os.path.join(directory, 'A3.txt'), 'w') as A_out:
+                    for i in range(n):
+                        row = f.readline().rstrip('\n').lstrip().split()
+                        node = row[0]
+                        arcs = np.array(row[2:], dtype=int)
+                        d = _write_matrices(arcs, node, is_signed, d, A_out, B_out)
+            if '**domain' in line:
+                break
         
     if not euler_c == 1:
         print('Euler characteristic is not equal to 1!')
@@ -179,8 +192,9 @@ def main() -> None:
     if not os.path.exists(args.dir):
         os.mkdir(args.dir)
 
-    with open(args.file, "r", encoding="utf-8") as f:
-        write_matrices(f, args.dir, args.is_signed)
+    extract_seeds(args.file, args.dir)
+    write_matrices(args.file, args.dir, args.is_signed)
+    
     print('Time elapsed:', (time.perf_counter_ns() - start) / 1000000, 'ms')
 
 
