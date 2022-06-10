@@ -187,6 +187,14 @@ def main() -> None:
         action='store_true',
         help="Orientation"
     )
+    parser.add_argument(
+        "-v",
+        nargs='?',
+        const='complex.stpoly',
+        default=False,
+        help="Average volume of 3-cells"
+    )
+
     args = parser.parse_args()
 
     if not os.path.exists(args.dir):
@@ -195,6 +203,18 @@ def main() -> None:
     extract_seeds(args.file, args.dir)
     write_matrices(args.file, args.dir, args.is_signed)
     
+    if args.v:
+        with open(args.v, 'r') as fvol:
+            S = 0
+            n = 0
+            for line in fvol:
+                n += 1
+                S += float(line.rstrip('\n'))
+            avV = S / n
+        with open(os.path.join(args.dir, 'average_volume.txt'), 'w') as f_av:
+            f_av.write(str(avV))
+
+
     print('Time elapsed:', (time.perf_counter_ns() - start) / 1000000, 'ms')
 
 
