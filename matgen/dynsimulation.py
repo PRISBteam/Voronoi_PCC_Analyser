@@ -32,8 +32,8 @@ def main():
     args = parser.parse_args()
     os.system(
         'neper -T -n %d -id %d -o %s -reg 1' % (
-            args.n, args.id, args.filename
-        )
+            args.n, args.id, args.filename) +\
+        ' -statpoly id,vol -statface id,area -statedge id,length'
     )
     sparsemat.extract_seeds(args.filename + '.tess', '.')
     sparsemat.write_matrices(args.filename + '.tess', '.', True)
