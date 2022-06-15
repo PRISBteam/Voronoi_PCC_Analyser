@@ -3,7 +3,7 @@
 import os
 import argparse
 
-from matgen import sparsemat
+import sparsemat
 
 def main():
     """
