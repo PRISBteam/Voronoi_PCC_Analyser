@@ -27,6 +27,7 @@ def extract_seeds(
         directory: str = '.') -> None:
     """
     """
+    poly_seeds = {}
     with open(filename, 'r', encoding="utf-8") as f:
         for line in f:
             if '**cell' in line:
@@ -36,7 +37,8 @@ def extract_seeds(
                     for i in range(n):
                         row = f.readline().split()
                         f_seeds.write(' '.join(row[1:4]) + '\n')
-                return
+                        poly_seeds[int(row[0])] = [*map(float, row[1:4])]
+                return poly_seeds
 
 
 def _write_matrices(

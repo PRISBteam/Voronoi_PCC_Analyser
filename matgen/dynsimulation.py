@@ -5,6 +5,13 @@ import argparse
 
 import sparsemat
 
+def choose_boundaries(faces, p):
+    """
+    """
+    pass
+
+
+
 def main():
     """
     """
@@ -38,7 +45,7 @@ def main():
     sparsemat.extract_seeds(args.filename + '.tess', '.')
     sparsemat.write_matrices(args.filename + '.tess', '.', True)
 
-    # -periodicity all
+    # -periodicity all - check
     # -morphooptiini "coo:file(seeds)"
 
 if __name__ == '__main__':
