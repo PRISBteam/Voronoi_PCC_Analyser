@@ -554,7 +554,8 @@ class CellComplex():
         self.source_file = filename
         self.vertices = Vertex.from_file(filename)
         
-        print('Vertices loaded:', time.time() - start, 's')
+        print(len(self.vertices), 'vertices loaded:',
+            time.time() - start, 's')
         
         self.edges = Edge.from_file(
             filename = filename, 
@@ -562,18 +563,20 @@ class CellComplex():
             incidence=incidence
         )
         
-        print('Edges loaded:', time.time() - start, 's')
+        print(len(self.edges),'edges loaded:', time.time() - start, 's')
         
         self.faces = Face.from_file(
             filename = filename,
             edges=self.edges,
             incidence=incidence)
         
-        print('Faces loaded:', time.time() - start, 's')
+        print(len(self.faces), 'faces loaded:', time.time() - start, 's')
         
         self.polyhedra = Poly.from_file(filename, self.faces)
         
-        print('Poly loaded:', time.time() - start, 's')
+        if self.polyhedra:
+            print(len(self.polyhedra), 'poly loaded:',
+                time.time() - start, 's')
     
     
     def get_one(self, cell_type: str, id: int):
