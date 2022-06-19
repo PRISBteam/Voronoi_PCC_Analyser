@@ -176,7 +176,7 @@ class Edge():
                         e_id = int(row[0])
                         v1_id = int(row[1])
                         v2_id = int(row[2])
-                        v_list = [v1, v2]
+                        v_list = [v1_id, v2_id]
                         if incidence:
                             v1 = get_element_by_id(vertices, v1_id)
                             v1.add_incident_edge(e_id)
