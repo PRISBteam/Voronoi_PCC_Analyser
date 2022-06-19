@@ -9,9 +9,11 @@ it may be worth to load data from file to sparse matrix format
 from typing import Iterable, List
 import time
 
-def filterbyvalue(seq, value):
+def get_element_by_id(seq, id):
+    """
+    """
     for el in seq:
-        if el.id == value:
+        if el.id == id:
             return el
 
 class Vertex():
@@ -52,6 +54,7 @@ class Vertex():
         self.y = y
         self.z = z
         self.coord = (x, y, z)
+        self.coord2D = (x, y)
         self.neighbors = []
         self.incident_edges = []
         
@@ -156,29 +159,31 @@ class Edge():
         self.incident_faces = []
 
     @classmethod
-    def from_file(cls, filename, vertices):
+    def from_file(
+            cls,
+            filename: str,
+            vertices: List = [],
+            incidence: bool = True):
         """
         """
         edges = []
         with open(filename, 'r', encoding="utf-8") as f:
-                for line in f:
-                    if '**edge' in line:
-                        n = int(f.readline().rstrip('\n'))
-                        for i in range(n):
-                            row = f.readline().split()
-                            e_id = int(row[0])
-                            v_list = [int(row[1]), int(row[2])]
-                            vertex_1 = filterbyvalue(vertices, int(row[1]))
-                            # vertex_1 = [x for x in vertices if x.id == int(row[1])][0]
-                            # vertex_1 = next(filter(lambda x: x.id == int(row[1]), vertices))
-                            vertex_1.add_incident_edge(e_id)
-                            
-                            vertex_2 = filterbyvalue(vertices, int(row[2]))
-                            # vertex_2 = [x for x in vertices if x.id == int(row[2])][0]
-                            # vertex_2 = next(filter(lambda x: x.id == int(row[2]), vertices))
-                            vertex_2.add_incident_edge(e_id)
-                            edges.append(cls(e_id, v_list))
-                        return edges
+            for line in f:
+                if '**edge' in line:
+                    n = int(f.readline().rstrip('\n'))
+                    for i in range(n):
+                        row = f.readline().split()
+                        e_id = int(row[0])
+                        v1_id = int(row[1])
+                        v2_id = int(row[2])
+                        v_list = [v1, v2]
+                        if incidence:
+                            v1 = get_element_by_id(vertices, v1_id)
+                            v1.add_incident_edge(e_id)
+                            v2 = get_element_by_id(vertices, v2_id)
+                            v2.add_incident_edge(e_id)
+                        edges.append(cls(e_id, v_list))
+                    return edges
 
     def __str__(self):
         """
@@ -274,7 +279,11 @@ class Face():
         self.is_special = False
         
     @classmethod
-    def from_file(cls, filename, edges):
+    def from_file(
+            cls,
+            filename: str,
+            edges: List = [],
+            incidence: bool = True):
         """
         """
         faces = []
@@ -295,9 +304,9 @@ class Face():
                         for k in range(1, int(row[0]) + 1):
                             e_id = abs(int(row[k]))
                             e_list.append(e_id)
-                            edge = filterbyvalue(edges, e_id)
-                            # edge = next(filter(lambda x: x.id == e_id, edges))
-                            edge.add_incident_face(f_id)
+                            if incidence:
+                                edge = get_element_by_id(edges, e_id)
+                                edge.add_incident_face(f_id)
                         face.add_edges(e_list)
                         
                         row = f.readline().split()
@@ -388,6 +397,11 @@ class Face():
         """
         """
         self.is_special = is_special
+    
+    def set_seed(self, seed_coord):
+        """
+        """
+        self.seed = seed_coord
 
 
 class Poly():
@@ -426,48 +440,49 @@ class Poly():
         self.faces = []
 
     @classmethod
-    def from_file(cls, filename, faces):
+    def from_file(
+            cls,
+            filename: str,
+            faces: List):
         """
         """
         seeds = {}
         ori = {}
         polyhedra = []
-        # faces = get_faces_from_tess(filename)
         with open(filename, 'r', encoding="utf-8") as f:
-                for line in f:
-                    if '**cell' in line:
-                        N = int(f.readline().rstrip('\n'))
-                    if '*seed' in line:
-                        for i in range(N):
-                            row = f.readline().split()
-                            seeds[int(row[0])] = tuple([*map(float, row[1:4])])
-                    if '*ori' in line:
-                        ori_format = f.readline().strip() #.rstrip('\n')
-                        for i in range(N):
-                            row = f.readline().split()
-                            ori[i + 1] = tuple([*map(float, row)])
-                    if '**polyhedron' in line:
-                        n = int(f.readline().rstrip('\n'))
-                        for i in range(n):
-                            row = f.readline().split()
-                            p_id = int(row[0])
-                            v_list = []
-                            f_list = []
-                            for k in range(2, int(row[1]) + 2):
-                                f_id = abs(int(row[k]))
-                                face = filterbyvalue(faces, f_id)
-                                # face = next(filter(lambda x: x.id == f_id, faces))
-                                v_list += face.vertices
-                                f_list.append(f_id)
-                                face.add_incident_poly(p_id)
-                            v_list = list(set(v_list))
-                            f_list = list(set(f_list))
-                            poly = cls(p_id, v_list)
-                            poly.set_crystal_ori(ori_format, ori[p_id])
-                            poly.set_seed(seeds[p_id])
-                            poly.add_faces(f_list)
-                            polyhedra.append(poly)
-                        return polyhedra
+            for line in f:
+                if '**cell' in line:
+                    N = int(f.readline().rstrip('\n'))
+                if '*seed' in line:
+                    for i in range(N):
+                        row = f.readline().split()
+                        seeds[int(row[0])] = tuple([*map(float, row[1:4])])
+                if '*ori' in line:
+                    ori_format = f.readline().strip() #.rstrip('\n')
+                    for i in range(N):
+                        row = f.readline().split()
+                        ori[i + 1] = tuple([*map(float, row)])
+                if '**polyhedron' in line:
+                    n = int(f.readline().rstrip('\n'))
+                    for i in range(n):
+                        row = f.readline().split()
+                        p_id = int(row[0])
+                        v_list = []
+                        f_list = []
+                        for k in range(2, int(row[1]) + 2):
+                            f_id = abs(int(row[k]))
+                            f_list.append(f_id)
+                            face = get_element_by_id(faces, f_id)
+                            v_list += face.vertices
+                            face.add_incident_poly(p_id)
+                        v_list = list(set(v_list))
+                        f_list = list(set(f_list))
+                        poly = cls(p_id, v_list)
+                        poly.set_crystal_ori(ori_format, ori[p_id])
+                        poly.set_seed(seeds[p_id])
+                        poly.add_faces(f_list)
+                        polyhedra.append(poly)
+                    return polyhedra
         
     def __str__(self):
         """
@@ -529,7 +544,10 @@ class Poly():
 class CellComplex():
     """
     """
-    def __init__(self, filename='complex.tess'):
+    def __init__(
+            self,
+            filename: str = 'complex.tess',
+            incidence: bool = True):
         """
         """
         start = time.time()
@@ -538,11 +556,18 @@ class CellComplex():
         
         print('Vertices loaded:', time.time() - start, 's')
         
-        self.edges = Edge.from_file(filename, self.vertices)
+        self.edges = Edge.from_file(
+            filename = filename, 
+            vertices = self.vertices,
+            incidence=incidence
+        )
         
         print('Edges loaded:', time.time() - start, 's')
         
-        self.faces = Face.from_file(filename, self.edges)
+        self.faces = Face.from_file(
+            filename = filename,
+            edges=self.edges,
+            incidence=incidence)
         
         print('Faces loaded:', time.time() - start, 's')
         
@@ -565,7 +590,7 @@ class CellComplex():
         else:
             raise TypeError('Unknown type cell')
         
-        return next(filter(lambda x: x.id == id, cell_list))
+        return get_element_by_id(seq=cell_list, id=id)
     
     def get_many(self, cell_type, ids):
         """
@@ -581,7 +606,7 @@ class CellComplex():
         else:
             raise TypeError('Unknown type cell')
         
-        return [*filter(lambda x: x.id in ids, cell_list)]
+        return [get_element_by_id(cell_list, id) for id in ids]
     
     
     def save_into_files(self, representation):
