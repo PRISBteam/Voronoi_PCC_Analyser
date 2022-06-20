@@ -61,7 +61,7 @@ class Vertex():
     @classmethod
     def from_file(cls, filename):
         """
-        """
+        """      
         vertices = []
         with open(filename, 'r', encoding="utf-8") as f:
             for line in f:
@@ -75,7 +75,7 @@ class Vertex():
                         z = float(row[3])
                         vertices.append(cls(v_id, x, y, z))
                     return vertices
-
+        
     def __str__(self):
         """
         """
@@ -163,7 +163,8 @@ class Edge():
             cls,
             filename: str,
             vertices: List = [],
-            incidence: bool = True):
+            incidence: bool = True,
+            measure: bool = False):
         """
         """
         edges = []
@@ -197,7 +198,20 @@ class Edge():
                     if incidence:
                         for vertex in vertices:
                             vertex.add_incident_edges(v_dict[vertex.id])
-                    return edges
+                    break
+        if measure:
+            filename_m = filename.rstrip('.tess') + '.stedge'
+            e_lengths = {}
+            with open(filename_m, 'r', encoding="utf-8") as file:
+                for line in file:
+                    row = line.split()
+                    e_id = int(row[0])
+                    e_length = float(row[1])
+                    e_lengths[e_id] = e_length
+            for edge in edges:
+                edge.set_length(e_lengths[edge.id])
+
+        return edges
 
     def __str__(self):
         """
@@ -246,6 +260,11 @@ class Edge():
         """
         """
         return len(self.incident_faces)
+
+    def set_length(self, length):
+        """
+        """
+        self.len = length
 
 
 class Face():
@@ -297,7 +316,8 @@ class Face():
             cls,
             filename: str,
             edges: List = [],
-            incidence: bool = True):
+            incidence: bool = True,
+            measure: bool = False):
         """
         """
         faces = []
@@ -344,7 +364,21 @@ class Face():
                         for edge in edges:
                             edge.add_incident_faces(e_dict[edge.id])
                     
-                    return faces
+                    break
+        
+        if measure:
+            filename_m = filename.rstrip('.tess') + '.stface'
+            f_areas = {}
+            with open(filename_m, 'r', encoding="utf-8") as file:
+                for line in file:
+                    row = line.split()
+                    f_id = int(row[0])
+                    f_area = float(row[1])
+                    f_areas[f_id] = f_area
+            for face in faces:
+                face.set_area(f_areas[face.id])
+
+        return faces
         
     def __str__(self):
         """
@@ -428,6 +462,11 @@ class Face():
         """
         self.seed = seed_coord
 
+    def set_area(self, area):
+        """
+        """
+        self.area = area
+
 
 class Poly():
     """
@@ -468,7 +507,8 @@ class Poly():
     def from_file(
             cls,
             filename: str,
-            faces: List):
+            faces: List,
+            measure: bool = False):
         """
         """
         seeds = {}
@@ -521,7 +561,21 @@ class Poly():
                         for f_id in poly.faces:
                             poly.vertices += f_v_dict[f_id]
                         poly.vertices = list(set(poly.vertices))
-                    return polyhedra
+                    break
+        
+        if measure:
+            filename_m = filename.rstrip('.tess') + '.stpoly'
+            p_vols = {}
+            with open(filename_m, 'r', encoding="utf-8") as file:
+                for line in file:
+                    row = line.split()
+                    p_id = int(row[0])
+                    p_vol = float(row[1])
+                    p_vols[p_id] = p_vol
+            for poly in polyhedra:
+                poly.set_volume(p_vols[poly.id])
+        
+        return polyhedra
         
     def __str__(self):
         """
@@ -580,13 +634,19 @@ class Poly():
         self.ori_format = ori_format
         self.ori = ori_components
 
+    def set_volume(self, volume):
+        """
+        """
+        self.vol = volume
+
 class CellComplex():
     """
     """
     def __init__(
             self,
             filename: str = 'complex.tess',
-            incidence: bool = True):
+            incidence: bool = True,
+            measures: bool = False):
         """
         """
         start = time.time()
@@ -606,7 +666,8 @@ class CellComplex():
         self.edges = Edge.from_file(
             filename = filename, 
             vertices = self.vertices,
-            incidence=incidence
+            incidence=incidence,
+            measure=measures
         )
         
         print(len(self.edges),'edges loaded:', time.time() - start, 's')
@@ -614,8 +675,9 @@ class CellComplex():
         self.faces = Face.from_file(
             filename = filename,
             edges=self.edges,
-            incidence=incidence)
-        
+            incidence=incidence,
+            measure=measures
+        )
         print(len(self.faces), 'faces loaded:', time.time() - start, 's')
         
         if self.dim == 2:
@@ -632,7 +694,11 @@ class CellComplex():
             for face in self.faces:
                 face.set_seed2D(seeds[face.id])
         elif self.dim == 3:
-            self.polyhedra = Poly.from_file(filename, self.faces)
+            self.polyhedra = Poly.from_file(
+                filename,
+                self.faces,
+                measure=measures
+            )
             print(len(self.polyhedra), 'poly loaded:',
                 time.time() - start, 's')
     
