@@ -167,6 +167,8 @@ class Edge():
         """
         """
         edges = []
+        if incidence:
+            v_dict = {}
         with open(filename, 'r', encoding="utf-8") as f:
             for line in f:
                 if '**edge' in line:
@@ -178,11 +180,23 @@ class Edge():
                         v2_id = int(row[2])
                         v_list = [v1_id, v2_id]
                         if incidence:
-                            v1 = get_element_by_id(vertices, v1_id)
-                            v1.add_incident_edge(e_id)
-                            v2 = get_element_by_id(vertices, v2_id)
-                            v2.add_incident_edge(e_id)
+                            if v1_id in v_dict.keys():
+                                v_dict[v1_id].append(e_id)
+                            else:
+                                v_dict[v1_id] = [e_id]
+                            if v2_id in v_dict.keys():
+                                v_dict[v2_id].append(e_id)
+                            else:
+                                v_dict[v2_id] = [e_id]                            
+                            # v1 = get_element_by_id(vertices, v1_id)
+                            # v1.add_incident_edge(e_id)
+                            # v2 = get_element_by_id(vertices, v2_id)
+                            # v2.add_incident_edge(e_id)
                         edges.append(cls(e_id, v_list))
+
+                    if incidence:
+                        for vertex in vertices:
+                            vertex.add_incident_edges(v_dict[vertex.id])
                     return edges
 
     def __str__(self):
@@ -287,6 +301,8 @@ class Face():
         """
         """
         faces = []
+        if incidence:
+            e_dict = {}
         with open(filename, 'r', encoding="utf-8") as f:
             for line in f:
                 if '**face' in line:
@@ -305,8 +321,12 @@ class Face():
                             e_id = abs(int(row[k]))
                             e_list.append(e_id)
                             if incidence:
-                                edge = get_element_by_id(edges, e_id)
-                                edge.add_incident_face(f_id)
+                                if e_id in e_dict.keys():
+                                    e_dict[e_id].append(f_id)
+                                else:
+                                    e_dict[e_id] = [f_id]
+                                # edge = get_element_by_id(edges, e_id)
+                                # edge.add_incident_face(f_id)
                         face.add_edges(e_list)
                         
                         row = f.readline().split()
@@ -319,6 +339,11 @@ class Face():
                         _ = f.readline()
                         
                         faces.append(face)
+                    
+                    if incidence:
+                        for edge in edges:
+                            edge.add_incident_faces(e_dict[edge.id])
+                    
                     return faces
         
     def __str__(self):
@@ -398,7 +423,7 @@ class Face():
         """
         self.is_special = is_special
     
-    def set_seed(self, seed_coord):
+    def set_seed2D(self, seed_coord):
         """
         """
         self.seed = seed_coord
@@ -431,13 +456,13 @@ class Poly():
         
     get_degree
     """
-    def __init__(self, id: int, v_list: Iterable):
+    def __init__(self, id: int, f_list: Iterable):
         """
         """
         self.id = id
-        self.vertices = v_list
+        self.vertices = []
         self.neighbors = []
-        self.faces = []
+        self.faces = f_list
 
     @classmethod
     def from_file(
@@ -449,6 +474,7 @@ class Poly():
         seeds = {}
         ori = {}
         polyhedra = []
+        f_dict = {}
         with open(filename, 'r', encoding="utf-8") as f:
             for line in f:
                 if '**cell' in line:
@@ -472,16 +498,29 @@ class Poly():
                         for k in range(2, int(row[1]) + 2):
                             f_id = abs(int(row[k]))
                             f_list.append(f_id)
-                            face = get_element_by_id(faces, f_id)
-                            v_list += face.vertices
-                            face.add_incident_poly(p_id)
-                        v_list = list(set(v_list))
+                            if f_id in f_dict.keys():
+                                f_dict[f_id].append(p_id)
+                            else:
+                                f_dict[f_id] = [p_id]
+                            # face = get_element_by_id(faces, f_id)
+                            # v_list += face.vertices
+                            # face.add_incident_poly(p_id)
+                        # v_list = list(set(v_list))
                         f_list = list(set(f_list))
-                        poly = cls(p_id, v_list)
+                        poly = cls(p_id, f_list)
                         poly.set_crystal_ori(ori_format, ori[p_id])
                         poly.set_seed(seeds[p_id])
-                        poly.add_faces(f_list)
+                        # poly.add_faces(f_list)
                         polyhedra.append(poly)
+
+                    f_v_dict = {}
+                    for face in faces:
+                        face.add_incident_polys(f_dict[face.id])
+                        f_v_dict[face.id] = face.vertices
+                    for poly in polyhedra:
+                        for f_id in poly.faces:
+                            poly.vertices += f_v_dict[f_id]
+                        poly.vertices = list(set(poly.vertices))
                     return polyhedra
         
     def __str__(self):
@@ -552,6 +591,13 @@ class CellComplex():
         """
         start = time.time()
         self.source_file = filename
+
+        with open(filename, 'r', encoding="utf-8") as f:
+            for line in f:
+                if '**general' in line:
+                    self.dim = int(f.readline().split()[0])
+                    break
+
         self.vertices = Vertex.from_file(filename)
         
         print(len(self.vertices), 'vertices loaded:',
@@ -572,9 +618,21 @@ class CellComplex():
         
         print(len(self.faces), 'faces loaded:', time.time() - start, 's')
         
-        self.polyhedra = Poly.from_file(filename, self.faces)
-        
-        if self.polyhedra:
+        if self.dim == 2:
+            seeds = {}
+            with open(filename, 'r', encoding="utf-8") as f:
+                for line in f:
+                    if '**cell' in line:
+                        N = int(f.readline().rstrip('\n'))
+                    if '*seed' in line:
+                        for i in range(N):
+                            row = f.readline().split()
+                            seeds[int(row[0])] = tuple([*map(float, row[1:3])])
+                        break
+            for face in self.faces:
+                face.set_seed2D(seeds[face.id])
+        elif self.dim == 3:
+            self.polyhedra = Poly.from_file(filename, self.faces)
             print(len(self.polyhedra), 'poly loaded:',
                 time.time() - start, 's')
     
