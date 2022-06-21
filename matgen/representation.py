@@ -193,14 +193,19 @@ def _transform_coord(
     return (xs, ys, zs)
 
 
-def create_axis(figsize: Tuple = (8,8)):
+def create_3D_axis(
+        figsize: Tuple = (8, 8),
+        xlim: Tuple = (0, 1),
+        ylim: Tuple = (0, 1),
+        zlim: Tuple = (0, 1)
+        ):
     """
     """
     fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(111, projection='3d')
-    ax.set_xlim(0,1)
-    ax.set_ylim(0,1)
-    ax.set_zlim(0,1)
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.set_zlim(0, 1)
     return fig, ax
 
 

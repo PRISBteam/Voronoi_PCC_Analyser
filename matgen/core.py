@@ -2,12 +2,17 @@
 classes
 - check time
 - optimize
-- incidence is time consuming: 
-it may be worth to load data from file to sparse matrix format
 
 """
 from typing import Iterable, List
 import time
+
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+from matgen import representation
 
 def get_element_by_id(seq, id):
     """
@@ -118,6 +123,25 @@ class Vertex():
         """
         """
         return len(self.incident_edges)
+    
+    def plot2D():
+        """
+        x, y
+        """
+        pass
+
+    def plot3D(self, ax: Axes = None, show: bool = False):
+        """
+        """
+        if not ax:
+            fig, ax = representation.create_3D_axis()
+        ax.scatter(self.x, self.y, self.z)
+
+        if show:
+            plt.show()
+
+        return ax
+
 
 
 class Edge():
@@ -265,6 +289,22 @@ class Edge():
         """
         """
         self.len = length
+
+    # def plot3D(self, ax: Axes = None):
+    #     """
+    #     """
+    #     if not ax:
+    #         fig, ax = representation.create_3D_axis()
+    #     x1, x2 = [v.x for v in self.vertices]
+    #     y1, y2 = [v.y for v in self.vertices]        
+    #     z1, z2 = [v.z for v in self.vertices]
+
+    #     x_space = np.linspace(x1, x2, 50)
+    #     y_space = np.linspace(y1, y2, 50)
+    #     z_space = np.linspace(z1, z2, 50)
+        
+    #     ax.plot(x_space, y_space, z_space)
+
 
 
 class Face():
@@ -468,6 +508,8 @@ class Face():
         self.area = area
 
 
+
+
 class Poly():
     """
     Class Poly (3-cell).
@@ -615,6 +657,12 @@ class Poly():
         self.faces += f_list
         self.faces = list(set(self.faces))
     
+    def add_edges(self, e_list):
+        """
+        """
+        self.edges = e_list
+    
+    
     def set_orientation(self, orientation):
         """
         """
@@ -701,7 +749,14 @@ class CellComplex():
             )
             print(len(self.polyhedra), 'poly loaded:',
                 time.time() - start, 's')
-    
+
+        for poly in self.polyhedra:
+            p_edges = []
+            p_faces = self.get_many('f', poly.faces)
+            for p_face in p_faces:
+                p_edges += p_face.edges
+            poly.add_edges(list(set(p_edges)))
+
     
     def get_one(self, cell_type: str, id: int):
         """
@@ -734,6 +789,87 @@ class CellComplex():
             raise TypeError('Unknown type cell')
         
         return [get_element_by_id(cell_list, id) for id in ids]
+    
+    def plot_vertices_3D(
+            self,
+            v_id_list: List = [],
+            ax: Axes = None,):
+        """
+        """
+        if not ax:
+            fig, ax = representation.create_3D_axis()
+        if v_id_list:
+            v_list = self.get_many('v', v_id_list)
+        else:
+            v_list = self.vertices
+        for v in v_list:
+            ax = v.plot3D(ax)
+        
+        return ax
+
+    def plot_edges_3D(
+            self,
+            e_id_list: List = [],
+            ax: Axes = None):
+        if not ax:
+            fig, ax = representation.create_3D_axis()
+        if e_id_list:
+            e_list = self.get_many('e', e_id_list)
+        else:
+            e_list = self.edges
+        for e in e_list:
+            v1, v2 = self.get_many('v', e.vertices)
+
+            x_space = np.linspace(v1.x, v2.x, 50)
+            y_space = np.linspace(v1.y, v2.y, 50)
+            z_space = np.linspace(v1.z, v2.z, 50)
+            
+            ax.plot(x_space, y_space, z_space)
+            
+        return ax
+
+
+    def plot_faces_3D(
+            self,
+            f_id_list: List = [],
+            ax: Axes = None
+        ):
+        """
+        """
+        if not ax:
+            fig, ax = representation.create_3D_axis()
+        if f_id_list:
+            f_list = self.get_many('f', f_id_list)
+        else:
+            f_list = self.faces
+        f_coord_list = []
+        for f in f_list:
+            v_list = self.get_many('v', f.vertices)
+            coord_list = [v.coord for v in v_list]
+            f_coord_list.append(coord_list)
+        poly = Poly3DCollection(f_coord_list, alpha = 0.2)
+        ax.add_collection3d(poly)
+
+        return ax
+
+    def plot_polyhedra_3D(
+            self,
+            p_id_list: List = [],
+            ax: Axes = None
+        ):
+        """
+        """
+        if not ax:
+            fig, ax = representation.create_3D_axis()
+        if p_id_list:
+            p_list = self.get_many('p', p_id_list)
+        else:
+            p_list = self.polyhedra
+        
+        for p in p_list:
+            _ = self.plot_faces_3D(p.faces, ax)
+
+        return ax
     
     
     def save_into_files(self, representation):
