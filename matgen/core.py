@@ -60,7 +60,7 @@ class Vertex():
         self.z = z
         self.coord = (x, y, z)
         self.coord2D = (x, y)
-        # self.neighbors = []
+        self.neighbor_ids = []
         self.e_ids = []
         
     @classmethod
@@ -95,17 +95,17 @@ class Vertex():
         
         return v_str
     
-    # def add_neighbor(self, n_id: int):
-    #     """
-    #     """
-    #     self.neighbors.append(n_id)
-    #     self.neighbors = list(set(self.neighbors))
+    def add_neighbor(self, n_id: int):
+        """
+        """
+        self.neighbor_ids.append(n_id)
+        self.neighbor_ids = list(set(self.neighbor_ids))
     
-    # def add_neighbors(self, n_list: Iterable):
-    #     """
-    #     """
-    #     self.neighbors += n_list
-    #     self.neighbors = list(set(self.neighbors))
+    def add_neighbors(self, n_ids: Iterable):
+        """
+        """
+        self.neighbor_ids += n_ids
+        self.neighbor_ids = list(set(self.neighbor_ids))
         
     def add_incident_edge(self, e_id: int):
         """
@@ -184,7 +184,7 @@ class Edge():
         """
         self.id = id
         self.v_ids = v_ids
-        # self.neighbors = []
+        self.neighbor_ids = []
         self.f_ids = []
 
     @classmethod
@@ -209,7 +209,10 @@ class Edge():
                         v2_id = int(row[2])
                         v_ids = [v1_id, v2_id]
                         _vertices[v1_id].add_incident_edge(e_id)
+                        _vertices[v1_id].add_neighbor(v2_id)
                         _vertices[v2_id].add_incident_edge(e_id)
+                        _vertices[v2_id].add_neighbor(v1_id)
+
                         # if incidence:
                         #     if v1_id in v_dict.keys():
                         #         v_dict[v1_id].append(e_id)
@@ -251,17 +254,17 @@ class Edge():
         
         return e_str
     
-    # def add_neighbor(self, n_id: int):
-    #     """
-    #     """
-    #     self.neighbors.append(n_id)
-    #     self.neighbors = list(set(self.neighbors))
+    def add_neighbor(self, n_id: int):
+        """
+        """
+        self.neighbor_ids.append(n_id)
+        self.neighbor_ids = list(set(self.neighbor_ids))
     
-    # def add_neighbors(self, n_list: Iterable):
-    #     """
-    #     """
-    #     self.neighbors += n_list
-    #     self.neighbors = list(set(self.neighbors))
+    def add_neighbors(self, n_ids: Iterable):
+        """
+        """
+        self.neighbor_ids += n_ids
+        self.neighbor_ids = list(set(self.neighbor_ids))
         
     def add_incident_face(self, f_id: int):
         """
@@ -349,7 +352,7 @@ class Face():
         self.id = id
         self.v_ids = v_ids
         self.e_ids = []
-        # self.neighbors = []
+        self.neighbor_ids = []
         self.p_ids = []
         self.is_special = False
         
@@ -433,17 +436,17 @@ class Face():
         
         return f_str
     
-    # def add_neighbor(self, n_id: int):
-    #     """
-    #     """
-    #     self.neighbors.append(n_id)
-    #     self.neighbors = list(set(self.neighbors))
+    def add_neighbor(self, n_id: int):
+        """
+        """
+        self.neighbor_ids.append(n_id)
+        self.neighbor_ids = list(set(self.neighbor_ids))
     
-    # def add_neighbors(self, n_list: Iterable):
-    #     """
-    #     """
-    #     self.neighbors += n_list
-    #     self.neighbors = list(set(self.neighbors))
+    def add_neighbors(self, n_ids: Iterable):
+        """
+        """
+        self.neighbor_ids += n_ids
+        self.neighbor_ids = list(set(self.neighbor_ids))
         
     def add_incident_poly(self, p_id: int):
         """
@@ -542,7 +545,7 @@ class Poly():
         self.id = id
         self.v_ids = []
         self.e_ids = []
-        # self.neighbors = []
+        self.neighbor_ids = []
         self.f_ids = f_ids
 
     @classmethod
@@ -632,17 +635,17 @@ class Poly():
         
         return p_str
     
-    # def add_neighbor(self, n_id: int):
-    #     """
-    #     """
-    #     self.neighbors.append(n_id)
-    #     self.neighbors = list(set(self.neighbors))
+    def add_neighbor(self, n_id: int):
+        """
+        """
+        self.neighbor_ids.append(n_id)
+        self.neighbor_ids = list(set(self.neighbor_ids))
     
-    # def add_neighbors(self, n_list: Iterable):
-    #     """
-    #     """
-    #     self.neighbors += n_list
-    #     self.neighbors = list(set(self.neighbors))
+    def add_neighbors(self, n_ids: Iterable):
+        """
+        """
+        self.neighbor_ids += n_ids
+        self.neighbor_ids = list(set(self.neighbor_ids))
         
     def add_face(self, f_id: int):
         """
@@ -724,6 +727,15 @@ class CellComplex():
         print(len(self._edges.keys()),'edges loaded:',
             time.time() - start, 's')
         
+        for v in self.vertices:
+            for e_id in v.e_ids:
+                s = set(v.e_ids)
+                s.difference_update([e_id])
+                self._edges[e_id].add_neighbors(list(s))
+
+        print('neighbor edges found',
+            time.time() - start, 's')        
+        
         self._faces = Face.from_tess_file(
             filename = filename,
             _edges=self._edges,
@@ -734,6 +746,15 @@ class CellComplex():
         
         print(len(self._faces.keys()), 'faces loaded:',
             time.time() - start, 's')
+
+        for e in self.edges:
+            for f_id in e.f_ids:
+                s = set(e.f_ids)
+                s.difference_update([f_id])
+                self._faces[f_id].add_neighbors(list(s))
+        
+        print('neighbor faces found',
+            time.time() - start, 's') 
         
         if self.dim == 2:
             with open(filename, 'r', encoding="utf-8") as file:
@@ -759,6 +780,15 @@ class CellComplex():
             
             print(len(self._polyhedra.keys()), 'poly loaded:',
                 time.time() - start, 's')
+
+        for f in self.faces:
+            for p_id in f.p_ids:
+                s = set(f.p_ids)
+                s.difference_update([p_id])
+                self._polyhedra[p_id].add_neighbors(list(s))
+        
+        print('neighbor polyhedra found',
+            time.time() - start, 's') 
 
         # # переделать
         # for poly in self.polyhedra:
