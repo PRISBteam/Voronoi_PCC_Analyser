@@ -4,7 +4,7 @@ classes
 - optimize
 
 """
-from typing import Iterable, List
+from typing import Dict, Iterable, List
 import time
 
 import numpy as np
@@ -14,12 +14,12 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from matgen import representation
 
-def get_element_by_id(seq, id):
-    """
-    """
-    for el in seq:
-        if el.id == id:
-            return el
+# def get_element_by_id(seq, id):
+#     """
+#     """
+#     for el in seq:
+#         if el.id == id:
+#             return el
 
 class Vertex():
     """
@@ -39,7 +39,7 @@ class Vertex():
         A tuple of x-, y-, z-coordinates.
     neighbors
         List of neighbouring vertices.
-    incident_edges
+    e_ids
         List of edges which the vetrex incident to.
         
     Methods
@@ -60,14 +60,14 @@ class Vertex():
         self.z = z
         self.coord = (x, y, z)
         self.coord2D = (x, y)
-        self.neighbors = []
-        self.incident_edges = []
+        # self.neighbors = []
+        self.e_ids = []
         
     @classmethod
-    def from_file(cls, filename):
+    def from_tess_file(cls, filename):
         """
         """      
-        vertices = []
+        _vertices = {}
         with open(filename, 'r', encoding="utf-8") as f:
             for line in f:
                 if '**vertex' in line:
@@ -78,8 +78,8 @@ class Vertex():
                         x = float(row[1])
                         y = float(row[2])
                         z = float(row[3])
-                        vertices.append(cls(v_id, x, y, z))
-                    return vertices
+                        _vertices[v_id] = cls(v_id, x, y, z)
+                    return _vertices
         
     def __str__(self):
         """
@@ -95,34 +95,34 @@ class Vertex():
         
         return v_str
     
-    def add_neighbor(self, n_id: int):
-        """
-        """
-        self.neighbors.append(n_id)
-        self.neighbors = list(set(self.neighbors))
+    # def add_neighbor(self, n_id: int):
+    #     """
+    #     """
+    #     self.neighbors.append(n_id)
+    #     self.neighbors = list(set(self.neighbors))
     
-    def add_neighbors(self, n_list: Iterable):
-        """
-        """
-        self.neighbors += n_list
-        self.neighbors = list(set(self.neighbors))
+    # def add_neighbors(self, n_list: Iterable):
+    #     """
+    #     """
+    #     self.neighbors += n_list
+    #     self.neighbors = list(set(self.neighbors))
         
     def add_incident_edge(self, e_id: int):
         """
         """
-        self.incident_edges.append(e_id)
-        self.incident_edges = list(set(self.incident_edges))
+        self.e_ids.append(e_id)
+        self.e_ids = list(set(self.e_ids))
         
-    def add_incident_edges(self, e_list: Iterable):
+    def add_incident_edges(self, e_ids: Iterable):
         """
         """
-        self.incident_edges += e_list
-        self.incident_edges = list(set(self.incident_edges))
+        self.e_ids += e_ids
+        self.e_ids = list(set(self.e_ids))
         
     def get_degree(self):
         """
         """
-        return len(self.incident_edges)
+        return len(self.e_ids)
     
     def plot2D():
         """
@@ -130,18 +130,23 @@ class Vertex():
         """
         pass
 
-    def plot3D(self, ax: Axes = None, show: bool = False):
+    def plot3D(self, ax: Axes = None, **kwargs):
         """
         """
         if not ax:
             fig, ax = representation.create_3D_axis()
-        ax.scatter(self.x, self.y, self.z)
-
-        if show:
-            plt.show()
-
+        ax.scatter(self.x, self.y, self.z, **kwargs)
         return ax
-
+    
+    def plot2D(self, ax: Axes = None, **kwargs):
+        """
+        """
+        if not ax:
+            ax = plt.subplot(111)
+            ax.set_xlim(0, 1)
+            ax.set_ylim(0, 1)
+        ax.scatter(self.x, self.y, **kwargs)
+        return ax
 
 
 class Edge():
@@ -152,7 +157,7 @@ class Edge():
     ----------
     id
         Identifier of an edge.
-    vertices
+    v_ids
         A list of two vertices (their ids) of the edge.
     neighbors
         List of neighbouring edges.
@@ -174,26 +179,25 @@ class Edge():
     get_degree
     
     """
-    def __init__(self, id: int, v_list: Iterable):
+    def __init__(self, id: int, v_ids: Iterable):
         """
         """
         self.id = id
-        self.vertices = v_list
-        self.neighbors = []
-        self.incident_faces = []
+        self.v_ids = v_ids
+        # self.neighbors = []
+        self.f_ids = []
 
     @classmethod
-    def from_file(
+    def from_tess_file(
             cls,
             filename: str,
-            vertices: List = [],
-            incidence: bool = True,
+            _vertices: Dict = {},
             measure: bool = False):
         """
         """
-        edges = []
-        if incidence:
-            v_dict = {}
+        _edges = {}
+        # if incidence:
+        #     v_dict = {}
         with open(filename, 'r', encoding="utf-8") as f:
             for line in f:
                 if '**edge' in line:
@@ -203,39 +207,35 @@ class Edge():
                         e_id = int(row[0])
                         v1_id = int(row[1])
                         v2_id = int(row[2])
-                        v_list = [v1_id, v2_id]
-                        if incidence:
-                            if v1_id in v_dict.keys():
-                                v_dict[v1_id].append(e_id)
-                            else:
-                                v_dict[v1_id] = [e_id]
-                            if v2_id in v_dict.keys():
-                                v_dict[v2_id].append(e_id)
-                            else:
-                                v_dict[v2_id] = [e_id]                            
-                            # v1 = get_element_by_id(vertices, v1_id)
-                            # v1.add_incident_edge(e_id)
-                            # v2 = get_element_by_id(vertices, v2_id)
-                            # v2.add_incident_edge(e_id)
-                        edges.append(cls(e_id, v_list))
+                        v_ids = [v1_id, v2_id]
+                        _vertices[v1_id].add_incident_edge(e_id)
+                        _vertices[v2_id].add_incident_edge(e_id)
+                        # if incidence:
+                        #     if v1_id in v_dict.keys():
+                        #         v_dict[v1_id].append(e_id)
+                        #     else:
+                        #         v_dict[v1_id] = [e_id]
+                        #     if v2_id in v_dict.keys():
+                        #         v_dict[v2_id].append(e_id)
+                        #     else:
+                        #         v_dict[v2_id] = [e_id]
 
-                    if incidence:
-                        for vertex in vertices:
-                            vertex.add_incident_edges(v_dict[vertex.id])
+                        _edges[e_id] = cls(e_id, v_ids)
+
+                    # if incidence:
+                    #     for v_id, vertex in vertices.items():
+                    #         vertex.add_incident_edges(v_dict[v_id])
                     break
         if measure:
             filename_m = filename.rstrip('.tess') + '.stedge'
-            e_lengths = {}
             with open(filename_m, 'r', encoding="utf-8") as file:
                 for line in file:
                     row = line.split()
                     e_id = int(row[0])
                     e_length = float(row[1])
-                    e_lengths[e_id] = e_length
-            for edge in edges:
-                edge.set_length(e_lengths[edge.id])
+                    _edges[e_id].set_length(e_length)
 
-        return edges
+        return _edges
 
     def __str__(self):
         """
@@ -251,29 +251,29 @@ class Edge():
         
         return e_str
     
-    def add_neighbor(self, n_id: int):
-        """
-        """
-        self.neighbors.append(n_id)
-        self.neighbors = list(set(self.neighbors))
+    # def add_neighbor(self, n_id: int):
+    #     """
+    #     """
+    #     self.neighbors.append(n_id)
+    #     self.neighbors = list(set(self.neighbors))
     
-    def add_neighbors(self, n_list: Iterable):
-        """
-        """
-        self.neighbors += n_list
-        self.neighbors = list(set(self.neighbors))
+    # def add_neighbors(self, n_list: Iterable):
+    #     """
+    #     """
+    #     self.neighbors += n_list
+    #     self.neighbors = list(set(self.neighbors))
         
     def add_incident_face(self, f_id: int):
         """
         """
-        self.incident_faces.append(f_id)
-        self.incident_faces = list(set(self.incident_faces))
+        self.f_ids.append(f_id)
+        self.f_ids = list(set(self.f_ids))
         
-    def add_incident_faces(self, f_list: Iterable):
+    def add_incident_faces(self, f_ids: Iterable):
         """
         """
-        self.incident_faces += f_list
-        self.incident_faces = list(set(self.incident_faces))
+        self.f_ids += f_ids
+        self.f_ids = list(set(self.f_ids))
     
     def set_orientation(self, orientation):
         """
@@ -282,8 +282,9 @@ class Edge():
 
     def get_degree(self):
         """
+        triple junctions ?
         """
-        return len(self.incident_faces)
+        return len(self.f_ids)
 
     def set_length(self, length):
         """
@@ -342,27 +343,27 @@ class Face():
     set_special
     
     """
-    def __init__(self, id: int, v_list: Iterable):
+    def __init__(self, id: int, v_ids: Iterable):
         """
         """
         self.id = id
-        self.vertices = v_list
-        self.neighbors = []
-        self.incident_poly = []
+        self.v_ids = v_ids
+        self.e_ids = []
+        # self.neighbors = []
+        self.p_ids = []
         self.is_special = False
         
     @classmethod
-    def from_file(
+    def from_tess_file(
             cls,
             filename: str,
-            edges: List = [],
-            incidence: bool = True,
+            _edges: List = [],
             measure: bool = False):
         """
         """
-        faces = []
-        if incidence:
-            e_dict = {}
+        _faces = {}
+        # if incidence:
+        #     e_dict = {}
         with open(filename, 'r', encoding="utf-8") as f:
             for line in f:
                 if '**face' in line:
@@ -370,24 +371,25 @@ class Face():
                     for i in range(n):
                         row = f.readline().split()
                         f_id = int(row[0])
-                        v_list = []
+                        v_ids = []
                         for k in range(2, int(row[1]) + 2):
-                            v_list.append(int(row[k]))
-                        face = cls(f_id, v_list)
+                            v_ids.append(int(row[k]))
+                        face = cls(f_id, v_ids)
                         
                         row = f.readline().split()
-                        e_list = []
+                        e_ids = []
                         for k in range(1, int(row[0]) + 1):
                             e_id = abs(int(row[k]))
-                            e_list.append(e_id)
-                            if incidence:
-                                if e_id in e_dict.keys():
-                                    e_dict[e_id].append(f_id)
-                                else:
-                                    e_dict[e_id] = [f_id]
+                            e_ids.append(e_id)
+                            _edges[e_id].add_incident_face(f_id)
+                            # if incidence:
+                            #     if e_id in e_dict.keys():
+                            #         e_dict[e_id].append(f_id)
+                            #     else:
+                            #         e_dict[e_id] = [f_id]
                                 # edge = get_element_by_id(edges, e_id)
                                 # edge.add_incident_face(f_id)
-                        face.add_edges(e_list)
+                        face.add_edges(e_ids)
                         
                         row = f.readline().split()
                         face.add_equation(
@@ -398,27 +400,24 @@ class Face():
                         )
                         _ = f.readline()
                         
-                        faces.append(face)
+                        _faces[f_id] = face
                     
-                    if incidence:
-                        for edge in edges:
-                            edge.add_incident_faces(e_dict[edge.id])
+                    # if incidence:
+                    #     for edge in edges:
+                    #         edge.add_incident_faces(e_dict[edge.id])
                     
                     break
         
         if measure:
             filename_m = filename.rstrip('.tess') + '.stface'
-            f_areas = {}
             with open(filename_m, 'r', encoding="utf-8") as file:
                 for line in file:
                     row = line.split()
                     f_id = int(row[0])
                     f_area = float(row[1])
-                    f_areas[f_id] = f_area
-            for face in faces:
-                face.set_area(f_areas[face.id])
+                    _faces[f_id].set_area(f_area)
 
-        return faces
+        return _faces
         
     def __str__(self):
         """
@@ -434,34 +433,35 @@ class Face():
         
         return f_str
     
-    def add_neighbor(self, n_id: int):
-        """
-        """
-        self.neighbors.append(n_id)
-        self.neighbors = list(set(self.neighbors))
+    # def add_neighbor(self, n_id: int):
+    #     """
+    #     """
+    #     self.neighbors.append(n_id)
+    #     self.neighbors = list(set(self.neighbors))
     
-    def add_neighbors(self, n_list: Iterable):
-        """
-        """
-        self.neighbors += n_list
-        self.neighbors = list(set(self.neighbors))
+    # def add_neighbors(self, n_list: Iterable):
+    #     """
+    #     """
+    #     self.neighbors += n_list
+    #     self.neighbors = list(set(self.neighbors))
         
     def add_incident_poly(self, p_id: int):
         """
         """
-        self.incident_poly.append(p_id)
-        self.incident_poly = list(set(self.incident_poly))
+        self.p_ids.append(p_id)
+        self.p_ids = list(set(self.p_ids))
         
-    def add_incident_polys(self, p_list: Iterable):
+    def add_incident_polys(self, p_ids: Iterable):
         """
         """
-        self.incident_poly += p_list
-        self.incident_poly = list(set(self.incident_poly))
+        self.p_ids += p_ids
+        self.p_ids = list(set(self.p_ids))
     
-    def add_edges(self, e_list):
+    def add_edges(self, e_ids):
         """
         """
-        self.edges = e_list
+        self.e_ids += e_ids
+        self.e_ids = list(set(self.e_ids))
     
     def add_equation(self, d, a, b, c):
         """
@@ -479,16 +479,17 @@ class Face():
     
     def get_degree(self):
         """
+        internal / external
         """
-        return len(self.incident_poly)
+        return len(self.p_ids)
     
     def get_type(self):
         """
         Check!!!
         """
-        if len(self.incident_poly) == 1:
+        if len(self.p_ids) == 1:
             self.type = "external"
-        elif len(self.incident_poly) == 2:
+        elif len(self.p_ids) == 2:
             self.type = "internal"
         return self.type
     
@@ -506,8 +507,6 @@ class Face():
         """
         """
         self.area = area
-
-
 
 
 class Poly():
@@ -537,26 +536,27 @@ class Poly():
         
     get_degree
     """
-    def __init__(self, id: int, f_list: Iterable):
+    def __init__(self, id: int, f_ids: Iterable):
         """
         """
         self.id = id
-        self.vertices = []
-        self.neighbors = []
-        self.faces = f_list
+        self.v_ids = []
+        self.e_ids = []
+        # self.neighbors = []
+        self.f_ids = f_ids
 
     @classmethod
-    def from_file(
+    def from_tess_file(
             cls,
             filename: str,
-            faces: List,
+            _faces: List,
             measure: bool = False):
         """
         """
         seeds = {}
         ori = {}
-        polyhedra = []
-        f_dict = {}
+        _polyhedra = {}
+        # f_dict = {}
         with open(filename, 'r', encoding="utf-8") as f:
             for line in f:
                 if '**cell' in line:
@@ -575,34 +575,35 @@ class Poly():
                     for i in range(n):
                         row = f.readline().split()
                         p_id = int(row[0])
-                        v_list = []
-                        f_list = []
+                        f_ids = []
+                        v_ids = []
+                        e_ids = []
                         for k in range(2, int(row[1]) + 2):
                             f_id = abs(int(row[k]))
-                            f_list.append(f_id)
-                            if f_id in f_dict.keys():
-                                f_dict[f_id].append(p_id)
-                            else:
-                                f_dict[f_id] = [p_id]
-                            # face = get_element_by_id(faces, f_id)
-                            # v_list += face.vertices
-                            # face.add_incident_poly(p_id)
-                        # v_list = list(set(v_list))
-                        f_list = list(set(f_list))
-                        poly = cls(p_id, f_list)
+                            f_ids.append(f_id)
+                            v_ids += _faces[f_id].v_ids
+                            e_ids += _faces[f_id].e_ids
+                            # if f_id in f_dict.keys():
+                            #     f_dict[f_id].append(p_id)
+                            # else:
+                            #     f_dict[f_id] = [p_id]
+                            _faces[f_id].add_incident_poly(p_id)
+                        f_ids = list(set(f_ids))
+                        poly = cls(p_id, f_ids)
+                        poly.v_ids += v_ids
+                        poly.v_ids = list(set(poly.v_ids))
+                        poly.add_edges(e_ids)
                         poly.set_crystal_ori(ori_format, ori[p_id])
                         poly.set_seed(seeds[p_id])
-                        # poly.add_faces(f_list)
-                        polyhedra.append(poly)
-
-                    f_v_dict = {}
-                    for face in faces:
-                        face.add_incident_polys(f_dict[face.id])
-                        f_v_dict[face.id] = face.vertices
-                    for poly in polyhedra:
-                        for f_id in poly.faces:
-                            poly.vertices += f_v_dict[f_id]
-                        poly.vertices = list(set(poly.vertices))
+                        _polyhedra[p_id] = poly
+                    # f_v_dict = {}
+                    # for face in faces:
+                    #     face.add_incident_polys(f_dict[face.id])
+                    #     f_v_dict[face.id] = face.v_ids
+                    # for poly in polyhedra:
+                    #     for f_id in poly.faces:
+                    #         poly.v_ids += f_v_dict[f_id]
+                    #     poly.v_ids = list(set(poly.v_ids))
                     break
         
         if measure:
@@ -613,11 +614,9 @@ class Poly():
                     row = line.split()
                     p_id = int(row[0])
                     p_vol = float(row[1])
-                    p_vols[p_id] = p_vol
-            for poly in polyhedra:
-                poly.set_volume(p_vols[poly.id])
+                    _polyhedra[p_id].set_volume(p_vol)
         
-        return polyhedra
+        return _polyhedra
         
     def __str__(self):
         """
@@ -633,34 +632,35 @@ class Poly():
         
         return p_str
     
-    def add_neighbor(self, n_id: int):
-        """
-        """
-        self.neighbors.append(n_id)
-        self.neighbors = list(set(self.neighbors))
+    # def add_neighbor(self, n_id: int):
+    #     """
+    #     """
+    #     self.neighbors.append(n_id)
+    #     self.neighbors = list(set(self.neighbors))
     
-    def add_neighbors(self, n_list: Iterable):
-        """
-        """
-        self.neighbors += n_list
-        self.neighbors = list(set(self.neighbors))
+    # def add_neighbors(self, n_list: Iterable):
+    #     """
+    #     """
+    #     self.neighbors += n_list
+    #     self.neighbors = list(set(self.neighbors))
         
     def add_face(self, f_id: int):
         """
         """
-        self.faces.append(f_id)
-        self.faces = list(set(self.faces))
+        self.f_ids.append(f_id)
+        self.f_ids = list(set(self.f_ids))
         
-    def add_faces(self, f_list: Iterable):
+    def add_faces(self, f_ids: Iterable):
         """
         """
-        self.faces += f_list
-        self.faces = list(set(self.faces))
+        self.f_ids += f_ids
+        self.f_ids = list(set(self.f_ids))
     
-    def add_edges(self, e_list):
+    def add_edges(self, e_ids):
         """
         """
-        self.edges = e_list
+        self.e_ids += e_ids
+        self.e_ids = list(set(self.e_ids))
     
     
     def set_orientation(self, orientation):
@@ -668,10 +668,10 @@ class Poly():
         """
         pass
     
-    def get_degree(self):
-        """
-        """
-        return len(self.faces)
+    # def get_degree(self):
+    #     """
+    #     """
+    #     return len(self.f_ids)
     
     def set_seed(self, seed_coord):
         """
@@ -693,12 +693,12 @@ class CellComplex():
     def __init__(
             self,
             filename: str = 'complex.tess',
-            incidence: bool = True,
             measures: bool = False):
         """
         """
         start = time.time()
         self.source_file = filename
+        self.measures = measures
 
         with open(filename, 'r', encoding="utf-8") as f:
             for line in f:
@@ -706,168 +706,181 @@ class CellComplex():
                     self.dim = int(f.readline().split()[0])
                     break
 
-        self.vertices = Vertex.from_file(filename)
+        self._vertices = Vertex.from_tess_file(filename)
+        # May be redundant, or make generator?
+        self.vertices = [v for v in self._vertices.values()]
         
-        print(len(self.vertices), 'vertices loaded:',
+        print(len(self._vertices.keys()), 'vertices loaded:',
             time.time() - start, 's')
         
-        self.edges = Edge.from_file(
+        self._edges = Edge.from_tess_file(
             filename = filename, 
-            vertices = self.vertices,
-            incidence=incidence,
+            _vertices = self._vertices,
             measure=measures
         )
+        # May be redundant, or make generator?
+        self.edges = [e for e in self._edges.values()]
         
-        print(len(self.edges),'edges loaded:', time.time() - start, 's')
+        print(len(self._edges.keys()),'edges loaded:',
+            time.time() - start, 's')
         
-        self.faces = Face.from_file(
+        self._faces = Face.from_tess_file(
             filename = filename,
-            edges=self.edges,
-            incidence=incidence,
+            _edges=self._edges,
             measure=measures
         )
-        print(len(self.faces), 'faces loaded:', time.time() - start, 's')
+        # May be redundant, or make generator?
+        self.faces = [f for f in self._faces.values()]
+        
+        print(len(self._faces.keys()), 'faces loaded:',
+            time.time() - start, 's')
         
         if self.dim == 2:
-            seeds = {}
-            with open(filename, 'r', encoding="utf-8") as f:
-                for line in f:
+            with open(filename, 'r', encoding="utf-8") as file:
+                for line in file:
                     if '**cell' in line:
-                        N = int(f.readline().rstrip('\n'))
+                        N = int(file.readline().rstrip('\n'))
                     if '*seed' in line:
                         for i in range(N):
                             row = f.readline().split()
-                            seeds[int(row[0])] = tuple([*map(float, row[1:3])])
+                            f_id = int(row[0])
+                            seed_coord = tuple([*map(float, row[1:3])])
+                            self._faces[f_id].set_seed2D(seed_coord)
                         break
-            for face in self.faces:
-                face.set_seed2D(seeds[face.id])
+
         elif self.dim == 3:
-            self.polyhedra = Poly.from_file(
+            self._polyhedra = Poly.from_tess_file(
                 filename,
-                self.faces,
+                self._faces,
                 measure=measures
             )
-            print(len(self.polyhedra), 'poly loaded:',
+            # May be redundant, or make generator?
+            self.polyhedra = [p for p in self._polyhedra.values()]
+            
+            print(len(self._polyhedra.keys()), 'poly loaded:',
                 time.time() - start, 's')
 
-        for poly in self.polyhedra:
-            p_edges = []
-            p_faces = self.get_many('f', poly.faces)
-            for p_face in p_faces:
-                p_edges += p_face.edges
-            poly.add_edges(list(set(p_edges)))
+        # # переделать
+        # for poly in self.polyhedra:
+        #     p_edges = []
+        #     p_faces = self.get_many('f', poly.faces)
+        #     for p_face in p_faces:
+        #         p_edges += p_face.edges
+        #     poly.add_edges(list(set(p_edges)))
 
     
     def get_one(self, cell_type: str, id: int):
         """
         """
         if cell_type == 'v' or cell_type == 'vertex':
-            cell_list = self.vertices
+            _cells = self._vertices
         elif cell_type == 'e' or cell_type == 'edge':
-            cell_list = self.edges
+            _cells = self._edges
         elif cell_type == 'f' or cell_type == 'face':
-            cell_list = self.faces
+            _cells = self._faces
         elif cell_type == 'p' or cell_type == 'poly':
-            cell_list = self.polyhedra
+            _cells = self._polyhedra
         else:
             raise TypeError('Unknown type cell')
         
-        return get_element_by_id(seq=cell_list, id=id)
+        return _cells[id]
     
     def get_many(self, cell_type, ids):
         """
         """
         if cell_type == 'v' or cell_type == 'vertex':
-            cell_list = self.vertices
+            _cells = self._vertices
         elif cell_type == 'e' or cell_type == 'edge':
-            cell_list = self.edges
+            _cells = self._edges
         elif cell_type == 'f' or cell_type == 'face':
-            cell_list = self.faces
+            _cells = self._faces
         elif cell_type == 'p' or cell_type == 'poly':
-            cell_list = self.polyhedra
+            _cells = self._polyhedra
         else:
             raise TypeError('Unknown type cell')
-        
-        return [get_element_by_id(cell_list, id) for id in ids]
+
+        return [_cells[id] for id in ids]
     
     def plot_vertices_3D(
             self,
-            v_id_list: List = [],
-            ax: Axes = None,):
+            v_ids: List = [],
+            ax: Axes = None,
+            **kwargs):
         """
         """
         if not ax:
             fig, ax = representation.create_3D_axis()
-        if v_id_list:
-            v_list = self.get_many('v', v_id_list)
+        if v_ids:
+            v_list = self.get_many('v', v_ids)
         else:
             v_list = self.vertices
         for v in v_list:
-            ax = v.plot3D(ax)
+            ax = v.plot3D(ax, **kwargs)
         
         return ax
 
     def plot_edges_3D(
             self,
-            e_id_list: List = [],
-            ax: Axes = None):
+            e_ids: List = [],
+            ax: Axes = None,
+            **kwargs):
         if not ax:
             fig, ax = representation.create_3D_axis()
-        if e_id_list:
-            e_list = self.get_many('e', e_id_list)
+        if e_ids:
+            e_list = self.get_many('e', e_ids)
         else:
             e_list = self.edges
         for e in e_list:
-            v1, v2 = self.get_many('v', e.vertices)
+            v1, v2 = self.get_many('v', e.v_ids)
 
             x_space = np.linspace(v1.x, v2.x, 50)
             y_space = np.linspace(v1.y, v2.y, 50)
             z_space = np.linspace(v1.z, v2.z, 50)
             
-            ax.plot(x_space, y_space, z_space)
+            ax.plot(x_space, y_space, z_space, **kwargs)
             
         return ax
 
 
     def plot_faces_3D(
             self,
-            f_id_list: List = [],
-            ax: Axes = None
-        ):
+            f_ids: List = [],
+            ax: Axes = None,
+            **kwargs):
         """
         """
         if not ax:
             fig, ax = representation.create_3D_axis()
-        if f_id_list:
-            f_list = self.get_many('f', f_id_list)
+        if f_ids:
+            f_list = self.get_many('f', f_ids)
         else:
             f_list = self.faces
         f_coord_list = []
         for f in f_list:
-            v_list = self.get_many('v', f.vertices)
+            v_list = self.get_many('v', f.v_ids)
             coord_list = [v.coord for v in v_list]
             f_coord_list.append(coord_list)
-        poly = Poly3DCollection(f_coord_list, alpha = 0.2)
+        poly = Poly3DCollection(f_coord_list, alpha = 0.2, **kwargs)
         ax.add_collection3d(poly)
 
         return ax
 
     def plot_polyhedra_3D(
             self,
-            p_id_list: List = [],
-            ax: Axes = None
-        ):
+            p_ids: List = [],
+            ax: Axes = None,
+            **kwargs):
         """
         """
         if not ax:
             fig, ax = representation.create_3D_axis()
-        if p_id_list:
-            p_list = self.get_many('p', p_id_list)
+        if p_ids:
+            p_list = self.get_many('p', p_ids)
         else:
             p_list = self.polyhedra
         
         for p in p_list:
-            _ = self.plot_faces_3D(p.faces, ax)
+            _ = self.plot_faces_3D(p.f_ids, ax, **kwargs)
 
         return ax
     
