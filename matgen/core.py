@@ -4,7 +4,7 @@ classes
 - optimize
 
 """
-from typing import Dict, Iterable, List
+from typing import Dict, Iterable, List, Union
 import time
 
 import numpy as np
@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
-from matgen import representation
+from matgen import representation, matutils
 
 # def get_element_by_id(seq, id):
 #     """
@@ -799,37 +799,35 @@ class CellComplex():
         #     poly.add_edges(list(set(p_edges)))
 
     
-    def get_one(self, cell_type: str, id: int):
+    def _choose_cell_type(self, cell_type: Union[str, int]):
         """
         """
-        if cell_type == 'v' or cell_type == 'vertex':
+        if cell_type in ['v', 'vertex', 0, '0']:
             _cells = self._vertices
-        elif cell_type == 'e' or cell_type == 'edge':
+        elif cell_type in ['e', 'edge', 1, '1']:
             _cells = self._edges
-        elif cell_type == 'f' or cell_type == 'face':
+        elif cell_type in ['f', 'face', 2, '2']:
             _cells = self._faces
-        elif cell_type == 'p' or cell_type == 'poly':
+        elif cell_type in ['p', 'poly', 3, '3']:
             _cells = self._polyhedra
         else:
-            raise TypeError('Unknown type cell')
+            raise TypeError('Unknown cell type')
         
-        return _cells[id]
+        return _cells
     
-    def get_many(self, cell_type, ids):
+    def get_one(self, cell_type: Union[str, int], cell_id: int):
         """
         """
-        if cell_type == 'v' or cell_type == 'vertex':
-            _cells = self._vertices
-        elif cell_type == 'e' or cell_type == 'edge':
-            _cells = self._edges
-        elif cell_type == 'f' or cell_type == 'face':
-            _cells = self._faces
-        elif cell_type == 'p' or cell_type == 'poly':
-            _cells = self._polyhedra
-        else:
-            raise TypeError('Unknown type cell')
+        _cells = self._choose_cell_type(cell_type)
+        
+        return _cells[cell_id]
+    
+    def get_many(self, cell_type, cell_ids):
+        """
+        """
+        _cells = self._choose_cell_type(cell_type)
 
-        return [_cells[id] for id in ids]
+        return [_cells[cell_id] for cell_id in cell_ids]
     
     def plot_vertices_3D(
             self,
@@ -915,11 +913,26 @@ class CellComplex():
         return ax
     
     
-    def save_into_files(self, representation):
+    def get_sparse_A(self, cell_type):
+        """
+        """
+        _cells = self._choose_cell_type(cell_type)
+   
+        return matutils.get_A_from_cells(_cells)
+
+    def get_graph_from_A(self, cell_type):
+        """
+        """
+        _cells = self._choose_cell_type(cell_type)
+        
+        return matutils.get_G_from_cells(_cells)
+
+    def save_into_files(self, representation=None, work_dir: str = '.'):
         """
         Can be saved as a set of srapse matrices or cell lists.
         representation: operator form, cells list, neper format?
+        A, B
         """
-        pass
+        matutils.save_A(self, work_dir)
 
     
