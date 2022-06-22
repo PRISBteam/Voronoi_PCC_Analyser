@@ -16,11 +16,13 @@ Functions
 """
 
 import argparse
-from ast import Return
 import os
 import time
 from typing import Dict, TextIO
 import numpy as np
+
+import core
+import matutils
 
 def extract_seeds(        
         filename: str = 'complex.tess',
@@ -204,7 +206,9 @@ def main() -> None:
         os.mkdir(args.dir)
 
     extract_seeds(args.file, args.dir)
-    write_matrices(args.file, args.dir, args.is_signed)
+    # write_matrices(args.file, args.dir, args.is_signed) - wrong
+    c = core.CellComplex(filename=args.file)
+    c.save_into_files(work_dir=args.dir)
     
     if args.v:
         with open(args.v, 'r') as fvol:

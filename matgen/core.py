@@ -12,7 +12,8 @@ import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
-from matgen import representation, matutils
+import representation
+import matutils
 
 # def get_element_by_id(seq, id):
 #     """
@@ -58,8 +59,8 @@ class Vertex():
         self.x = x
         self.y = y
         self.z = z
-        self.coord = (x, y, z)
-        self.coord2D = (x, y)
+        self.coord = (x, y, z) # make property ?
+        self.coord2D = (x, y)  # make property ?
         self.neighbor_ids = []
         self.e_ids = []
         
@@ -147,6 +148,12 @@ class Vertex():
             ax.set_ylim(0, 1)
         ax.scatter(self.x, self.y, **kwargs)
         return ax
+
+    @property
+    def incident_cells(self):
+        """
+        """
+        return self.e_ids
 
 
 class Edge():
@@ -293,6 +300,12 @@ class Edge():
         """
         """
         self.len = length
+
+    @property
+    def incident_cells(self):
+        """
+        """
+        return self.f_ids
 
     # def plot3D(self, ax: Axes = None):
     #     """
@@ -510,6 +523,12 @@ class Face():
         """
         """
         self.area = area
+
+    @property
+    def incident_cells(self):
+        """
+        """
+        return self.p_ids
 
 
 class Poly():
@@ -763,7 +782,7 @@ class CellComplex():
                         N = int(file.readline().rstrip('\n'))
                     if '*seed' in line:
                         for i in range(N):
-                            row = f.readline().split()
+                            row = file.readline().split()
                             f_id = int(row[0])
                             seed_coord = tuple([*map(float, row[1:3])])
                             self._faces[f_id].set_seed2D(seed_coord)
@@ -920,6 +939,13 @@ class CellComplex():
    
         return matutils.get_A_from_cells(_cells)
 
+    def get_sparse_B(self, cell_type):
+        """
+        """
+        _cells = self._choose_cell_type(cell_type)
+   
+        return matutils.get_B_from_cells(_cells)
+
     def get_graph_from_A(self, cell_type):
         """
         """
@@ -934,5 +960,6 @@ class CellComplex():
         A, B
         """
         matutils.save_A(self, work_dir)
+        matutils.save_B(self, work_dir)
 
     
