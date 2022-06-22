@@ -930,7 +930,79 @@ class CellComplex():
             _ = self.plot_faces_3D(p.f_ids, ax, **kwargs)
 
         return ax
-    
+
+    def plot_vertices_2D(
+            self,
+            v_ids: List = [],
+            ax: Axes = None,
+            **kwargs):
+        """
+        """
+        if not ax:
+            fig, ax = representation.create_2D_axis()
+        if v_ids:
+            v_list = self.get_many('v', v_ids)
+        else:
+            v_list = self.vertices
+        for v in v_list:
+            ax = v.plot2D(ax, **kwargs)
+        
+        return ax
+
+    def plot_edges_2D(
+            self,
+            e_ids: List = [],
+            ax: Axes = None,
+            **kwargs):
+        if not ax:
+            fig, ax = representation.create_2D_axis()
+        if e_ids:
+            e_list = self.get_many('e', e_ids)
+        else:
+            e_list = self.edges
+        for e in e_list:
+            v1, v2 = self.get_many('v', e.v_ids)
+
+            x_space = np.linspace(v1.x, v2.x, 50)
+            y_space = np.linspace(v1.y, v2.y, 50)
+            
+            ax.plot(x_space, y_space, **kwargs)
+            
+        return ax
+
+
+    def plot_faces_2D(
+            self,
+            f_ids: List = [],
+            ax: Axes = None,
+            **kwargs):
+        """
+        """
+        if not ax:
+            fig, ax = representation.create_2D_axis()
+        if f_ids:
+            f_list = self.get_many('f', f_ids)
+        else:
+            f_list = self.faces
+        f_coord_list = []
+        for f in f_list:
+            _ = self.plot_edges_2D(f.e_ids, ax, **kwargs)
+            v_list = self.get_many('v', f.v_ids)
+            xs = [v.x for v in v_list]
+            ys = [v.y for v in v_list]
+            ax.fill(xs, ys, **kwargs)
+
+        return ax
+
+    #     
+    #     for f in f_list:
+    #         v_list = self.get_many('v', f.v_ids)
+    #         coord_list = [v.coord for v in v_list]
+    #         f_coord_list.append(coord_list)
+    #     poly = Poly3DCollection(f_coord_list, alpha = 0.2, **kwargs)
+    #     ax.add_collection3d(poly)
+
+   
     
     def get_sparse_A(self, cell_type):
         """
