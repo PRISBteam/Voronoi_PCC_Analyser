@@ -124,12 +124,7 @@ class Vertex():
         """
         """
         return len(self.e_ids)
-    
-    def plot2D():
-        """
-        x, y
-        """
-        pass
+
 
     def plot3D(self, ax: Axes = None, **kwargs):
         """
@@ -630,7 +625,6 @@ class Poly():
         
         if measure:
             filename_m = filename.rstrip('.tess') + '.stpoly'
-            p_vols = {}
             with open(filename_m, 'r', encoding="utf-8") as file:
                 for line in file:
                     row = line.split()
@@ -986,7 +980,7 @@ class CellComplex():
             f_list = self.faces
         f_coord_list = []
         for f in f_list:
-            _ = self.plot_edges_2D(f.e_ids, ax, **kwargs)
+            # _ = self.plot_edges_2D(f.e_ids, ax, **kwargs)
             v_list = self.get_many('v', f.v_ids)
             xs = [v.x for v in v_list]
             ys = [v.y for v in v_list]
@@ -1002,8 +996,56 @@ class CellComplex():
     #     poly = Poly3DCollection(f_coord_list, alpha = 0.2, **kwargs)
     #     ax.add_collection3d(poly)
 
-   
-    
+    def plot_seeds_2D(
+            self,
+            f_ids: List = [],
+            ax: Axes = None,
+            **kwargs):
+        """
+        """
+        if not ax:
+            ax = plt.subplot(111)
+            # ax.set_xlim(0, 1)
+            # ax.set_ylim(0, 1)
+        if f_ids:
+            f_list = self.get_many('f', f_ids)
+        else:
+            f_list = self.faces
+        
+        xs = []
+        ys = []
+        for f in f_list:
+            x, y = f.seed
+            xs.append(x)
+            ys.append(y)
+        ax.scatter(xs, ys, **kwargs)
+        return ax
+
+    def plot_seeds_3D(
+            self,
+            p_ids: List = [],
+            ax: Axes = None,
+            **kwargs):
+        """
+        """
+        if not ax:
+            fig, ax = representation.create_2D_axis()
+        if p_ids:
+            p_list = self.get_many('p', p_ids)
+        else:
+            p_list = self.polyhedra
+        
+        xs = []
+        ys = []
+        zs = []
+        for p in p_list:
+            x, y, z = p.seed
+            xs.append(x)
+            ys.append(y)
+            zs.append(z)
+        ax.scatter(xs, ys, zs, **kwargs)
+        return ax
+  
     def get_sparse_A(self, cell_type):
         """
         """

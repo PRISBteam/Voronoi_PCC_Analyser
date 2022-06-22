@@ -218,8 +218,8 @@ def create_2D_axis(
     """
     fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(111)
-    ax.set_xlim(*xlim)
-    ax.set_ylim(*ylim)
+    # ax.set_xlim(*xlim)
+    # ax.set_ylim(*ylim)
     # plt.grid()
     return fig, ax
 
