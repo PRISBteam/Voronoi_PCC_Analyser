@@ -16,8 +16,8 @@ def construct_dense_matrix(f, matrix_shape=None):
     """
     """
     A_sparse = np.loadtxt(f, dtype='int')
-    I = np.array([row[0] for row in A_sparse]) - 1
-    J = np.array([row[1] for row in A_sparse]) - 1
+    I = np.array([row[0] for row in A_sparse])
+    J = np.array([row[1] for row in A_sparse])
     V = np.array([row[2] for row in A_sparse])
 
     A_dense = sparse.coo_matrix((V,(I,J)), shape=matrix_shape).toarray()
