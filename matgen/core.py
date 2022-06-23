@@ -63,6 +63,7 @@ class Vertex():
         self.coord2D = (x, y)  # make property ?
         self.neighbor_ids = []
         self.e_ids = []
+        self.is_external = False
         
     @classmethod
     def from_tess_file(cls, filename):
@@ -150,6 +151,17 @@ class Vertex():
         """
         return self.e_ids
 
+    def set_external(self, is_exernal: bool = True):
+        """
+        """
+        self.is_external = is_exernal
+
+    def set_type(self, type: str):
+        """
+        """
+        self.type = type
+
+
 
 class Edge():
     """
@@ -188,13 +200,16 @@ class Edge():
         self.v_ids = v_ids
         self.neighbor_ids = []
         self.f_ids = []
+        self.is_special = False
+        self.is_external = False
 
     @classmethod
     def from_tess_file(
             cls,
             filename: str,
             _vertices: Dict = {},
-            measure: bool = False):
+            measure: bool = False,
+            theta: bool = False):
         """
         """
         _edges = {}
@@ -239,6 +254,9 @@ class Edge():
                     e_id = int(row[0])
                     e_length = float(row[1])
                     _edges[e_id].set_length(e_length)
+                    if theta:
+                        e_theta = float(row[2])
+                        _edges[e_id].set_theta2D(e_theta)
 
         return _edges
 
@@ -296,11 +314,36 @@ class Edge():
         """
         self.len = length
 
+    def set_theta2D(self, theta):
+        """
+        disorientation angle (in degrees)
+        """
+        self.theta = theta
+        if theta < 0:
+            self.set_external()
+        elif theta >= 15: # might be changed
+            self.set_special()
+
+    def set_special(self, is_special=True):
+        """
+        """
+        self.is_special = is_special
+
     @property
     def incident_cells(self):
         """
         """
         return self.f_ids
+
+    def set_external(self, is_exernal: bool = True):
+        """
+        """
+        self.is_external = is_exernal
+
+    def set_type(self, type: str):
+        """
+        """
+        self.type = type
 
     # def plot3D(self, ax: Axes = None):
     #     """
@@ -363,13 +406,15 @@ class Face():
         self.neighbor_ids = []
         self.p_ids = []
         self.is_special = False
+        self.is_external = False
         
     @classmethod
     def from_tess_file(
             cls,
             filename: str,
             _edges: List = [],
-            measure: bool = False):
+            measure: bool = False,
+            theta: bool = False):
         """
         """
         _faces = {}
@@ -427,6 +472,9 @@ class Face():
                     f_id = int(row[0])
                     f_area = float(row[1])
                     _faces[f_id].set_area(f_area)
+                    if theta:
+                        f_theta = float(row[2])
+                        _faces[f_id].set_theta(f_theta)
 
         return _faces
         
@@ -494,15 +542,15 @@ class Face():
         """
         return len(self.p_ids)
     
-    def get_type(self):
-        """
-        Check!!!
-        """
-        if len(self.p_ids) == 1:
-            self.type = "external"
-        elif len(self.p_ids) == 2:
-            self.type = "internal"
-        return self.type
+    # def get_type(self):
+    #     """
+    #     Check!!!
+    #     """
+    #     if len(self.p_ids) == 1:
+    #         self.type = "external"
+    #     elif len(self.p_ids) == 2:
+    #         self.type = "internal"
+    #     return self.type
     
     def set_special(self, is_special=True):
         """
@@ -519,11 +567,26 @@ class Face():
         """
         self.area = area
 
+    def set_theta(self, theta):
+        """
+        disorientation angle (in degrees)
+        """
+        self.theta = theta
+        if theta < 0:
+            self.set_external()
+        elif theta >= 15: # might be changed
+            self.set_special()
+
     @property
     def incident_cells(self):
         """
         """
         return self.p_ids
+
+    def set_external(self, is_exernal: bool = True):
+        """
+        """
+        self.is_external = is_exernal
 
 
 class Poly():
@@ -630,7 +693,7 @@ class Poly():
                     row = line.split()
                     p_id = int(row[0])
                     p_vol = float(row[1])
-                    _polyhedra[p_id].set_volume(p_vol)
+                    _polyhedra[p_id].set_volume(p_vol)                    
         
         return _polyhedra
         
@@ -709,7 +772,8 @@ class CellComplex():
     def __init__(
             self,
             filename: str = 'complex.tess',
-            measures: bool = False):
+            measures: bool = False,
+            theta: bool = False):
         """
         """
         start = time.time()
@@ -721,6 +785,13 @@ class CellComplex():
                 if '**general' in line:
                     self.dim = int(f.readline().split()[0])
                     break
+        
+        if self.dim == 2:
+            theta2D = theta
+            theta3D = False
+        elif self.dim ==3:
+            theta2D = False
+            theta3D = theta
 
         self._vertices = Vertex.from_tess_file(filename)
         # May be redundant, or make generator?
@@ -732,7 +803,8 @@ class CellComplex():
         self._edges = Edge.from_tess_file(
             filename = filename, 
             _vertices = self._vertices,
-            measure=measures
+            measure=measures,
+            theta=theta2D
         )
         # May be redundant, or make generator?
         self.edges = [e for e in self._edges.values()]
@@ -752,7 +824,8 @@ class CellComplex():
         self._faces = Face.from_tess_file(
             filename = filename,
             _edges=self._edges,
-            measure=measures
+            measure=measures,
+            theta=theta3D
         )
         # May be redundant, or make generator?
         self.faces = [f for f in self._faces.values()]
@@ -781,6 +854,13 @@ class CellComplex():
                             seed_coord = tuple([*map(float, row[1:3])])
                             self._faces[f_id].set_seed2D(seed_coord)
                         break
+                    # TODO: add ori in 2D case
+
+            for e in self.edges:
+                if len(e.f_ids) == 1:
+                    e.set_external()
+                    for v_id in e.v_ids:
+                        self._vertices[v_id].set_external()
 
         elif self.dim == 3:
             self._polyhedra = Poly.from_tess_file(
@@ -794,14 +874,22 @@ class CellComplex():
             print(len(self._polyhedra.keys()), 'poly loaded:',
                 time.time() - start, 's')
 
-        for f in self.faces:
-            for p_id in f.p_ids:
-                s = set(f.p_ids)
-                s.difference_update([p_id])
-                self._polyhedra[p_id].add_neighbors(list(s))
-        
-        print('neighbor polyhedra found',
-            time.time() - start, 's') 
+            for f in self.faces:
+                for p_id in f.p_ids:
+                    s = set(f.p_ids)
+                    s.difference_update([p_id])
+                    self._polyhedra[p_id].add_neighbors(list(s))
+            
+            print('neighbor polyhedra found',
+                time.time() - start, 's')
+
+            for f in self.faces:
+                if len(f.p_ids) == 1:
+                    f.set_external()
+                    for v_id in f.v_ids:
+                        self._vertices[v_id].set_external()
+                    for e_id in f.e_ids:
+                        self._edges[e_id].set_external()                    
 
         # # переделать
         # for poly in self.polyhedra:
