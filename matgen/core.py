@@ -156,7 +156,7 @@ class Vertex():
         """
         self.is_external = is_exernal
 
-    def set_type(self, type: str):
+    def set_type2D(self, type: str):
         """
         """
         self.type = type
@@ -891,6 +891,8 @@ class CellComplex():
                     for e_id in f.e_ids:
                         self._edges[e_id].set_external()                    
 
+        if theta:
+            self.set_junction_types()
         # # переделать
         # for poly in self.polyhedra:
         #     p_edges = []
@@ -1066,7 +1068,6 @@ class CellComplex():
             f_list = self.get_many('f', f_ids)
         else:
             f_list = self.faces
-        f_coord_list = []
         for f in f_list:
             # _ = self.plot_edges_2D(f.e_ids, ax, **kwargs)
             v_list = self.get_many('v', f.v_ids)
@@ -1163,5 +1164,42 @@ class CellComplex():
         """
         matutils.save_A(self, work_dir)
         matutils.save_B(self, work_dir)
+
+    def set_junction_types(self):
+        """
+        E - external
+        """
+        junction_types = {
+            0: 'J0',
+            1: 'J1',
+            2: 'J2',
+            3: 'J3'
+        }
+
+        if self.dim == 2:
+            for v in self.vertices:
+                v.n_spec_edges = 0
+                if v.is_external:
+                    v.set_type2D('E')
+                else:
+                    for e_id in v.e_ids:
+                        if self._edges[e_id].is_special:
+                            v.n_spec_edges += 1
+                    v.set_type2D(junction_types[v.n_spec_edges])
+        elif self.dim == 3:
+            for e in self.edges:
+                e.n_spec_faces = 0
+                if e.is_external:
+                    e.set_type('E')
+                else:
+                    for f_id in e.f_ids:
+                        if self._faces[f_id].is_special:
+                            e.n_spec_faces += 1
+                    e.set_type(junction_types[e.n_spec_faces])
+
+
+
+
+
 
     
