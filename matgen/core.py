@@ -3,6 +3,8 @@ classes
 TODO:
 1. Add web interface
 2. 
+
+Change lists of incident etc. to sets?
 """
 from typing import Dict, Iterable, List, Tuple, Union
 import time
@@ -254,7 +256,8 @@ class Edge():
             filename: str,
             _vertices: Dict = {},
             measure: bool = False,
-            theta: bool = False):
+            theta: bool = False,
+            theta_threshold: bool = 15):
         """
         """
         _edges = {}
@@ -264,16 +267,17 @@ class Edge():
             for line in f:
                 if '**edge' in line:
                     n = int(f.readline().rstrip('\n'))
-                    for i in range(n):
+                    for _ in range(n):
                         row = f.readline().split()
                         e_id = int(row[0])
                         v1_id = int(row[1])
                         v2_id = int(row[2])
                         v_ids = [v1_id, v2_id]
-                        _vertices[v1_id].add_incident_edge(e_id)
-                        _vertices[v1_id].add_neighbor(v2_id)
-                        _vertices[v2_id].add_incident_edge(e_id)
-                        _vertices[v2_id].add_neighbor(v1_id)
+                        if _vertices:
+                            _vertices[v1_id].add_incident_edge(e_id)
+                            _vertices[v1_id].add_neighbor(v2_id)
+                            _vertices[v2_id].add_incident_edge(e_id)
+                            _vertices[v2_id].add_neighbor(v1_id)
 
                         # if incidence:
                         #     if v1_id in v_dict.keys():
@@ -301,7 +305,9 @@ class Edge():
                     _edges[e_id].set_length(e_length)
                     if theta:
                         e_theta = float(row[2])
-                        _edges[e_id].set_theta2D(e_theta)
+                        _edges[e_id].set_theta(
+                            e_theta, threshold=theta_threshold
+                        )
 
         return _edges
 
@@ -331,6 +337,12 @@ class Edge():
         self.neighbor_ids += n_ids
         self.neighbor_ids = list(set(self.neighbor_ids))
         
+    @property
+    def incident_cells(self):
+        """
+        """
+        return self.f_ids
+
     def add_incident_face(self, f_id: int):
         """
         """
@@ -359,35 +371,42 @@ class Edge():
         """
         self.len = length
 
-    def set_theta2D(self, theta):
+    def set_theta(self, theta, threshold: float = 15.0):
         """
         disorientation angle (in degrees)
+        theta must be >= 0 ?
+        for external cells theta = -1
         """
         self.theta = theta
         if theta < 0:
-            self.set_external()
-        elif theta >= 15: # might be changed
+            self.set_external(True)
+        else:
+            self.set_external(False)
+        if theta >= threshold:
             self.set_special()
 
-    def set_special(self, is_special=True):
+    def set_special(self, is_special: bool = True):
         """
         """
         self.is_special = is_special
+        if is_special:
+            self.set_external(False)
+            if self.theta < 0:
+                self.theta = None
 
-    @property
-    def incident_cells(self):
-        """
-        """
-        return self.f_ids
 
     def set_external(self, is_external: bool = True):
         """
         """
         self.is_external = is_external
+        if is_external:
+            self.theta = -1
+            self.set_special(False)
 
     def set_junction_type(self, junction_type: str):
         """
         For 3D cell complex
+        ? check consistency: external has type 'E'
         """
         self.junction_type = junction_type
 
@@ -480,7 +499,7 @@ class Face():
     def from_tess_file(
             cls,
             filename: str,
-            _edges: List = [],
+            _edges: Dict = {},
             measure: bool = False,
             theta: bool = False):
         """
@@ -505,7 +524,8 @@ class Face():
                         for k in range(1, int(row[0]) + 1):
                             e_id = abs(int(row[k]))
                             e_ids.append(e_id)
-                            _edges[e_id].add_incident_face(f_id)
+                            if _edges:
+                                _edges[e_id].add_incident_face(f_id)
                             # if incidence:
                             #     if e_id in e_dict.keys():
                             #         e_dict[e_id].append(f_id)
@@ -560,6 +580,12 @@ class Face():
         
         return f_str
     
+    @property
+    def incident_cells(self):
+        """
+        """
+        return self.p_ids
+    
     def add_neighbor(self, n_id: int):
         """
         """
@@ -610,12 +636,6 @@ class Face():
         """
         return len(self.p_ids)
     
-    
-    def set_special(self, is_special=True):
-        """
-        """
-        self.is_special = is_special
-    
     def set_seed2D(self, seed_coord):
         """
         """
@@ -626,26 +646,37 @@ class Face():
         """
         self.area = area
 
-    def set_theta(self, theta):
+    def set_theta(self, theta, threshold: float = 15.0):
         """
         disorientation angle (in degrees)
+        theta must be >= 0 ?
+        for external cells theta = -1 ?
         """
         self.theta = theta
         if theta < 0:
-            self.set_external()
-        elif theta >= 15: # might be changed
+            self.set_external(True)
+        else:
+            self.set_external(False)
+        if theta >= threshold:
             self.set_special()
 
-    @property
-    def incident_cells(self):
+    def set_special(self, is_special: bool = True):
         """
         """
-        return self.p_ids
+        self.is_special = is_special
+        if is_special:
+            self.set_external(False)
+            if self.theta < 0:
+                self.theta = None
 
     def set_external(self, is_external: bool = True):
         """
         """
         self.is_external = is_external
+        if is_external:
+            self.theta = -1
+            self.set_special(False)
+
 
     # def plot(
     #         self,
@@ -706,7 +737,7 @@ class Poly():
     def from_tess_file(
             cls,
             filename: str,
-            _faces: List,
+            _faces: Dict,
             measure: bool = False):
         """
         """
