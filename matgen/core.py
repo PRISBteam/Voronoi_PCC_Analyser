@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
-import representation
-import matutils
+#import representation
+from matgen import matutils
 
 # def get_element_by_id(seq, id):
 #     """
@@ -69,15 +69,13 @@ class Vertex():
     get_degree
         
     """
-    def __init__(self, id: int, x: float, y: float, z: float):
+    def __init__(self, id: int, x: float, y: float, z: float = 0):
         """
         """
         self.id = id
         self.x = x
         self.y = y
         self.z = z
-        self.coord = (x, y, z) # make property ?
-        self.coord2D = (x, y)  # make property ?
         self.neighbor_ids = []
         self.e_ids = []
         self.is_external = False
@@ -113,6 +111,24 @@ class Vertex():
         v_str = f"Vertex(id={self.id})"
         
         return v_str
+    
+    @property
+    def incident_cells(self):
+        """
+        """
+        return self.e_ids
+
+    @property
+    def coord(self):
+        """
+        """
+        return (self.x, self.y, self.z)
+
+    @property
+    def coord2D(self):
+        """
+        """
+        return (self.x, self.y)
     
     def add_neighbor(self, n_id: int):
         """
@@ -177,16 +193,12 @@ class Vertex():
     #     ax.scatter(self.x, self.y, **kwargs)
     #     return ax
 
-    @property
-    def incident_cells(self):
-        """
-        """
-        return self.e_ids
 
-    def set_external(self, is_exernal: bool = True):
+
+    def set_external(self, is_external: bool = True):
         """
         """
-        self.is_external = is_exernal
+        self.is_external = is_external
 
     def set_junction_type(self, junction_type: str):
         """
@@ -368,10 +380,10 @@ class Edge():
         """
         return self.f_ids
 
-    def set_external(self, is_exernal: bool = True):
+    def set_external(self, is_external: bool = True):
         """
         """
-        self.is_external = is_exernal
+        self.is_external = is_external
 
     def set_junction_type(self, junction_type: str):
         """
@@ -630,10 +642,10 @@ class Face():
         """
         return self.p_ids
 
-    def set_external(self, is_exernal: bool = True):
+    def set_external(self, is_external: bool = True):
         """
         """
-        self.is_external = is_exernal
+        self.is_external = is_external
 
     # def plot(
     #         self,
