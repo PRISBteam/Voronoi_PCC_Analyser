@@ -4,7 +4,7 @@ TODO:
 1. Add web interface
 2. 
 """
-from typing import Dict, Iterable, List, Union
+from typing import Dict, Iterable, List, Tuple, Union
 import time
 
 import numpy as np
@@ -21,6 +21,23 @@ import matutils
 #     for el in seq:
 #         if el.id == id:
 #             return el
+
+def _create_ax(dim: int = 2, figsize: Tuple = (8,8)):
+    """
+    """
+    if dim == 2:
+        projection = None
+        xlim = ylim = (-0.1, 1.1)
+    elif dim == 3:
+        projection = '3d'
+        xlim = ylim = zlim = (0, 1)
+    fig = plt.figure(figsize=figsize)
+    ax = fig.add_subplot(111, projection=projection)
+    ax.set_xlim(*xlim)
+    ax.set_ylim(*ylim)
+    if dim == 3:
+        ax.set_zlim(*zlim)
+    return ax
 
 class Vertex():
     """
@@ -126,24 +143,39 @@ class Vertex():
         """
         return len(self.e_ids)
 
-
-    def plot3D(self, ax: Axes = None, **kwargs):
+    def plot(
+            self,
+            dim: int = 2,
+            ax: Axes = None,
+            figsize: Tuple = (8,8),
+            **kwargs):
         """
         """
         if not ax:
-            fig, ax = representation.create_3D_axis()
-        ax.scatter(self.x, self.y, self.z, **kwargs)
+            ax = _create_ax(dim, figsize)
+        if dim == 2:
+            ax.scatter(self.x, self.y, **kwargs)
+        elif dim == 3:
+            ax.scatter(self.x, self.y, self.z, **kwargs)
         return ax
     
-    def plot2D(self, ax: Axes = None, **kwargs):
-        """
-        """
-        if not ax:
-            ax = plt.subplot(111)
-            ax.set_xlim(0, 1)
-            ax.set_ylim(0, 1)
-        ax.scatter(self.x, self.y, **kwargs)
-        return ax
+    # def plot3D(self, ax: Axes = None, **kwargs):
+    #     """
+    #     """
+    #     if not ax:
+    #         fig, ax = representation.create_3D_axis()
+    #     ax.scatter(self.x, self.y, self.z, **kwargs)
+    #     return ax
+    
+    # def plot2D(self, ax: Axes = None, **kwargs):
+    #     """
+    #     """
+    #     if not ax:
+    #         ax = plt.subplot(111)
+    #         ax.set_xlim(0, 1)
+    #         ax.set_ylim(0, 1)
+    #     ax.scatter(self.x, self.y, **kwargs)
+    #     return ax
 
     @property
     def incident_cells(self):
@@ -346,6 +378,28 @@ class Edge():
         For 3D cell complex
         """
         self.junction_type = junction_type
+
+    def plot(
+            self,
+            dim: int = 2,
+            ax: Axes = None,
+            figsize: Tuple = (8,8),
+            **kwargs):
+        """
+        """
+        if not ax:
+            ax = _create_ax(dim, figsize)
+        
+        v1, v2 = self.v_ids
+        x_space = np.linspace(v1.x, v2.x, 50)
+        y_space = np.linspace(v1.y, v2.y, 50)
+        if dim == 2:
+            ax.plot(x_space, y_space, **kwargs)
+        elif dim == 3:
+            z_space = np.linspace(v1.z, v2.z, 50)
+            ax.plot(x_space, y_space, z_space, **kwargs)
+        
+        return ax
 
     # def plot3D(self, ax: Axes = None):
     #     """
@@ -761,7 +815,17 @@ class Poly():
 
 class CellComplex():
     """
+    Class CellComplex.
+    A class for cell complex.
+
+    Attributes
+    ----------
+
+    Methods
+    -------
+
     """
+    # Initializes a cell complex from Neper .tess file.
     def __init__(
             self,
             filename: str = 'complex.tess',
@@ -771,14 +835,21 @@ class CellComplex():
         """
         start = time.time()
         self.source_file = filename
-        self.measures = measures
+        self.measures = measures # has measures or not
 
+        # Define the cell complex dimension (can be 2 or 3)
         with open(filename, 'r', encoding="utf-8") as f:
             for line in f:
                 if '**general' in line:
                     self.dim = int(f.readline().split()[0])
+                    if self.dim not in [2, 3]:
+                        raise ValueError(
+                            f'Dimension must be 2 or 3, not {self.dim}'
+                        )
                     break
         
+        # In 2D case edges have misorintation angles (theta)
+        # In 3D case faces have misorintation angles (theta)
         if self.dim == 2:
             theta2D = theta
             theta3D = False
@@ -786,25 +857,27 @@ class CellComplex():
             theta2D = False
             theta3D = theta
 
+        # A dictionary
         self._vertices = Vertex.from_tess_file(filename)
-        # May be redundant, or make generator?
+        # A list
         self.vertices = [v for v in self._vertices.values()]
         
         print(len(self._vertices.keys()), 'vertices loaded:',
             time.time() - start, 's')
-        
+        # A dictionary
         self._edges = Edge.from_tess_file(
             filename = filename, 
             _vertices = self._vertices,
             measure=measures,
             theta=theta2D
         )
-        # May be redundant, or make generator?
+        # A list
         self.edges = [e for e in self._edges.values()]
         
         print(len(self._edges.keys()),'edges loaded:',
             time.time() - start, 's')
         
+        # Add neighbors to edges from common vertices
         for v in self.vertices:
             for e_id in v.e_ids:
                 s = set(v.e_ids)
@@ -813,19 +886,19 @@ class CellComplex():
 
         print('neighbor edges found',
             time.time() - start, 's')        
-        
+        # A dictionary
         self._faces = Face.from_tess_file(
             filename = filename,
             _edges=self._edges,
             measure=measures,
             theta=theta3D
         )
-        # May be redundant, or make generator?
+        # A list
         self.faces = [f for f in self._faces.values()]
         
         print(len(self._faces.keys()), 'faces loaded:',
             time.time() - start, 's')
-
+        # Add neighbors to faces from common edges
         for e in self.edges:
             for f_id in e.f_ids:
                 s = set(e.f_ids)
@@ -835,6 +908,7 @@ class CellComplex():
         print('neighbor faces found',
             time.time() - start, 's') 
         
+        # In 2D case faces have seeds and orientations
         if self.dim == 2:
             with open(filename, 'r', encoding="utf-8") as file:
                 for line in file:
@@ -848,25 +922,28 @@ class CellComplex():
                             self._faces[f_id].set_seed2D(seed_coord)
                         break
                     # TODO: add ori in 2D case
-
+            
+            # Set external edges and vertices
             for e in self.edges:
                 if len(e.f_ids) == 1:
                     e.set_external()
                     for v_id in e.v_ids:
                         self._vertices[v_id].set_external()
-
+        
+        # In 3D there are polyhedra, that have seeds and orientations
         elif self.dim == 3:
+            # A dictionary
             self._polyhedra = Poly.from_tess_file(
                 filename,
                 self._faces,
                 measure=measures
             )
-            # May be redundant, or make generator?
+            # A list
             self.polyhedra = [p for p in self._polyhedra.values()]
             
             print(len(self._polyhedra.keys()), 'poly loaded:',
                 time.time() - start, 's')
-
+            # Add neighbors to polyhedra from common faces
             for f in self.faces:
                 for p_id in f.p_ids:
                     s = set(f.p_ids)
@@ -876,6 +953,7 @@ class CellComplex():
             print('neighbor polyhedra found',
                 time.time() - start, 's')
 
+            # Set external faces, edges and vertices
             for f in self.faces:
                 if len(f.p_ids) == 1:
                     f.set_external()
@@ -883,17 +961,10 @@ class CellComplex():
                         self._vertices[v_id].set_external()
                     for e_id in f.e_ids:
                         self._edges[e_id].set_external()                    
-
+        
+        # Set junction types from theta (if known from a file)
         if theta:
             self.set_junction_types()
-        # # переделать
-        # for poly in self.polyhedra:
-        #     p_edges = []
-        #     p_faces = self.get_many('f', poly.faces)
-        #     for p_face in p_faces:
-        #         p_edges += p_face.edges
-        #     poly.add_edges(list(set(p_edges)))
-
     
     def _choose_cell_type(self, cell_type: Union[str, int]):
         """
@@ -925,7 +996,7 @@ class CellComplex():
 
         return [_cells[cell_id] for cell_id in cell_ids]
     
-    def plot_vertices_3D(
+    def plot_vertices(
             self,
             v_ids: List = [],
             ax: Axes = None,
@@ -933,15 +1004,33 @@ class CellComplex():
         """
         """
         if not ax:
-            fig, ax = representation.create_3D_axis()
+            ax = _create_ax(dim, figsize)
         if v_ids:
             v_list = self.get_many('v', v_ids)
         else:
             v_list = self.vertices
         for v in v_list:
-            ax = v.plot3D(ax, **kwargs)
+            ax = v.plot(dim=self.dim, ax=ax, **kwargs)
         
         return ax
+
+    # def plot_vertices_3D(
+    #         self,
+    #         v_ids: List = [],
+    #         ax: Axes = None,
+    #         **kwargs):
+    #     """
+    #     """
+    #     if not ax:
+    #         fig, ax = representation.create_3D_axis()
+    #     if v_ids:
+    #         v_list = self.get_many('v', v_ids)
+    #     else:
+    #         v_list = self.vertices
+    #     for v in v_list:
+    #         ax = v.plot3D(ax, **kwargs)
+        
+    #     return ax
 
     def plot_edges_3D(
             self,
@@ -1008,23 +1097,23 @@ class CellComplex():
 
         return ax
 
-    def plot_vertices_2D(
-            self,
-            v_ids: List = [],
-            ax: Axes = None,
-            **kwargs):
-        """
-        """
-        if not ax:
-            fig, ax = representation.create_2D_axis()
-        if v_ids:
-            v_list = self.get_many('v', v_ids)
-        else:
-            v_list = self.vertices
-        for v in v_list:
-            ax = v.plot2D(ax, **kwargs)
+    # def plot_vertices_2D(
+    #         self,
+    #         v_ids: List = [],
+    #         ax: Axes = None,
+    #         **kwargs):
+    #     """
+    #     """
+    #     if not ax:
+    #         fig, ax = representation.create_2D_axis()
+    #     if v_ids:
+    #         v_list = self.get_many('v', v_ids)
+    #     else:
+    #         v_list = self.vertices
+    #     for v in v_list:
+    #         ax = v.plot2D(ax, **kwargs)
         
-        return ax
+    #     return ax
 
     def plot_edges_2D(
             self,
