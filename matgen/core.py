@@ -1,8 +1,8 @@
 """
 classes
-- check time
-- optimize
-
+TODO:
+1. Add web interface
+2. 
 """
 from typing import Dict, Iterable, List, Union
 import time
@@ -156,10 +156,11 @@ class Vertex():
         """
         self.is_external = is_exernal
 
-    def set_type2D(self, type: str):
+    def set_junction_type(self, junction_type: str):
         """
+        For 2D cell complex
         """
-        self.type = type
+        self.junction_type = junction_type
 
 
 
@@ -340,10 +341,11 @@ class Edge():
         """
         self.is_external = is_exernal
 
-    def set_type(self, type: str):
+    def set_junction_type(self, junction_type: str):
         """
+        For 3D cell complex
         """
-        self.type = type
+        self.junction_type = junction_type
 
     # def plot3D(self, ax: Axes = None):
     #     """
@@ -542,15 +544,6 @@ class Face():
         """
         return len(self.p_ids)
     
-    # def get_type(self):
-    #     """
-    #     Check!!!
-    #     """
-    #     if len(self.p_ids) == 1:
-    #         self.type = "external"
-    #     elif len(self.p_ids) == 2:
-    #         self.type = "internal"
-    #     return self.type
     
     def set_special(self, is_special=True):
         """
@@ -1180,26 +1173,20 @@ class CellComplex():
             for v in self.vertices:
                 v.n_spec_edges = 0
                 if v.is_external:
-                    v.set_type2D('E')
+                    v.set_junction_type('E')
                 else:
                     for e_id in v.e_ids:
                         if self._edges[e_id].is_special:
                             v.n_spec_edges += 1
-                    v.set_type2D(junction_types[v.n_spec_edges])
+                    v.set_junction_type(junction_types[v.n_spec_edges])
         elif self.dim == 3:
             for e in self.edges:
                 e.n_spec_faces = 0
                 if e.is_external:
-                    e.set_type('E')
+                    e.set_junction_type('E')
                 else:
                     for f_id in e.f_ids:
                         if self._faces[f_id].is_special:
                             e.n_spec_faces += 1
-                    e.set_type(junction_types[e.n_spec_faces])
-
-
-
-
-
-
+                    e.set_junction_type(junction_types[e.n_spec_faces])
     
