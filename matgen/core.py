@@ -379,27 +379,27 @@ class Edge():
         """
         self.junction_type = junction_type
 
-    def plot(
-            self,
-            dim: int = 2,
-            ax: Axes = None,
-            figsize: Tuple = (8,8),
-            **kwargs):
-        """
-        """
-        if not ax:
-            ax = _create_ax(dim, figsize)
+    # def plot(
+    #         self,
+    #         dim: int = 2,
+    #         ax: Axes = None,
+    #         figsize: Tuple = (8,8),
+    #         **kwargs):
+    #     """
+    #     """
+    #     if not ax:
+    #         ax = _create_ax(dim, figsize)
         
-        v1, v2 = self.v_ids
-        x_space = np.linspace(v1.x, v2.x, 50)
-        y_space = np.linspace(v1.y, v2.y, 50)
-        if dim == 2:
-            ax.plot(x_space, y_space, **kwargs)
-        elif dim == 3:
-            z_space = np.linspace(v1.z, v2.z, 50)
-            ax.plot(x_space, y_space, z_space, **kwargs)
+    #     v1, v2 = self.v_ids # won't work because ids not equal to objects
+    #     x_space = np.linspace(v1.x, v2.x, 50)
+    #     y_space = np.linspace(v1.y, v2.y, 50)
+    #     if dim == 2:
+    #         ax.plot(x_space, y_space, **kwargs)
+    #     elif dim == 3:
+    #         z_space = np.linspace(v1.z, v2.z, 50)
+    #         ax.plot(x_space, y_space, z_space, **kwargs)
         
-        return ax
+    #     return ax
 
     # def plot3D(self, ax: Axes = None):
     #     """
@@ -634,6 +634,24 @@ class Face():
         """
         """
         self.is_external = is_exernal
+
+    # def plot(
+    #         self,
+    #         dim: int = 2,
+    #         ax: Axes = None,
+    #         figsize: Tuple = (8,8),
+    #         **kwargs):
+    #     """
+    #     """
+    #     if not ax:
+    #         ax = _create_ax(dim, figsize)
+    #     if dim == 2:
+    #         ax.scatter(self.x, self.y, **kwargs)
+    #     elif dim == 3:
+    #         ax.scatter(self.x, self.y, self.z, **kwargs)
+        
+    #     v_list = self.get_many('v', f.v_ids)
+    #     coord_list = [v.coord for v in v_list]
 
 
 class Poly():
@@ -1000,17 +1018,45 @@ class CellComplex():
             self,
             v_ids: List = [],
             ax: Axes = None,
+            figsize: Tuple = (8,8),
             **kwargs):
         """
         """
         if not ax:
-            ax = _create_ax(dim, figsize)
+            ax = _create_ax(self.dim, figsize)
         if v_ids:
             v_list = self.get_many('v', v_ids)
         else:
             v_list = self.vertices
         for v in v_list:
             ax = v.plot(dim=self.dim, ax=ax, **kwargs)
+        
+        return ax
+
+    
+    def plot_edges(
+            self,
+            e_ids: List = [],
+            ax: Axes = None,
+            figsize: Tuple = (8,8),
+            **kwargs):
+        """
+        """
+        if not ax:
+            ax = _create_ax(self.dim, figsize)
+        if e_ids:
+            e_list = self.get_many('e', e_ids)
+        else:
+            e_list = self.edges
+        for e in e_list:
+            v1, v2 = self.get_many('v', e.v_ids)
+            x_space = np.linspace(v1.x, v2.x, 50)
+            y_space = np.linspace(v1.y, v2.y, 50)
+            if self.dim == 2:
+                ax.plot(x_space, y_space, **kwargs)
+            elif self.dim == 3:
+                z_space = np.linspace(v1.z, v2.z, 50)
+                ax.plot(x_space, y_space, z_space, **kwargs)
         
         return ax
 
@@ -1032,38 +1078,39 @@ class CellComplex():
         
     #     return ax
 
-    def plot_edges_3D(
-            self,
-            e_ids: List = [],
-            ax: Axes = None,
-            **kwargs):
-        if not ax:
-            fig, ax = representation.create_3D_axis()
-        if e_ids:
-            e_list = self.get_many('e', e_ids)
-        else:
-            e_list = self.edges
-        for e in e_list:
-            v1, v2 = self.get_many('v', e.v_ids)
+    # def plot_edges_3D(
+    #         self,
+    #         e_ids: List = [],
+    #         ax: Axes = None,
+    #         **kwargs):
+    #     if not ax:
+    #         fig, ax = representation.create_3D_axis()
+    #     if e_ids:
+    #         e_list = self.get_many('e', e_ids)
+    #     else:
+    #         e_list = self.edges
+    #     for e in e_list:
+    #         v1, v2 = self.get_many('v', e.v_ids)
 
-            x_space = np.linspace(v1.x, v2.x, 50)
-            y_space = np.linspace(v1.y, v2.y, 50)
-            z_space = np.linspace(v1.z, v2.z, 50)
+    #         x_space = np.linspace(v1.x, v2.x, 50)
+    #         y_space = np.linspace(v1.y, v2.y, 50)
+    #         z_space = np.linspace(v1.z, v2.z, 50)
             
-            ax.plot(x_space, y_space, z_space, **kwargs)
+    #         ax.plot(x_space, y_space, z_space, **kwargs)
             
-        return ax
-
-
-    def plot_faces_3D(
+    #     return ax
+    
+    
+    def plot_faces(
             self,
             f_ids: List = [],
             ax: Axes = None,
+            figsize: Tuple = (8,8),
             **kwargs):
         """
         """
         if not ax:
-            fig, ax = representation.create_3D_axis()
+            ax = _create_ax(self.dim, figsize)
         if f_ids:
             f_list = self.get_many('f', f_ids)
         else:
@@ -1071,29 +1118,61 @@ class CellComplex():
         f_coord_list = []
         for f in f_list:
             v_list = self.get_many('v', f.v_ids)
-            coord_list = [v.coord for v in v_list]
-            f_coord_list.append(coord_list)
-        poly = Poly3DCollection(f_coord_list, alpha = 0.2, **kwargs)
-        ax.add_collection3d(poly)
 
+            if self.dim == 2:
+                xs = [v.x for v in v_list]
+                ys = [v.y for v in v_list]
+                ax.fill(xs, ys, **kwargs)
+            elif self.dim == 3:
+                coord_list = [v.coord for v in v_list]
+                f_coord_list.append(coord_list)
+        
+        if self.dim == 3:
+            poly = Poly3DCollection(f_coord_list, alpha = 0.2, **kwargs)
+            ax.add_collection3d(poly)
+        
         return ax
 
-    def plot_polyhedra_3D(
+    # def plot_faces_3D(
+    #         self,
+    #         f_ids: List = [],
+    #         ax: Axes = None,
+    #         **kwargs):
+    #     """
+    #     """
+    #     if not ax:
+    #         fig, ax = representation.create_3D_axis()
+    #     if f_ids:
+    #         f_list = self.get_many('f', f_ids)
+    #     else:
+    #         f_list = self.faces
+    #     f_coord_list = []
+    #     for f in f_list:
+    #         v_list = self.get_many('v', f.v_ids)
+    #         coord_list = [v.coord for v in v_list]
+    #         f_coord_list.append(coord_list)
+    #     poly = Poly3DCollection(f_coord_list, alpha = 0.2, **kwargs)
+    #     ax.add_collection3d(poly)
+
+    #     return ax
+
+    def plot_polyhedra(
             self,
             p_ids: List = [],
             ax: Axes = None,
+            figsize: Tuple = (8,8),
             **kwargs):
         """
         """
         if not ax:
-            fig, ax = representation.create_3D_axis()
+            ax = _create_ax(self.dim, figsize)
         if p_ids:
             p_list = self.get_many('p', p_ids)
         else:
             p_list = self.polyhedra
         
         for p in p_list:
-            _ = self.plot_faces_3D(p.f_ids, ax, **kwargs)
+            ax = self.plot_faces(f_ids=p.f_ids, ax=ax, **kwargs)
 
         return ax
 
@@ -1115,49 +1194,49 @@ class CellComplex():
         
     #     return ax
 
-    def plot_edges_2D(
-            self,
-            e_ids: List = [],
-            ax: Axes = None,
-            **kwargs):
-        if not ax:
-            fig, ax = representation.create_2D_axis()
-        if e_ids:
-            e_list = self.get_many('e', e_ids)
-        else:
-            e_list = self.edges
-        for e in e_list:
-            v1, v2 = self.get_many('v', e.v_ids)
+    # def plot_edges_2D(
+    #         self,
+    #         e_ids: List = [],
+    #         ax: Axes = None,
+    #         **kwargs):
+    #     if not ax:
+    #         fig, ax = representation.create_2D_axis()
+    #     if e_ids:
+    #         e_list = self.get_many('e', e_ids)
+    #     else:
+    #         e_list = self.edges
+    #     for e in e_list:
+    #         v1, v2 = self.get_many('v', e.v_ids)
 
-            x_space = np.linspace(v1.x, v2.x, 50)
-            y_space = np.linspace(v1.y, v2.y, 50)
+    #         x_space = np.linspace(v1.x, v2.x, 50)
+    #         y_space = np.linspace(v1.y, v2.y, 50)
             
-            ax.plot(x_space, y_space, **kwargs)
+    #         ax.plot(x_space, y_space, **kwargs)
             
-        return ax
+    #     return ax
 
 
-    def plot_faces_2D(
-            self,
-            f_ids: List = [],
-            ax: Axes = None,
-            **kwargs):
-        """
-        """
-        if not ax:
-            fig, ax = representation.create_2D_axis()
-        if f_ids:
-            f_list = self.get_many('f', f_ids)
-        else:
-            f_list = self.faces
-        for f in f_list:
-            # _ = self.plot_edges_2D(f.e_ids, ax, **kwargs)
-            v_list = self.get_many('v', f.v_ids)
-            xs = [v.x for v in v_list]
-            ys = [v.y for v in v_list]
-            ax.fill(xs, ys, **kwargs)
+    # def plot_faces_2D(
+    #         self,
+    #         f_ids: List = [],
+    #         ax: Axes = None,
+    #         **kwargs):
+    #     """
+    #     """
+    #     if not ax:
+    #         fig, ax = representation.create_2D_axis()
+    #     if f_ids:
+    #         f_list = self.get_many('f', f_ids)
+    #     else:
+    #         f_list = self.faces
+    #     for f in f_list:
+    #         # _ = self.plot_edges_2D(f.e_ids, ax, **kwargs)
+    #         v_list = self.get_many('v', f.v_ids)
+    #         xs = [v.x for v in v_list]
+    #         ys = [v.y for v in v_list]
+    #         ax.fill(xs, ys, **kwargs)
 
-        return ax
+    #     return ax
 
     #     
     #     for f in f_list:
@@ -1167,55 +1246,93 @@ class CellComplex():
     #     poly = Poly3DCollection(f_coord_list, alpha = 0.2, **kwargs)
     #     ax.add_collection3d(poly)
 
-    def plot_seeds_2D(
+    def plot_seeds(
             self,
-            f_ids: List = [],
+            cell_ids: List = [],
             ax: Axes = None,
+            figsize: Tuple = (8,8),
             **kwargs):
         """
         """
         if not ax:
-            ax = plt.subplot(111)
-            # ax.set_xlim(0, 1)
-            # ax.set_ylim(0, 1)
-        if f_ids:
-            f_list = self.get_many('f', f_ids)
-        else:
-            f_list = self.faces
+            ax = _create_ax(self.dim, figsize)
+        if self.dim == 2 and cell_ids:
+            cell_list = self.get_many('f', cell_ids)
+        elif self.dim == 2 and not cell_ids:
+            cell_list = self.faces
+        elif self.dim == 3 and cell_ids:
+            cell_list = self.get_many('p', cell_ids)
+        elif self.dim == 3 and not cell_ids:
+            cell_list = self.polyhedra
         
         xs = []
         ys = []
-        for f in f_list:
-            x, y = f.seed
+        if self.dim == 3:
+            zs = []
+        for cell in cell_list:
+            if self.dim == 2:
+                x, y = cell.seed
+            elif self.dim == 3:
+                x, y, z = cell.seed
+                zs.append(z)
             xs.append(x)
             ys.append(y)
-        ax.scatter(xs, ys, **kwargs)
+        if self.dim == 2:
+            ax.scatter(xs, ys, **kwargs)
+        elif self.dim == 3:
+            ax.scatter(xs, ys, zs, **kwargs)
         return ax
 
-    def plot_seeds_3D(
-            self,
-            p_ids: List = [],
-            ax: Axes = None,
-            **kwargs):
-        """
-        """
-        if not ax:
-            fig, ax = representation.create_2D_axis()
-        if p_ids:
-            p_list = self.get_many('p', p_ids)
-        else:
-            p_list = self.polyhedra
+
+    # def plot_seeds_2D(
+    #         self,
+    #         f_ids: List = [],
+    #         ax: Axes = None,
+    #         **kwargs):
+    #     """
+    #     """
+    #     if not ax:
+    #         ax = plt.subplot(111)
+    #         # ax.set_xlim(0, 1)
+    #         # ax.set_ylim(0, 1)
+    #     if f_ids:
+    #         f_list = self.get_many('f', f_ids)
+    #     else:
+    #         f_list = self.faces
         
-        xs = []
-        ys = []
-        zs = []
-        for p in p_list:
-            x, y, z = p.seed
-            xs.append(x)
-            ys.append(y)
-            zs.append(z)
-        ax.scatter(xs, ys, zs, **kwargs)
-        return ax
+    #     xs = []
+    #     ys = []
+    #     for f in f_list:
+    #         x, y = f.seed
+    #         xs.append(x)
+    #         ys.append(y)
+    #     ax.scatter(xs, ys, **kwargs)
+    #     return ax
+
+    # def plot_seeds_3D(
+    #         self,
+    #         p_ids: List = [],
+    #         ax: Axes = None,
+    #         **kwargs):
+    #     """
+    #     """
+    #     if not ax:
+    #         fig, ax = representation.create_2D_axis()
+    #     if p_ids:
+    #         p_list = self.get_many('p', p_ids)
+    #     else:
+    #         p_list = self.polyhedra
+        
+    #     xs = []
+    #     ys = []
+    #     zs = []
+    #     for p in p_list:
+    #         x, y, z = p.seed
+    #         xs.append(x)
+    #         ys.append(y)
+    #         zs.append(z)
+    #     ax.scatter(xs, ys, zs, **kwargs)
+    #     return ax
   
     def get_sparse_A(self, cell_type):
         """
