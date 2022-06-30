@@ -312,7 +312,12 @@ class Edge():
                             lower_thrd=lower_thrd,
                             upper_thrd=upper_thrd
                         )
-
+        # Add neighbors to edges from common vertices
+        for v in _vertices.values():
+            for e_id in v.e_ids:
+                s = set(v.e_ids)
+                s.difference_update([e_id])
+                _edges[e_id].add_neighbors(list(s))
         return _edges
 
     def __str__(self):
@@ -542,8 +547,6 @@ class Face():
         """
         """
         _faces = {}
-        # if incidence:
-        #     e_dict = {}
         with open(filename, 'r', encoding="utf-8") as f:
             for line in f:
                 if '**face' in line:
@@ -563,13 +566,6 @@ class Face():
                             e_ids.append(e_id)
                             if _edges:
                                 _edges[e_id].add_incident_face(f_id)
-                            # if incidence:
-                            #     if e_id in e_dict.keys():
-                            #         e_dict[e_id].append(f_id)
-                            #     else:
-                            #         e_dict[e_id] = [f_id]
-                                # edge = get_element_by_id(edges, e_id)
-                                # edge.add_incident_face(f_id)
                         face.add_edges(e_ids)
                         
                         row = f.readline().split()
@@ -582,13 +578,7 @@ class Face():
                         _ = f.readline()
                         
                         _faces[f_id] = face
-                    
-                    # if incidence:
-                    #     for edge in edges:
-                    #         edge.add_incident_faces(e_dict[edge.id])
-                    
                     break
-        
         if measure:
             filename_m = filename.rstrip('.tess') + '.stface'
             with open(filename_m, 'r', encoding="utf-8") as file:
@@ -604,7 +594,11 @@ class Face():
                             lower_thrd=lower_thrd,
                             upper_thrd=upper_thrd
                         )
-
+        for e in _edges.values():
+            for f_id in e.f_ids:
+                s = set(e.f_ids)
+                s.difference_update([f_id])
+                _faces[f_id].add_neighbors(list(s))
         return _faces
         
     def __str__(self):
@@ -677,7 +671,7 @@ class Face():
         """
         return len(self.p_ids)
     
-    def set_seed2D(self, seed_coord):
+    def set_seed(self, seed_coord):
         """
         """
         self.seed = seed_coord
@@ -814,7 +808,6 @@ class Poly():
         seeds = {}
         ori = {}
         _polyhedra = {}
-        # f_dict = {}
         with open(filename, 'r', encoding="utf-8") as f:
             for line in f:
                 if '**cell' in line:
@@ -841,10 +834,6 @@ class Poly():
                             f_ids.append(f_id)
                             v_ids += _faces[f_id].v_ids
                             e_ids += _faces[f_id].e_ids
-                            # if f_id in f_dict.keys():
-                            #     f_dict[f_id].append(p_id)
-                            # else:
-                            #     f_dict[f_id] = [p_id]
                             _faces[f_id].add_incident_poly(p_id)
                         f_ids = list(set(f_ids))
                         poly = cls(p_id, f_ids)
@@ -854,16 +843,7 @@ class Poly():
                         poly.set_crystal_ori(ori_format, ori[p_id])
                         poly.set_seed(seeds[p_id])
                         _polyhedra[p_id] = poly
-                    # f_v_dict = {}
-                    # for face in faces:
-                    #     face.add_incident_polys(f_dict[face.id])
-                    #     f_v_dict[face.id] = face.v_ids
-                    # for poly in polyhedra:
-                    #     for f_id in poly.faces:
-                    #         poly.v_ids += f_v_dict[f_id]
-                    #     poly.v_ids = list(set(poly.v_ids))
                     break
-        
         if measure:
             filename_m = filename.rstrip('.tess') + '.stpoly'
             with open(filename_m, 'r', encoding="utf-8") as file:
@@ -871,8 +851,12 @@ class Poly():
                     row = line.split()
                     p_id = int(row[0])
                     p_vol = float(row[1])
-                    _polyhedra[p_id].set_volume(p_vol)                    
-        
+                    _polyhedra[p_id].set_volume(p_vol)
+        for f in _faces.values():
+            for p_id in f.p_ids:
+                s = set(f.p_ids)
+                s.difference_update([p_id])
+                _polyhedra[p_id].add_neighbors(list(s))
         return _polyhedra
         
     def __str__(self):
@@ -1013,14 +997,14 @@ class CellComplex():
             time.time() - start, 's')
         
         # Add neighbors to edges from common vertices
-        for v in self.vertices:
-            for e_id in v.e_ids:
-                s = set(v.e_ids)
-                s.difference_update([e_id])
-                self._edges[e_id].add_neighbors(list(s))
+        # for v in self.vertices:
+        #     for e_id in v.e_ids:
+        #         s = set(v.e_ids)
+        #         s.difference_update([e_id])
+        #         self._edges[e_id].add_neighbors(list(s))
 
-        print('neighbor edges found',
-            time.time() - start, 's')        
+        # print('neighbor edges found',
+        #     time.time() - start, 's')        
         # A dictionary
         self._faces = Face.from_tess_file(
             filename = filename,
@@ -1036,14 +1020,14 @@ class CellComplex():
         print(len(self._faces.keys()), 'faces loaded:',
             time.time() - start, 's')
         # Add neighbors to faces from common edges
-        for e in self.edges:
-            for f_id in e.f_ids:
-                s = set(e.f_ids)
-                s.difference_update([f_id])
-                self._faces[f_id].add_neighbors(list(s))
+        # for e in self.edges:
+        #     for f_id in e.f_ids:
+        #         s = set(e.f_ids)
+        #         s.difference_update([f_id])
+        #         self._faces[f_id].add_neighbors(list(s))
         
-        print('neighbor faces found',
-            time.time() - start, 's') 
+        # print('neighbor faces found',
+        #     time.time() - start, 's') 
         
         # In 2D case faces have seeds and orientations
         if self.dim == 2:
@@ -1056,7 +1040,7 @@ class CellComplex():
                             row = file.readline().split()
                             f_id = int(row[0])
                             seed_coord = tuple([*map(float, row[1:3])])
-                            self._faces[f_id].set_seed2D(seed_coord)
+                            self._faces[f_id].set_seed(seed_coord)
                         break
                     # TODO: add ori in 2D case
             
@@ -1081,14 +1065,14 @@ class CellComplex():
             print(len(self._polyhedra.keys()), 'poly loaded:',
                 time.time() - start, 's')
             # Add neighbors to polyhedra from common faces
-            for f in self.faces:
-                for p_id in f.p_ids:
-                    s = set(f.p_ids)
-                    s.difference_update([p_id])
-                    self._polyhedra[p_id].add_neighbors(list(s))
+            # for f in self.faces:
+            #     for p_id in f.p_ids:
+            #         s = set(f.p_ids)
+            #         s.difference_update([p_id])
+            #         self._polyhedra[p_id].add_neighbors(list(s))
             
-            print('neighbor polyhedra found',
-                time.time() - start, 's')
+            # print('neighbor polyhedra found',
+            #     time.time() - start, 's')
 
             # Set external faces, edges and vertices
             for f in self.faces:
