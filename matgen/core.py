@@ -1059,6 +1059,7 @@ class CellComplex():
             v_ids: List = [],
             ax: Axes = None,
             figsize: Tuple = (8,8),
+            labels: bool = False,
             **kwargs):
         """
         """
@@ -1069,8 +1070,12 @@ class CellComplex():
         else:
             v_list = self.vertices
         for v in v_list:
-            ax = v.plot(dim=self.dim, ax=ax, **kwargs)
-        
+            if labels:
+                ax = v.plot(dim=self.dim, ax=ax, label=v.id, **kwargs)
+            else:
+                ax = v.plot(dim=self.dim, ax=ax, **kwargs)
+        if labels:
+            ax.legend(loc='best')
         return ax
 
     
@@ -1079,6 +1084,7 @@ class CellComplex():
             e_ids: List = [],
             ax: Axes = None,
             figsize: Tuple = (8,8),
+            labels: bool = False,
             **kwargs):
         """
         """
@@ -1093,11 +1099,18 @@ class CellComplex():
             x_space = np.linspace(v1.x, v2.x, 50)
             y_space = np.linspace(v1.y, v2.y, 50)
             if self.dim == 2:
-                ax.plot(x_space, y_space, **kwargs)
+                if labels:
+                    ax.plot(x_space, y_space, label=e.id, **kwargs)
+                else:
+                    ax.plot(x_space, y_space, **kwargs)
             elif self.dim == 3:
                 z_space = np.linspace(v1.z, v2.z, 50)
-                ax.plot(x_space, y_space, z_space, **kwargs)
-        
+                if labels:
+                    ax.plot(x_space, y_space, z_space, label=e.id, **kwargs)
+                else:
+                    ax.plot(x_space, y_space, z_space, **kwargs)
+        if labels:
+            ax.legend(loc='best')
         return ax
 
     # def plot_vertices_3D(
@@ -1146,8 +1159,10 @@ class CellComplex():
             f_ids: List = [],
             ax: Axes = None,
             figsize: Tuple = (8,8),
+            labels: bool = False,
             **kwargs):
         """
+        labels doesn't work with 3d faces
         """
         if not ax:
             ax = _create_ax(self.dim, figsize)
@@ -1162,15 +1177,19 @@ class CellComplex():
             if self.dim == 2:
                 xs = [v.x for v in v_list]
                 ys = [v.y for v in v_list]
-                ax.fill(xs, ys, **kwargs)
+                if labels:
+                    ax.fill(xs, ys, label=f.id, **kwargs)
+                else:
+                    ax.fill(xs, ys, **kwargs)
             elif self.dim == 3:
                 coord_list = [v.coord for v in v_list]
                 f_coord_list.append(coord_list)
-        
+
         if self.dim == 3:
             poly = Poly3DCollection(f_coord_list, alpha = 0.2, **kwargs)
             ax.add_collection3d(poly)
-        
+        elif labels:
+            ax.legend(loc='best')
         return ax
 
     # def plot_faces_3D(
