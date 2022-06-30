@@ -127,7 +127,7 @@ def test_Vertex_plot():
 def test_Vertex_from_tess_file():
     """
     """
-    filename = 'tests/test_data/n8-id1.tess'
+    filename = 'tests/test_data/n8-id1-3D.tess'
     _vertices = core.Vertex.from_tess_file(filename)
     assert len(_vertices.keys()) == 41
     assert _vertices[20].z == pytest.approx(0.581244510538)
@@ -265,7 +265,7 @@ def test_Edge_set_special():
 def test_Edge_from_tess_file():
     """
     """
-    filename = 'tests/test_data/n8-id1.tess'
+    filename = 'tests/test_data/n8-id1-3D.tess'
     _edges = core.Edge.from_tess_file(filename)
     assert len(_edges.keys()) == 78
     assert _edges[1].id == 1
@@ -294,7 +294,7 @@ def test_Edge_from_tess_file():
     assert set(_edges[59].neighbor_ids) == {2, 3, 10, 60, 61}
     assert len(_edges[59].neighbor_ids) == 5    
 
-    filename = 'tests/test_data/complex.tess'
+    filename = 'tests/test_data/n8-id1-3D-reg.tess'
     _edges = core.Edge.from_tess_file(filename, measure=True)
     assert len(_edges.keys()) == 64
     assert _edges[1].id == 1
@@ -308,6 +308,22 @@ def test_Edge_from_tess_file():
     assert _edges[41].len == pytest.approx(0.131174647632)
 
     filename = 'tests/test_data/n8-id1-2D-reg.tess'
+    _edges = core.Edge.from_tess_file(
+        filename, measure=True)
+    assert len(_edges.keys()) == 24
+    assert _edges[1].id == 1
+    assert _edges[11].__str__() == 'Edge(id=11)'
+    assert set(_edges[10].v_ids) == {10, 11}
+    assert set(_edges[20].v_ids) == {16, 3}
+    for e in _edges.values():
+        assert len(e.v_ids) == 2
+    assert _edges[1].len == pytest.approx(0.372175178843)
+    assert _edges[1].theta is None
+    assert _edges[24].len == pytest.approx(0.282179199432)
+    assert _edges[24].theta is None
+    assert _edges[4].len == pytest.approx(0.166904842609)
+    assert _edges[4].theta is None
+
     _edges = core.Edge.from_tess_file(
         filename, measure=True, theta=True, lower_thrd=15)
     assert len(_edges.keys()) == 24
@@ -492,7 +508,7 @@ def test_Face_set_special():
 def test_Face_from_tess_file():
     """
     """
-    filename = 'tests/test_data/n8-id1.tess'
+    filename = 'tests/test_data/n8-id1-3D.tess'
     _faces = core.Face.from_tess_file(filename)
     assert len(_faces.keys()) == 46
     assert _faces[1].id == 1
@@ -522,66 +538,108 @@ def test_Face_from_tess_file():
         (-0.0, -0.0, -1.0)
     )
     assert _faces[10].d == pytest.approx(-0.0)
-    
-    # assert set(_edges[1].neighbor_ids) == {2, 3, 5}
-    # assert len(_edges[1].neighbor_ids) == 3
-    # assert set(_edges[1].e_ids) == {1, 2, 6}
-    # assert len(_edges[1].e_ids) == 3
 
-    # filename = 'tests/test_data/complex.tess'
-    # _edges = core.Edge.from_tess_file(filename, measure=True)
-    # assert len(_edges.keys()) == 64
-    # assert _edges[1].id == 1
-    # assert _edges[41].__str__() == 'Edge(id=41)'
-    # assert set(_edges[10].v_ids) == {12, 10}
-    # assert set(_edges[20].v_ids) == {15, 14}
-    # for e in _edges.values():
-    #     assert len(e.v_ids) == 2
-    # assert _edges[1].len == pytest.approx(0.856403573756)
-    # assert _edges[64].len == pytest.approx(0.305660878901)
-    # assert _edges[41].len == pytest.approx(0.131174647632)
+    assert set(_faces[1].neighbor_ids) == {
+        2, 3, 4, 6, 7, 39, 16, 30
+    }
+    assert len(_faces[1].neighbor_ids) == 8
+    assert set(_faces[8].neighbor_ids) == {
+        34, 40, 9, 10, 11, 44, 13, 14, 15, 24
+    }
+    assert len(_faces[8].neighbor_ids) == 10
+    assert set(_faces[38].neighbor_ids) == {
+        33, 34, 35, 37, 39, 40, 41, 42, 13, 14, 20, 21
+    }
+    assert len(_faces[38].neighbor_ids) == 12 
+    assert set(_edges[1].f_ids) == {1, 2}
+    assert len(_edges[1].f_ids) == 2
+    assert set(_edges[33].f_ids) == {28, 14, 15}
+    assert len(_edges[33].f_ids) == 3
+    assert set(_edges[78].f_ids) == {45, 46}
+    assert len(_edges[78].f_ids) == 2
 
-    # filename = 'tests/test_data/n8-id1-2D-reg.tess'
-    # _edges = core.Edge.from_tess_file(
-    #     filename, measure=True, theta=True, lower_thrd=15)
-    # assert len(_edges.keys()) == 24
-    # assert _edges[1].id == 1
-    # assert _edges[11].__str__() == 'Edge(id=11)'
-    # assert set(_edges[10].v_ids) == {10, 11}
-    # assert set(_edges[20].v_ids) == {16, 3}
-    # for e in _edges.values():
-    #     assert len(e.v_ids) == 2
-    # assert _edges[1].len == pytest.approx(0.372175178843)
-    # assert _edges[1].theta == pytest.approx(-1)
-    # assert _edges[1].is_external
-    # assert _edges[24].len == pytest.approx(0.282179199432)
-    # assert _edges[24].theta == pytest.approx(-1)
-    # assert _edges[24].is_external
-    # assert not _edges[24].is_special
-    # assert _edges[4].len == pytest.approx(0.166904842609)
-    # assert _edges[4].theta == pytest.approx(67.795707673672)
-    # assert not _edges[4].is_external
-    # assert _edges[4].is_special
-    # assert len([e.id for e in _edges.values() if e.is_external]) == 10
+    filename = 'tests/test_data/n8-id1-2D-reg.tess'
+    _faces = core.Face.from_tess_file(filename, measure=True)
+    assert len(_faces.keys()) == 8
+    assert _faces[1].id == 1
+    assert _faces[8].__str__() == 'Face(id=8)'
+    assert set(_faces[1].v_ids) == {1, 2, 3, 5, 4}
+    assert set(_faces[8].v_ids) == {17, 6, 7, 10}
+    assert _faces[1].area == pytest.approx(0.079335872484)
+    assert _faces[3].area == pytest.approx(0.180401764550)
+    assert _faces[8].area == pytest.approx(0.063265308997)
 
-    # _edges = core.Edge.from_tess_file(
-    #     filename, measure=True, theta=True, lower_thrd=70, upper_thrd=100)
-    # assert _edges[4].theta == pytest.approx(67.795707673672)
-    # assert not _edges[4].is_external
-    # assert not _edges[4].is_special
-    # assert _edges[5].theta == pytest.approx(99.343932545403)
-    # assert not _edges[5].is_external
-    # assert _edges[5].is_special
-    # assert _edges[5].len == pytest.approx(0.217043601663)
-    # assert _edges[7].theta == pytest.approx(135.438499725622)
-    # assert not _edges[7].is_external
-    # assert not _edges[7].is_special
+    filename = 'tests/test_data/n8-id1-3D-reg.tess'
+    _faces = core.Face.from_tess_file(filename, measure=True)
+    assert len(_faces.keys()) == 41
+    assert _faces[1].id == 1
+    assert _faces[41].__str__() == 'Face(id=41)'
+    assert set(_faces[10].v_ids) == {9, 11, 13, 14}
+    assert set(_faces[18].v_ids) == {18, 13, 14, 6, 5}
+    assert _faces[1].area == pytest.approx(0.353327084839)
+    assert _faces[10].area == pytest.approx(0.176306811532)
+    assert _faces[41].area == pytest.approx(0.153584906323)
+
+    _faces = core.Face.from_tess_file(
+        filename, measure=True, theta=True)
+    assert len(_faces.keys()) == 41
+    assert _faces[1].id == 1
+    assert _faces[41].__str__() == 'Face(id=41)'
+    assert set(_faces[10].v_ids) == {9, 11, 13, 14}
+    assert set(_faces[18].v_ids) == {18, 13, 14, 6, 5}
+    assert _faces[1].area == pytest.approx(0.353327084839)
+    assert _faces[1].theta == pytest.approx(-1)
+    assert _faces[1].is_external
+    assert not _faces[1].is_special
+    assert _faces[10].area == pytest.approx(0.176306811532)
+    assert _faces[10].theta == pytest.approx(135.438499725622)
+    assert not _faces[10].is_external
+    assert not _faces[10].is_special
+    assert _faces[41].area == pytest.approx(0.153584906323)
+    assert _faces[41].theta == pytest.approx(-1)
+    assert _faces[41].is_external
+    assert not _faces[41].is_special
+    assert len([f.id for f in _faces.values() if f.is_external]) == 25
+
+    _faces = core.Face.from_tess_file(
+        filename, measure=True, theta=True, lower_thrd=100)
+    assert _faces[1].area == pytest.approx(0.353327084839)
+    assert _faces[1].theta == pytest.approx(-1)
+    assert _faces[1].is_external    
+    assert _faces[10].area == pytest.approx(0.176306811532)
+    assert _faces[10].theta == pytest.approx(135.438499725622)
+    assert not _faces[10].is_external
+    assert _faces[10].is_special
+    assert _faces[20].area == pytest.approx(0.155823685909)
+    assert _faces[20].theta == pytest.approx(84.675006364931)
+    assert not _faces[20].is_external
+    assert not _faces[20].is_special
+    assert _faces[41].area == pytest.approx(0.153584906323)
+    assert _faces[41].theta == pytest.approx(-1)
+    assert _faces[41].is_external
+
+    _faces = core.Face.from_tess_file(
+        filename, measure=True, theta=True, lower_thrd=80, upper_thrd=100)
+    assert _faces[1].area == pytest.approx(0.353327084839)
+    assert _faces[1].theta == pytest.approx(-1)
+    assert _faces[1].is_external    
+    assert _faces[10].area == pytest.approx(0.176306811532)
+    assert _faces[10].theta == pytest.approx(135.438499725622)
+    assert not _faces[10].is_external
+    assert not _faces[10].is_special
+    assert _faces[20].area == pytest.approx(0.155823685909)
+    assert _faces[20].theta == pytest.approx(84.675006364931)
+    assert not _faces[20].is_external
+    assert _faces[20].is_special
+    assert _faces[41].area == pytest.approx(0.153584906323)
+    assert _faces[41].theta == pytest.approx(-1)
+    assert _faces[41].is_external
 
 
 def test_CellComplex():
     """
     """
-    filename = 'tests/test_data/n8-id1.tess'
+    filename = 'tests/test_data/n8-id1-3D.tess'
     c = core.CellComplex(filename)
 
     assert c.source_file == filename, "Filename doesn't match"
