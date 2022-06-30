@@ -3,10 +3,7 @@
 *.txt
 *.mat
 *.png
-*.tess
-*.stpoly
-*.stface
-*.stedge
+sample_data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
