@@ -914,8 +914,8 @@ class CellComplex():
         # A list
         self.vertices = [v for v in self._vertices.values()]
         
-        print(len(self._vertices.keys()), 'vertices loaded:',
-            time.time() - start, 's')
+        # print(len(self._vertices.keys()), 'vertices loaded:',
+        #     time.time() - start, 's')
         # A dictionary
         self._edges = Edge.from_tess_file(
             filename = filename, 
@@ -928,8 +928,8 @@ class CellComplex():
         # A list
         self.edges = [e for e in self._edges.values()]
         
-        print(len(self._edges.keys()),'edges loaded:',
-            time.time() - start, 's')
+        # print(len(self._edges.keys()),'edges loaded:',
+        #     time.time() - start, 's')
         
         # Add neighbors to edges from common vertices
         # for v in self.vertices:
@@ -952,8 +952,8 @@ class CellComplex():
         # A list
         self.faces = [f for f in self._faces.values()]
         
-        print(len(self._faces.keys()), 'faces loaded:',
-            time.time() - start, 's')
+        # print(len(self._faces.keys()), 'faces loaded:',
+        #     time.time() - start, 's')
         # Add neighbors to faces from common edges
         # for e in self.edges:
         #     for f_id in e.f_ids:
@@ -997,8 +997,6 @@ class CellComplex():
             # A list
             self.polyhedra = [p for p in self._polyhedra.values()]
             
-            print(len(self._polyhedra.keys()), 'poly loaded:',
-                time.time() - start, 's')
             # Add neighbors to polyhedra from common faces
             # for f in self.faces:
             #     for p_id in f.p_ids:
@@ -1022,6 +1020,9 @@ class CellComplex():
         # If lower or upper threshold are known or both
         if lower_thrd or upper_thrd:
             self.set_junction_types()
+
+        self.load_time = round(time.time() - start, 1)
+        print('Complex loaded:', self.load_time, 's')
     
     def _choose_cell_type(self, cell_type: Union[str, int]):
         """
@@ -1411,7 +1412,8 @@ class CellComplex():
             0: 'J0',
             1: 'J1',
             2: 'J2',
-            3: 'J3'
+            3: 'J3',
+            4: 'U'
         }
 
         if self.dim == 2:
@@ -1423,6 +1425,11 @@ class CellComplex():
                     for e_id in v.e_ids:
                         if self._edges[e_id].is_special:
                             v.n_spec_edges += 1
+                    if v.n_spec_edges > 3:
+                        print(
+                            f'{v} is incident to ' +
+                            f'{v.n_spec_edges} special edges'
+                        )
                     v.set_junction_type(junction_types[v.n_spec_edges])
         elif self.dim == 3:
             for e in self.edges:
@@ -1433,5 +1440,10 @@ class CellComplex():
                     for f_id in e.f_ids:
                         if self._faces[f_id].is_special:
                             e.n_spec_faces += 1
+                    if e.n_spec_faces > 3:
+                        print(
+                            f'{e} is incident to ' +
+                            f'{e.n_spec_faces} special faces'
+                        )
                     e.set_junction_type(junction_types[e.n_spec_faces])
     
