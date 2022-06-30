@@ -249,6 +249,7 @@ class Edge():
         self.f_ids = []
         self.is_special = False
         self.is_external = False
+        self.theta = None
 
     @classmethod
     def from_tess_file(
@@ -257,7 +258,8 @@ class Edge():
             _vertices: Dict = {},
             measure: bool = False,
             theta: bool = False,
-            theta_threshold: bool = 15):
+            lower_thrd: float = None,
+            upper_thrd: float = None):
         """
         """
         _edges = {}
@@ -306,7 +308,9 @@ class Edge():
                     if theta:
                         e_theta = float(row[2])
                         _edges[e_id].set_theta(
-                            e_theta, threshold=theta_threshold
+                            e_theta, 
+                            lower_thrd=lower_thrd,
+                            upper_thrd=upper_thrd
                         )
 
         return _edges
@@ -371,37 +375,67 @@ class Edge():
         """
         self.len = length
 
-    def set_theta(self, theta, threshold: float = 15.0):
+    def set_theta(
+            self,
+            theta,
+            lower_thrd: float = None,
+            upper_thrd: float = None):
         """
         disorientation angle (in degrees)
         theta must be >= 0 ?
         for external cells theta = -1
         """
-        self.theta = theta
         if theta < 0:
             self.set_external(True)
-        else:
-            self.set_external(False)
-        if theta >= threshold:
-            self.set_special()
+            return
+        elif self.is_external:
+            raise ValueError(f"External doesn't have theta (id={self.id})")
+        
+        self.theta = theta
+        
+        if lower_thrd and upper_thrd:
+            if  theta >= lower_thrd and theta <= upper_thrd:
+                self.set_special(True)
+            else:
+                self.set_special(False)
+        elif lower_thrd:
+            if  theta >= lower_thrd:
+                self.set_special(True)
+            else:
+                self.set_special(False)
+        elif upper_thrd:
+            if  theta <= upper_thrd:
+                self.set_special(True)
+            else:
+                self.set_special(False)
+
 
     def set_special(self, is_special: bool = True):
         """
+        External cannot be set special
         """
-        self.is_special = is_special
-        if is_special:
-            self.set_external(False)
-            if self.theta < 0:
-                self.theta = None
+        if is_special and not self.is_external:
+            self.is_special = is_special
+        elif not is_special:
+            self.is_special = is_special
+        elif self.is_external:
+            raise ValueError('External cannot be set special')
+        # if is_special:
+        #     self.set_external(False)
+        #     if self.theta < 0:
+        #         self.theta = None
 
 
     def set_external(self, is_external: bool = True):
         """
+        When set external, it is set not special with theta = -1
         """
         self.is_external = is_external
         if is_external:
             self.theta = -1
             self.set_special(False)
+        elif self.theta == -1:
+            self.theta = None
 
     def set_junction_type(self, junction_type: str):
         """
@@ -494,6 +528,7 @@ class Face():
         self.p_ids = []
         self.is_special = False
         self.is_external = False
+        self.theta = None
         
     @classmethod
     def from_tess_file(
@@ -501,7 +536,9 @@ class Face():
             filename: str,
             _edges: Dict = {},
             measure: bool = False,
-            theta: bool = False):
+            theta: bool = False,
+            lower_thrd: float = None,
+            upper_thrd: float = None):
         """
         """
         _faces = {}
@@ -562,7 +599,11 @@ class Face():
                     _faces[f_id].set_area(f_area)
                     if theta:
                         f_theta = float(row[2])
-                        _faces[f_id].set_theta(f_theta)
+                        _faces[f_id].set_theta(
+                            f_theta,
+                            lower_thrd=lower_thrd,
+                            upper_thrd=upper_thrd
+                        )
 
         return _faces
         
@@ -646,38 +687,67 @@ class Face():
         """
         self.area = area
 
-    def set_theta(self, theta, threshold: float = 15.0):
+    def set_theta(
+            self,
+            theta,
+            lower_thrd: float = None,
+            upper_thrd: float = None):
         """
         disorientation angle (in degrees)
         theta must be >= 0 ?
-        for external cells theta = -1 ?
+        for external cells theta = -1
         """
-        self.theta = theta
         if theta < 0:
             self.set_external(True)
-        else:
-            self.set_external(False)
-        if theta >= threshold:
-            self.set_special()
+            return
+        elif self.is_external:
+            raise ValueError(f"External doesn't have theta (id={self.id})")
+        
+        self.theta = theta
+        
+        if lower_thrd and upper_thrd:
+            if  theta >= lower_thrd and theta <= upper_thrd:
+                self.set_special(True)
+            else:
+                self.set_special(False)
+        elif lower_thrd:
+            if  theta >= lower_thrd:
+                self.set_special(True)
+            else:
+                self.set_special(False)
+        elif upper_thrd:
+            if  theta <= upper_thrd:
+                self.set_special(True)
+            else:
+                self.set_special(False)
+
 
     def set_special(self, is_special: bool = True):
         """
+        External cannot be set special
         """
-        self.is_special = is_special
-        if is_special:
-            self.set_external(False)
-            if self.theta < 0:
-                self.theta = None
+        if is_special and not self.is_external:
+            self.is_special = is_special
+        elif not is_special:
+            self.is_special = is_special
+        elif self.is_external:
+            raise ValueError('External cannot be set special')
+        # if is_special:
+        #     self.set_external(False)
+        #     if self.theta < 0:
+        #         self.theta = None
+
 
     def set_external(self, is_external: bool = True):
         """
+        When set external, it is set not special with theta = -1
         """
         self.is_external = is_external
         if is_external:
             self.theta = -1
             self.set_special(False)
-
-
+        elif self.theta == -1:
+            self.theta = None
     # def plot(
     #         self,
     #         dim: int = 2,
@@ -891,7 +961,9 @@ class CellComplex():
             self,
             filename: str = 'complex.tess',
             measures: bool = False,
-            theta: bool = False):
+            theta: bool = False,
+            lower_thrd: float = None,
+            upper_thrd: float = None):
         """
         """
         start = time.time()
@@ -930,7 +1002,9 @@ class CellComplex():
             filename = filename, 
             _vertices = self._vertices,
             measure=measures,
-            theta=theta2D
+            theta=theta2D,
+            lower_thrd=lower_thrd,
+            upper_thrd=upper_thrd
         )
         # A list
         self.edges = [e for e in self._edges.values()]
@@ -952,7 +1026,9 @@ class CellComplex():
             filename = filename,
             _edges=self._edges,
             measure=measures,
-            theta=theta3D
+            theta=theta3D,
+            lower_thrd=lower_thrd,
+            upper_thrd=upper_thrd
         )
         # A list
         self.faces = [f for f in self._faces.values()]
@@ -1024,7 +1100,8 @@ class CellComplex():
                         self._edges[e_id].set_external()                    
         
         # Set junction types from theta (if known from a file)
-        if theta:
+        # If lower or upper threshold are known or both
+        if lower_thrd or upper_thrd:
             self.set_junction_types()
     
     def _choose_cell_type(self, cell_type: Union[str, int]):
