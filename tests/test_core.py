@@ -636,6 +636,144 @@ def test_Face_from_tess_file():
     assert _faces[41].is_external
 
 
+def test_Poly():
+    """
+    """
+    p = core.Poly(id=8, f_ids=[1, 2, 3, 4, 5, 6, 7])
+    assert p.id == 8
+    assert len(p.f_ids) == 7
+    assert p.f_ids == [1, 2, 3, 4, 5, 6, 7]
+    assert p.__str__() == "Poly(id=8)"
+    assert p.v_ids == []
+    assert p.e_ids == []
+    assert p.neighbor_ids == []
+    # assert not p.is_external
+
+def test_Poly_add():
+    """
+    """
+    p = core.Poly(id=8, f_ids=[1, 2, 3, 4, 5, 6, 7])
+    p.add_neighbor(21)
+    p.add_neighbor(34)
+    p.add_neighbors([1, 2])
+    p.add_neighbors([5, 1, 3])
+    p.add_neighbor(2)
+    assert len(p.neighbor_ids) == 6
+    assert set(p.neighbor_ids) == {1, 2, 3, 5, 21, 34}
+
+    p.add_face(21)
+    p.add_face(34)
+    p.add_faces([1, 2, 43])
+    p.add_face(2)
+    assert len(p.f_ids) == 10
+    assert set(p.f_ids) == {1, 2, 3, 4, 5, 6, 7, 21, 34, 43}
+    
+    p.add_edges([1, 2, 3, 4, 5])
+    p.add_edges([4, 7])
+    assert len(p.e_ids) == 6
+    assert set(p.e_ids) == {1, 2, 3, 4, 5, 7}
+
+
+def test_Poly_set():
+    """
+    """
+    p = core.Poly(id=8, f_ids=[5, 1, 2, 7, 8])
+    p.set_seed((0.016887594857, 0.181381736214, 0.629280359626))
+    assert p.seed == pytest.approx(
+        (0.016887594857, 0.181381736214, 0.629280359626)
+    )
+
+    p.set_crystal_ori(
+        ori_format='rodrigues:active',
+        ori_components = (1.523765148626, -0.825428244669, -1.420533467432)
+    )
+    assert p.ori_format == 'rodrigues:active'
+    assert p.ori == pytest.approx(
+        (1.523765148626, -0.825428244669, -1.420533467432)
+    )
+    
+    p.set_volume(0.109988575811)
+    assert p.vol == pytest.approx(0.109988575811)
+
+
+def test_Poly_from_tess_file():
+    """
+    """
+    filename = 'tests/test_data/n8-id1-3D.tess'
+    _faces = core.Face.from_tess_file(filename)
+    _polyhedra = core.Poly.from_tess_file(filename, _faces)
+    assert len(_polyhedra.keys()) == 8
+    assert len(_faces.keys()) == 46
+    assert _polyhedra[1].id == 1
+    assert _polyhedra[8].__str__() == 'Poly(id=8)'
+    assert set(_polyhedra[1].f_ids) == {1, 2, 3, 4, 5, 6, 7}
+    assert set(_polyhedra[1].v_ids) == {5, 1, 2, 7, 8, 3, 6, 4, 10, 9}
+    assert set(_polyhedra[1].e_ids) == {
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+    }
+    assert set(_polyhedra[6].f_ids) == {33, 34, 35, 36, 37, 38, 13, 20}
+
+    assert set(_polyhedra[1].neighbor_ids) == {3, 4, 5, 7}
+    assert len(_polyhedra[1].neighbor_ids) == 4
+    assert set(_polyhedra[2].neighbor_ids) == {3, 4, 6, 7, 8}
+    assert len(_polyhedra[2].neighbor_ids) == 5
+    assert set(_polyhedra[3].neighbor_ids) == {1, 2, 4, 5, 6, 7, 8}
+    assert len(_polyhedra[3].neighbor_ids) == 7
+    assert set(_polyhedra[4].neighbor_ids) == {1, 2, 3, 5, 7, 8}
+    assert len(_polyhedra[4].neighbor_ids) == 6
+    assert set(_polyhedra[5].neighbor_ids) == {1, 3, 4}
+    assert len(_polyhedra[5].neighbor_ids) == 3
+    assert set(_polyhedra[6].neighbor_ids) == {2, 3, 7}
+    assert len(_polyhedra[6].neighbor_ids) == 3
+    assert set(_polyhedra[7].neighbor_ids) == {1, 2, 3, 4, 6, 8}
+    assert len(_polyhedra[7].neighbor_ids) == 6
+    assert set(_polyhedra[8].neighbor_ids) == {2, 3, 4, 7}
+    assert len(_polyhedra[8].neighbor_ids) == 4
+
+    assert _faces[1].p_ids == [1]
+    assert set(_faces[38].p_ids) == {6, 7}
+    assert len(_faces[38].p_ids) == 2
+    assert set(_faces[29].p_ids) == {8, 4}
+    assert len(_faces[29].p_ids) == 2
+
+    assert _polyhedra[1].seed == pytest.approx(
+        (0.016887594857, 0.181381736214, 0.629280359626)
+    )
+    assert _polyhedra[4].seed == pytest.approx(
+        (0.423040555082, 0.213141902806, 0.936204718055)
+    )
+    assert _polyhedra[8].seed == pytest.approx(
+        (0.902268065690, 0.816822567923, 0.598715895985)
+    )
+    for p in _polyhedra.values():
+        p.ori_format == 'rodrigues:active'
+    assert _polyhedra[1].ori == pytest.approx(
+        (8.253699726097, 7.366388557100, 4.105072216587)
+    )
+    assert _polyhedra[5].ori == pytest.approx(
+        (4.973430367520, -10.134509055522, 8.032142962011)
+    )
+    assert _polyhedra[8].ori == pytest.approx(
+        (-1.257199685882, 6.450495633959, -1.299790958022)
+    )
+
+    filename = 'tests/test_data/n8-id1-3D-reg.tess'
+    _faces = core.Face.from_tess_file(filename)
+    _polyhedra = core.Poly.from_tess_file(filename, _faces, measure=True)    
+    assert len(_faces.keys()) == 41
+    assert len(_polyhedra.keys()) == 8
+    assert set(_polyhedra[1].f_ids) == {1, 2, 3, 4, 5}
+    assert _polyhedra[1].vol == pytest.approx(0.063575246550)
+    assert _polyhedra[1].seed == pytest.approx(
+        (0.016887594857, 0.181381736214, 0.629280359626)
+    )
+    assert _polyhedra[1].ori == pytest.approx(
+        (8.253699726097, 7.366388557100, 4.105072216587)
+    )
+    assert _polyhedra[5].vol == pytest.approx(0.068254327087)
+    assert _polyhedra[8].vol == pytest.approx(0.098091488645)
+
+
 def test_CellComplex():
     """
     """
