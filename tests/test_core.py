@@ -779,5 +779,136 @@ def test_CellComplex():
     """
     filename = 'tests/test_data/n8-id1-3D.tess'
     c = core.CellComplex(filename)
-
     assert c.source_file == filename, "Filename doesn't match"
+    assert not c.measures
+    assert c.dim == 3
+    assert len(c._vertices) == 41
+    assert len(c.vertices) == 41
+    assert len(c._edges) == 78
+    assert len(c.edges) == 78
+    assert len(c._faces) == 46
+    assert len(c.faces) == 46
+    assert len(c._polyhedra) == 8
+    assert len(c.polyhedra) == 8
+
+    assert len([f for f in c.faces if f.is_external]) == 27
+    assert c._faces[1].is_external
+    assert c._faces[31].is_external 
+    assert not c._faces[29].is_external
+
+    filename = 'tests/test_data/n8-id1-3D-reg.tess'
+    c = core.CellComplex(filename, measures=True)
+    assert c.source_file == filename, "Filename doesn't match"
+    assert c.measures
+    assert c.dim == 3
+    assert len(c._vertices) == 32
+    assert len(c.vertices) == 32
+    assert len(c._edges) == 64
+    assert len(c.edges) == 64
+    assert len(c._faces) == 41
+    assert len(c.faces) == 41
+    assert len(c._polyhedra) == 8
+    assert len(c.polyhedra) == 8
+    assert c._edges[11].len == pytest.approx(0.768638704795)
+    assert c._faces[11].area == pytest.approx(0.293258891322)
+    assert c._polyhedra[3].vol == pytest.approx(0.192734120330)
+
+    c = core.CellComplex(filename, measures=True, theta=True)
+    assert c._edges[11].len == pytest.approx(0.768638704795)
+    assert c._polyhedra[3].vol == pytest.approx(0.192734120330)
+    assert c._faces[5].area == pytest.approx(0.304580291613)
+    assert c._faces[5].theta == pytest.approx(67.795707673672)
+    assert not c._faces[5].is_external
+    assert c._faces[1].area == pytest.approx(0.353327084839)
+    assert c._faces[1].theta == pytest.approx(-1)
+    assert c._faces[1].is_external    
+    assert c._faces[4].area == pytest.approx(0.185043610754)
+    assert c._faces[4].theta == pytest.approx(99.343932545403)
+    assert not c._faces[4].is_external
+
+    c = core.CellComplex(
+        filename,
+        measures=True,
+        theta=True,
+        lower_thrd=60
+    )
+    assert c._edges[11].len == pytest.approx(0.768638704795)
+    assert c._polyhedra[3].vol == pytest.approx(0.192734120330)
+    assert c._faces[5].area == pytest.approx(0.304580291613)
+    assert c._faces[5].theta == pytest.approx(67.795707673672)
+    assert not c._faces[5].is_external
+    assert c._faces[5].is_special
+    assert c._faces[1].area == pytest.approx(0.353327084839)
+    assert c._faces[1].theta == pytest.approx(-1)
+    assert c._faces[1].is_external
+    assert not c._faces[1].is_special
+    assert c._faces[4].area == pytest.approx(0.185043610754)
+    assert c._faces[4].theta == pytest.approx(99.343932545403)
+    assert not c._faces[4].is_external
+    assert c._faces[4].is_special
+
+    c = core.CellComplex(
+        filename,
+        measures=True,
+        theta=True,
+        lower_thrd=60, 
+        upper_thrd=90
+    )
+    assert c._edges[11].len == pytest.approx(0.768638704795)
+    assert c._polyhedra[3].vol == pytest.approx(0.192734120330)
+    assert c._faces[5].area == pytest.approx(0.304580291613)
+    assert c._faces[5].theta == pytest.approx(67.795707673672)
+    assert not c._faces[5].is_external
+    assert c._faces[5].is_special
+    assert c._faces[1].area == pytest.approx(0.353327084839)
+    assert c._faces[1].theta == pytest.approx(-1)
+    assert c._faces[1].is_external
+    assert not c._faces[1].is_special
+    assert c._faces[4].area == pytest.approx(0.185043610754)
+    assert c._faces[4].theta == pytest.approx(99.343932545403)
+    assert not c._faces[4].is_external
+    assert not c._faces[4].is_special
+
+    filename = 'tests/test_data/n8-id1-2D-reg.tess'
+    c = core.CellComplex(
+        filename,
+        measures=True,
+        theta=True,
+        lower_thrd=60, 
+        upper_thrd=90
+    )
+    assert c.source_file == filename, "Filename doesn't match"
+    assert c.measures
+    assert c.dim == 2
+    assert len(c._vertices) == 17
+    assert len(c.vertices) == 17
+    assert len(c._edges) == 24
+    assert len(c.edges) == 24
+    assert len(c._faces) == 8
+    assert len(c.faces) == 8
+
+    assert len([e for e in c.edges if e.is_external]) == 10
+    assert c._edges[14].is_external 
+    assert not c._edges[13].is_external
+    assert c._faces[5].area == pytest.approx(0.138529969005)
+    assert c._edges[5].len == pytest.approx(0.217043601663)
+    assert c._edges[5].theta == pytest.approx(99.343932545403)
+    assert not c._edges[5].is_external
+    assert not c._edges[5].is_special
+    assert c._edges[1].len == pytest.approx(0.372175178843)
+    assert c._edges[1].theta == pytest.approx(-1)
+    assert c._edges[1].is_external
+    assert not c._edges[1].is_special
+    assert c._edges[4].len == pytest.approx(0.166904842609)
+    assert c._edges[4].theta == pytest.approx(67.795707673672)
+    assert not c._edges[4].is_external
+    assert c._edges[4].is_special
+
+    # TODO: test junctions
+
+
+def test_CellComplex_plot():
+    """
+    """
+    pass
+    # TODO: test plots
