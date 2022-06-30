@@ -396,16 +396,17 @@ class Edge():
             raise ValueError('External cannot be set special')
 
 
-    def set_external(self, is_external: bool = True):
+    def set_external(self, is_external: bool = True, dim: int = 3):
         """
         When set external, it is set not special with theta = -1
         """
         self.is_external = is_external
-        if is_external:
-            self.theta = -1
-            self.set_special(False)
-        elif self.theta == -1:
-            self.theta = None
+        if dim == 2:
+            if is_external:
+                self.theta = -1
+                self.set_special(False)
+            elif self.theta == -1:
+                self.theta = None
 
     def set_junction_type(self, junction_type: str):
         """
@@ -692,16 +693,17 @@ class Face():
         #         self.theta = None
 
 
-    def set_external(self, is_external: bool = True):
+    def set_external(self, is_external: bool = True, dim: int = 3):
         """
         When set external, it is set not special with theta = -1
         """
         self.is_external = is_external
-        if is_external:
-            self.theta = -1
-            self.set_special(False)
-        elif self.theta == -1:
-            self.theta = None
+        if dim == 3:
+            if is_external:
+                self.theta = -1
+                self.set_special(False)
+            elif self.theta == -1:
+                self.theta = None
 
 
 class Poly():
@@ -863,6 +865,11 @@ class Poly():
         """
         self.vol = volume
 
+    def set_external(self, is_external: bool = True):
+        """
+        """
+        self.is_external = is_external
+
 class CellComplex():
     """
     Class CellComplex.
@@ -982,9 +989,11 @@ class CellComplex():
             # Set external edges and vertices
             for e in self.edges:
                 if len(e.f_ids) == 1:
-                    e.set_external()
+                    e.set_external(dim=self.dim)
                     for v_id in e.v_ids:
                         self._vertices[v_id].set_external()
+                    for f_id in e.f_ids:
+                        self._faces[f_id].set_external(dim=self.dim)
         
         # In 3D there are polyhedra, that have seeds and orientations
         elif self.dim == 3:
@@ -1010,11 +1019,13 @@ class CellComplex():
             # Set external faces, edges and vertices
             for f in self.faces:
                 if len(f.p_ids) == 1:
-                    f.set_external()
+                    f.set_external(dim=self.dim)
                     for v_id in f.v_ids:
                         self._vertices[v_id].set_external()
                     for e_id in f.e_ids:
-                        self._edges[e_id].set_external()                    
+                        self._edges[e_id].set_external(dim=self.dim)
+                    for p_id in f.p_ids:
+                        self._polyhedra[p_id].set_external()
         
         # Set junction types from theta (if known from a file)
         # If lower or upper threshold are known or both
@@ -1024,6 +1035,47 @@ class CellComplex():
         self.load_time = round(time.time() - start, 1)
         print('Complex loaded:', self.load_time, 's')
     
+    def __str__(self):
+        """
+        """
+        cc_str = f"<class CellComplex> {self.dim}D" +\
+        f"\n{self.nv} vertices" + f"\n{self.ne} edges" +\
+        f"\n{self.nf} faces" 
+        
+        if self.dim == 3:
+            cc_str += f"\n{self.np} polyhedra"
+
+        return cc_str
+    
+    def __repr__(self) -> str:
+        """
+        """
+        return self.__str__()
+
+    @property
+    def nv(self):
+        """
+        """
+        return len(self._vertices)
+
+    @property
+    def ne(self):
+        """
+        """
+        return len(self._edges)
+
+    @property
+    def nf(self):
+        """
+        """
+        return len(self._faces)
+
+    @property
+    def np(self):
+        """
+        """
+        return len(self._polyhedra)
+
     def _choose_cell_type(self, cell_type: Union[str, int]):
         """
         """
