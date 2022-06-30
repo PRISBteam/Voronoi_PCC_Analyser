@@ -17,12 +17,6 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 #import representation
 from matgen import matutils
 
-# def get_element_by_id(seq, id):
-#     """
-#     """
-#     for el in seq:
-#         if el.id == id:
-#             return el
 
 def _create_ax(dim: int = 2, figsize: Tuple = (8,8)):
     """
@@ -83,7 +77,7 @@ class Vertex():
         self.is_external = False
         
     @classmethod
-    def from_tess_file(cls, filename):
+    def from_tess_file(cls, filename: str):
         """
         """      
         _vertices = {}
@@ -177,26 +171,6 @@ class Vertex():
             ax.scatter(self.x, self.y, self.z, **kwargs)
         return ax
     
-    # def plot3D(self, ax: Axes = None, **kwargs):
-    #     """
-    #     """
-    #     if not ax:
-    #         fig, ax = representation.create_3D_axis()
-    #     ax.scatter(self.x, self.y, self.z, **kwargs)
-    #     return ax
-    
-    # def plot2D(self, ax: Axes = None, **kwargs):
-    #     """
-    #     """
-    #     if not ax:
-    #         ax = plt.subplot(111)
-    #         ax.set_xlim(0, 1)
-    #         ax.set_ylim(0, 1)
-    #     ax.scatter(self.x, self.y, **kwargs)
-    #     return ax
-
-
-
     def set_external(self, is_external: bool = True):
         """
         """
@@ -364,25 +338,20 @@ class Edge():
         self.f_ids += f_ids
         self.f_ids = list(set(self.f_ids))
     
-    def set_orientation(self, orientation):
-        """
-        """
-        pass
-
     def get_degree(self):
         """
         triple junctions ?
         """
         return len(self.f_ids)
 
-    def set_length(self, length):
+    def set_length(self, length: float):
         """
         """
         self.len = length
 
     def set_theta(
             self,
-            theta,
+            theta: float,
             lower_thrd: float = None,
             upper_thrd: float = None):
         """
@@ -425,10 +394,6 @@ class Edge():
             self.is_special = is_special
         elif self.is_external:
             raise ValueError('External cannot be set special')
-        # if is_special:
-        #     self.set_external(False)
-        #     if self.theta < 0:
-        #         self.theta = None
 
 
     def set_external(self, is_external: bool = True):
@@ -645,13 +610,13 @@ class Face():
         self.p_ids += p_ids
         self.p_ids = list(set(self.p_ids))
     
-    def add_edges(self, e_ids):
+    def add_edges(self, e_ids: Iterable):
         """
         """
         self.e_ids += e_ids
         self.e_ids = list(set(self.e_ids))
     
-    def add_equation(self, d, a, b, c):
+    def add_equation(self, d: float, a: float, b: float, c: float):
         """
         """
         self.d = d
@@ -660,30 +625,25 @@ class Face():
         self.c = c
         self.normal = (a, b, c)
     
-    def set_orientation(self, orientation):
-        """
-        """
-        pass
-    
     def get_degree(self):
         """
         internal / external
         """
         return len(self.p_ids)
     
-    def set_seed(self, seed_coord):
+    def set_seed(self, seed_coord: Tuple):
         """
         """
         self.seed = seed_coord
 
-    def set_area(self, area):
+    def set_area(self, area: float):
         """
         """
         self.area = area
 
     def set_theta(
             self,
-            theta,
+            theta: float,
             lower_thrd: float = None,
             upper_thrd: float = None):
         """
@@ -742,23 +702,6 @@ class Face():
             self.set_special(False)
         elif self.theta == -1:
             self.theta = None
-    # def plot(
-    #         self,
-    #         dim: int = 2,
-    #         ax: Axes = None,
-    #         figsize: Tuple = (8,8),
-    #         **kwargs):
-    #     """
-    #     """
-    #     if not ax:
-    #         ax = _create_ax(dim, figsize)
-    #     if dim == 2:
-    #         ax.scatter(self.x, self.y, **kwargs)
-    #     elif dim == 3:
-    #         ax.scatter(self.x, self.y, self.z, **kwargs)
-        
-    #     v_list = self.get_many('v', f.v_ids)
-    #     coord_list = [v.coord for v in v_list]
 
 
 class Poly():
@@ -897,33 +840,25 @@ class Poly():
         self.f_ids += f_ids
         self.f_ids = list(set(self.f_ids))
     
-    def add_edges(self, e_ids):
+    def add_edges(self, e_ids: Iterable):
         """
         """
         self.e_ids += e_ids
         self.e_ids = list(set(self.e_ids))
     
     
-    def set_orientation(self, orientation):
-        """
-        """
-        pass
-    
-    # def get_degree(self):
-    #     """
-    #     """
-    #     return len(self.f_ids)
-    
-    def set_seed(self, seed_coord):
+    def set_seed(self, seed_coord: Tuple):
         """
         """
         self.seed = seed_coord
     
-    def set_crystal_ori(self, ori_format, ori_components):
+    def set_crystal_ori(self, ori_format: str, ori_components: Tuple):
+        """
+        """
         self.ori_format = ori_format
         self.ori = ori_components
 
-    def set_volume(self, volume):
+    def set_volume(self, volume: float):
         """
         """
         self.vol = volume
@@ -1111,7 +1046,7 @@ class CellComplex():
         
         return _cells[cell_id]
     
-    def get_many(self, cell_type, cell_ids):
+    def get_many(self, cell_type: Union[str, int], cell_ids: Iterable):
         """
         """
         _cells = self._choose_cell_type(cell_type)
@@ -1438,28 +1373,28 @@ class CellComplex():
     #     ax.scatter(xs, ys, zs, **kwargs)
     #     return ax
   
-    def get_sparse_A(self, cell_type):
+    def get_sparse_A(self, cell_type: Union[str, int]):
         """
         """
         _cells = self._choose_cell_type(cell_type)
    
         return matutils.get_A_from_cells(_cells)
 
-    def get_sparse_B(self, cell_type):
+    def get_sparse_B(self, cell_type: Union[str, int]):
         """
         """
         _cells = self._choose_cell_type(cell_type)
    
         return matutils.get_B_from_cells(_cells)
 
-    def get_graph_from_A(self, cell_type):
+    def get_graph_from_A(self, cell_type: Union[str, int]):
         """
         """
         _cells = self._choose_cell_type(cell_type)
         
         return matutils.get_G_from_cells(_cells)
 
-    def save_into_files(self, representation=None, work_dir: str = '.'):
+    def save_into_files(self, work_dir: str = '.', representation=None):
         """
         Can be saved as a set of srapse matrices or cell lists.
         representation: operator form, cells list, neper format?
