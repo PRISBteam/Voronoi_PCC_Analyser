@@ -18,7 +18,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from matgen import matutils
 
 
-def _create_ax(dim: int = 2, figsize: Tuple = (8,8)):
+def _create_ax(dim: int = 2, figsize: Tuple = (8,8)) -> Axes:
     """
     """
     if dim == 2:
@@ -72,12 +72,13 @@ class Vertex():
         self.x = x
         self.y = y
         self.z = z
-        self.neighbor_ids = []
+        self.n_ids = []
         self.e_ids = []
         self.is_external = False
+        self.junction_type = None
         
     @classmethod
-    def from_tess_file(cls, filename: str):
+    def from_tess_file(cls, filename: str) -> Dict:
         """
         """      
         _vertices = {}
@@ -94,14 +95,14 @@ class Vertex():
                         _vertices[v_id] = cls(v_id, x, y, z)
                     return _vertices
         
-    def __str__(self):
+    def __str__(self) -> str:
         """
         """
         v_str = "Vertex(id=%d)" % self.id
         
         return v_str
     
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         """
         v_str = f"Vertex(id={self.id})"
@@ -109,19 +110,19 @@ class Vertex():
         return v_str
     
     @property
-    def incident_cells(self):
+    def incident_cells(self) -> List:
         """
         """
         return self.e_ids
 
     @property
-    def coord(self):
+    def coord(self) -> Tuple[float]:
         """
         """
         return (self.x, self.y, self.z)
 
     @property
-    def coord2D(self):
+    def coord2D(self) -> Tuple[float]:
         """
         """
         return (self.x, self.y)
@@ -129,14 +130,14 @@ class Vertex():
     def add_neighbor(self, n_id: int):
         """
         """
-        self.neighbor_ids.append(n_id)
-        self.neighbor_ids = list(set(self.neighbor_ids))
+        self.n_ids.append(n_id)
+        self.n_ids = list(set(self.n_ids))
     
     def add_neighbors(self, n_ids: Iterable):
         """
         """
-        self.neighbor_ids += n_ids
-        self.neighbor_ids = list(set(self.neighbor_ids))
+        self.n_ids += n_ids
+        self.n_ids = list(set(self.n_ids))
         
     def add_incident_edge(self, e_id: int):
         """
@@ -150,7 +151,7 @@ class Vertex():
         self.e_ids += e_ids
         self.e_ids = list(set(self.e_ids))
         
-    def get_degree(self):
+    def get_degree(self) -> int:
         """
         """
         return len(self.e_ids)
@@ -160,7 +161,7 @@ class Vertex():
             dim: int = 2,
             ax: Axes = None,
             figsize: Tuple = (8,8),
-            **kwargs):
+            **kwargs) -> Axes:
         """
         """
         if not ax:
@@ -176,12 +177,12 @@ class Vertex():
         """
         self.is_external = is_external
 
-    def set_junction_type(self, junction_type: str):
+    def set_junction_type(self, junction_type: int):
         """
         For 2D cell complex
+        junction_type equals number of special incident cells
         """
         self.junction_type = junction_type
-
 
 
 class Edge():
@@ -219,11 +220,12 @@ class Edge():
         """
         self.id = id
         self.v_ids = v_ids
-        self.neighbor_ids = []
+        self.n_ids = []
         self.f_ids = []
         self.is_special = False
         self.is_external = False
         self.theta = None
+        self.junction_type = None
 
     @classmethod
     def from_tess_file(
@@ -311,14 +313,14 @@ class Edge():
     def add_neighbor(self, n_id: int):
         """
         """
-        self.neighbor_ids.append(n_id)
-        self.neighbor_ids = list(set(self.neighbor_ids))
+        self.n_ids.append(n_id)
+        self.n_ids = list(set(self.n_ids))
     
     def add_neighbors(self, n_ids: Iterable):
         """
         """
-        self.neighbor_ids += n_ids
-        self.neighbor_ids = list(set(self.neighbor_ids))
+        self.n_ids += n_ids
+        self.n_ids = list(set(self.n_ids))
         
     @property
     def incident_cells(self):
@@ -355,12 +357,13 @@ class Edge():
             lower_thrd: float = None,
             upper_thrd: float = None):
         """
+        2D
         disorientation angle (in degrees)
         theta must be >= 0 ?
         for external cells theta = -1
         """
         if theta < 0:
-            self.set_external(True)
+            self.set_external(True, dim=2)
             return
         elif self.is_external:
             raise ValueError(f"External doesn't have theta (id={self.id})")
@@ -396,9 +399,10 @@ class Edge():
             raise ValueError('External cannot be set special')
 
 
-    def set_external(self, is_external: bool = True, dim: int = 3):
+    def set_external(self, is_external: bool = True, dim: int = 2):
         """
         When set external, it is set not special with theta = -1
+        Default for edge dim = 2
         """
         self.is_external = is_external
         if dim == 2:
@@ -408,10 +412,10 @@ class Edge():
             elif self.theta == -1:
                 self.theta = None
 
-    def set_junction_type(self, junction_type: str):
+    def set_junction_type(self, junction_type: int):
         """
         For 3D cell complex
-        ? check consistency: external has type 'E'
+        ? check consistency: external has type None
         """
         self.junction_type = junction_type
 
@@ -495,7 +499,7 @@ class Face():
         self.id = id
         self.v_ids = v_ids
         self.e_ids = []
-        self.neighbor_ids = []
+        self.n_ids = []
         self.p_ids = []
         self.is_special = False
         self.is_external = False
@@ -590,14 +594,14 @@ class Face():
     def add_neighbor(self, n_id: int):
         """
         """
-        self.neighbor_ids.append(n_id)
-        self.neighbor_ids = list(set(self.neighbor_ids))
+        self.n_ids.append(n_id)
+        self.n_ids = list(set(self.n_ids))
     
     def add_neighbors(self, n_ids: Iterable):
         """
         """
-        self.neighbor_ids += n_ids
-        self.neighbor_ids = list(set(self.neighbor_ids))
+        self.n_ids += n_ids
+        self.n_ids = list(set(self.n_ids))
         
     def add_incident_poly(self, p_id: int):
         """
@@ -648,12 +652,13 @@ class Face():
             lower_thrd: float = None,
             upper_thrd: float = None):
         """
+        3D
         disorientation angle (in degrees)
         theta must be >= 0 ?
         for external cells theta = -1
         """
         if theta < 0:
-            self.set_external(True)
+            self.set_external(True, dim=3)
             return
         elif self.is_external:
             raise ValueError(f"External doesn't have theta (id={self.id})")
@@ -696,6 +701,7 @@ class Face():
     def set_external(self, is_external: bool = True, dim: int = 3):
         """
         When set external, it is set not special with theta = -1
+        Default for face dim = 2
         """
         self.is_external = is_external
         if dim == 3:
@@ -739,7 +745,7 @@ class Poly():
         self.id = id
         self.v_ids = []
         self.e_ids = []
-        self.neighbor_ids = []
+        self.n_ids = []
         self.f_ids = f_ids
 
     @classmethod
@@ -821,14 +827,14 @@ class Poly():
     def add_neighbor(self, n_id: int):
         """
         """
-        self.neighbor_ids.append(n_id)
-        self.neighbor_ids = list(set(self.neighbor_ids))
+        self.n_ids.append(n_id)
+        self.n_ids = list(set(self.n_ids))
     
     def add_neighbors(self, n_ids: Iterable):
         """
         """
-        self.neighbor_ids += n_ids
-        self.neighbor_ids = list(set(self.neighbor_ids))
+        self.n_ids += n_ids
+        self.n_ids = list(set(self.n_ids))
         
     def add_face(self, f_id: int):
         """
@@ -1039,11 +1045,11 @@ class CellComplex():
         """
         """
         cc_str = f"<class CellComplex> {self.dim}D" +\
-        f"\n{self.nv} vertices" + f"\n{self.ne} edges" +\
-        f"\n{self.nf} faces" 
+        f"\n{self.vernb} vertices" + f"\n{self.edgenb} edges" +\
+        f"\n{self.facenb} faces" 
         
         if self.dim == 3:
-            cc_str += f"\n{self.np} polyhedra"
+            cc_str += f"\n{self.polynb} polyhedra"
 
         return cc_str
     
@@ -1053,25 +1059,25 @@ class CellComplex():
         return self.__str__()
 
     @property
-    def nv(self):
+    def vernb(self):
         """
         """
         return len(self._vertices)
 
     @property
-    def ne(self):
+    def edgenb(self):
         """
         """
         return len(self._edges)
 
     @property
-    def nf(self):
+    def facenb(self):
         """
         """
         return len(self._faces)
 
     @property
-    def np(self):
+    def polynb(self):
         """
         """
         return len(self._polyhedra)
@@ -1105,7 +1111,94 @@ class CellComplex():
         _cells = self._choose_cell_type(cell_type)
 
         return [_cells[cell_id] for cell_id in cell_ids]
-    
+
+    def get_external_ids(self, cell_type: Union[str, int]):
+        """
+        """
+        _cells = self._choose_cell_type(cell_type)
+
+        return [cell.id for cell in _cells.values() if cell.is_external]
+
+    def get_internal_ids(self, cell_type: Union[str, int]):
+        """
+        """
+        _cells = self._choose_cell_type(cell_type)
+
+        return [cell.id for cell in _cells.values() if not cell.is_external]
+
+    def get_special_ids(self):
+        """
+        2D - edges can be special
+        3D - faces can be special
+        """
+        if self.dim == 2:
+            _cells = self._choose_cell_type('edge')
+        elif self.dim == 3:
+            _cells = self._choose_cell_type('face')
+
+        return [cell.id for cell in _cells.values() if cell.is_special]
+
+    def get_junction_ids_of_type(self, junction_type: int) -> List:
+        """
+        2D - vertices are junctions
+        3D - edges are junctions
+        """
+        
+        if self.dim == 2:
+            _cells = self._choose_cell_type('vertex')
+        elif self.dim == 3:
+            _cells = self._choose_cell_type('edge')
+
+        junction_ids = []
+        for cell in _cells.values():
+            if cell.junction_type == junction_type:
+                junction_ids.append(cell.id)
+
+        return junction_ids
+
+    def set_junction_types(self) -> None:
+        """
+        external has None junction type
+        """
+        # junction_types = {
+        #     0: 'J0',
+        #     1: 'J1',
+        #     2: 'J2',
+        #     3: 'J3',
+        #     4: 'U'
+        # }
+
+        if self.dim == 2:
+            for v in self.vertices:
+                v.n_spec_edges = 0
+                if v.is_external:
+                    v.set_junction_type(None)
+                else:
+                    for e_id in v.e_ids:
+                        if self._edges[e_id].is_special:
+                            v.n_spec_edges += 1
+                    if v.n_spec_edges > 3:
+                        print(
+                            f'{v} is incident to ' +
+                            f'{v.n_spec_edges} special edges'
+                        )
+                    v.set_junction_type(v.n_spec_edges)
+        elif self.dim == 3:
+            for e in self.edges:
+                e.n_spec_faces = 0
+                if e.is_external:
+                    e.set_junction_type(None)
+                else:
+                    for f_id in e.f_ids:
+                        if self._faces[f_id].is_special:
+                            e.n_spec_faces += 1
+                    if e.n_spec_faces > 3:
+                        print(
+                            f'{e} is incident to ' +
+                            f'{e.n_spec_faces} special faces'
+                        )
+                    e.set_junction_type(e.n_spec_faces)
+
     def plot_vertices(
             self,
             v_ids: List = [],
@@ -1475,46 +1568,4 @@ class CellComplex():
         matutils.save_A(self, work_dir)
         matutils.save_B(self, work_dir)
 
-    def set_junction_types(self):
-        """
-        E - external
-        """
-        junction_types = {
-            0: 'J0',
-            1: 'J1',
-            2: 'J2',
-            3: 'J3',
-            4: 'U'
-        }
-
-        if self.dim == 2:
-            for v in self.vertices:
-                v.n_spec_edges = 0
-                if v.is_external:
-                    v.set_junction_type('E')
-                else:
-                    for e_id in v.e_ids:
-                        if self._edges[e_id].is_special:
-                            v.n_spec_edges += 1
-                    if v.n_spec_edges > 3:
-                        print(
-                            f'{v} is incident to ' +
-                            f'{v.n_spec_edges} special edges'
-                        )
-                    v.set_junction_type(junction_types[v.n_spec_edges])
-        elif self.dim == 3:
-            for e in self.edges:
-                e.n_spec_faces = 0
-                if e.is_external:
-                    e.set_junction_type('E')
-                else:
-                    for f_id in e.f_ids:
-                        if self._faces[f_id].is_special:
-                            e.n_spec_faces += 1
-                    if e.n_spec_faces > 3:
-                        print(
-                            f'{e} is incident to ' +
-                            f'{e.n_spec_faces} special faces'
-                        )
-                    e.set_junction_type(junction_types[e.n_spec_faces])
     
