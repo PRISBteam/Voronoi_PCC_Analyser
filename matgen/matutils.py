@@ -58,7 +58,7 @@ def _get_IJV_from_neighbors(_cells: Dict) -> Tuple[List]:
     J = []
     V = []
     for cell_id, cell in _cells.items():
-        for n_id in cell.neighbor_ids:
+        for n_id in cell.n_ids:
             I.append(cell_id - 1)
             J.append(n_id - 1)
             V.append(1)
