@@ -18,6 +18,8 @@ def test_create_ax():
     ax = core._create_ax(dim=3, figsize=(4,4))
     plt.savefig('tests/figures/new-ax-3D-size-4.png')
 
+    plt.close('all')
+
 
 def test_Vertex():
     """
@@ -122,6 +124,8 @@ def test_Vertex_plot():
     )
     ax.legend(loc='best')
     plt.savefig('tests/figures/vertices-2D-1.png')
+
+    plt.close('all')
 
 
 def test_Vertex_from_tess_file():
@@ -956,49 +960,56 @@ def test_CellComplex_choose():
     assert c.get_many('p', [5, 3]) == [c._polyhedra[5], c._polyhedra[3]]
     assert c.get_many(3, [5, 3]) == [c._polyhedra[5], c._polyhedra[3]]
 
-
-def test_CellComplex_plot():
+def test_CellComplex_plot_2D():
     """
     """
-    # filename = 'tests/test_data/n8-id1-2D.tess'
-    # c = core.CellComplex(filename)
+    filename = 'tests/test_data/n8-id1-2D.tess'
+    c = core.CellComplex(filename)
 
-    # _ = c.plot_vertices(c='b')
-    # plt.savefig('tests/figures/vertices-2D-all.png')
+    _ = c.plot_vertices(c='b')
+    plt.savefig('tests/figures/vertices-2D-all.png')
 
-    # v_ids_ext = c.get_external_ids(0)
-    # v_ids_int = c.get_internal_ids(0)
-    # ax = c.plot_vertices(v_ids=v_ids_ext, c='k')
-    # ax = c.plot_vertices(v_ids=v_ids_int, ax=ax, labels=True)
-    # plt.savefig('tests/figures/vertices-2D-ext.png')
+    v_ids_ext = c.get_external_ids(0)
+    v_ids_int = c.get_internal_ids(0)
+    ax = c.plot_vertices(v_ids=v_ids_ext, c='k')
+    ax = c.plot_vertices(v_ids=v_ids_int, ax=ax, labels=True)
+    plt.savefig('tests/figures/vertices-2D-ext.png')
 
-    # ax = c.plot_vertices([1, 2, 3, 4], labels=True)
-    # plt.savefig('tests/figures/vertices-2D-4.png')
+    ax = c.plot_vertices([1, 2, 3, 4], labels=True)
+    plt.savefig('tests/figures/vertices-2D-4.png')
 
-    # _ = c.plot_edges(c='b')
-    # plt.savefig('tests/figures/edges-2D-all.png')
+    _ = c.plot_edges(c='b')
+    plt.savefig('tests/figures/edges-2D-all.png')
 
-    # e_ids_ext = c.get_external_ids(1)
-    # e_ids_int = c.get_internal_ids('e')
-    # ax = c.plot_edges(e_ids=e_ids_ext, c='k')
-    # ax = c.plot_edges(e_ids_int, ax=ax, labels=True)
-    # plt.savefig('tests/figures/edges-2D-ext.png')
+    e_ids_ext = c.get_external_ids(1)
+    e_ids_int = c.get_internal_ids('e')
+    ax = c.plot_edges(e_ids=e_ids_ext, c='k')
+    ax = c.plot_edges(e_ids_int, ax=ax, labels=True)
+    plt.savefig('tests/figures/edges-2D-ext.png')
 
-    # ax = c.plot_edges([1, 2, 3, 4], labels=True)
-    # plt.savefig('tests/figures/edges-2D-4.png')
+    ax = c.plot_edges([1, 2, 3, 4], labels=True)
+    plt.savefig('tests/figures/edges-2D-4.png')
 
-    # ax = c.plot_edges([1, 2, 3, 4], labels=True)
-    # ax = c.plot_vertices([1, 2, 3, 4, 5, 6, 7], labels=True, ax=ax)
-    # plt.savefig('tests/figures/vertices-edges-2D.png')
+    ax = c.plot_edges([1, 2, 3, 4], labels=True)
+    ax = c.plot_vertices([1, 2, 3, 4, 5, 6, 7], labels=True, ax=ax)
+    plt.savefig('tests/figures/vertices-edges-2D.png')
 
-    # _ = c.plot_faces(labels=True)
-    # plt.savefig('tests/figures/faces-2D-all.png')
+    ax = c.plot_faces(labels=True)
+    plt.savefig('tests/figures/faces-2D-all.png')
+    ax = c.plot_seeds(ax=ax, color='k', label='seeds')
+    ax.legend()
+    plt.savefig('tests/figures/faces-seeds-2D-all.png')
 
-    # ax = c.plot_edges([1, 2, 3, 4], labels=True)
-    # ax = c.plot_vertices([1, 2, 3, 4, 5], labels=True, ax=ax)
-    # ax = c.plot_faces([1, 2], labels=True, ax=ax)
-    # plt.savefig('tests/figures/vertices-edges-faces-2D.png')
+    ax = c.plot_edges([1, 2, 3, 4], labels=True)
+    ax = c.plot_vertices([1, 2, 3, 4, 5], labels=True, ax=ax)
+    ax = c.plot_faces([1, 2], labels=True, ax=ax)
+    plt.savefig('tests/figures/vertices-edges-faces-2D.png')
 
+    plt.close('all')
+
+def test_CellComplex_plot_3D():
+    """
+    """
     filename = 'tests/test_data/n8-id1-3D.tess'
     c = core.CellComplex(filename)
 
@@ -1030,7 +1041,7 @@ def test_CellComplex_plot():
     ax = c.plot_vertices([1, 2, 3, 4, 5, 6, 7], labels=True, ax=ax)
     plt.savefig('tests/figures/vertices-edges-3D.png')
 
-    _ = c.plot_faces([1,2])
+    ax = c.plot_faces([1,2])
     plt.savefig('tests/figures/faces-3D-2.png')
 
     ax = c.plot_edges([1, 2, 3, 4], labels=True)
@@ -1041,6 +1052,9 @@ def test_CellComplex_plot():
     ax = c.plot_polyhedra([1], color='b')
     ax = c.plot_polyhedra([2], color='r', ax=ax)
     plt.savefig('tests/figures/polys-3D-2.png')
+
+    plt.close('all')
+
 
 def test_CellComplex_set_junction():
     """
@@ -1115,3 +1129,20 @@ def test_CellComplex_set_junction():
     ax = c.plot_edges(c.get_junction_ids_of_type(2), c='y', ax=ax)
     ax = c.plot_edges(c.get_junction_ids_of_type(3), c='g', ax=ax)
     plt.savefig('tests/figures/specials-3D-theta.png')
+
+    plt.close('all')
+
+    c.reset_special(lower_thrd=160, upper_thrd=170)
+    assert c.get_special_ids() == [10, 14, 18, 22]
+    assert c.get_j_fraction(3) == pytest.approx(0.0)
+    assert c.get_j_fraction(2) == pytest.approx(0.25)
+    assert c.get_j_fraction(1) == pytest.approx(0.375)
+    assert c.get_j_fraction(0) == pytest.approx(0.375)
+
+    c.reset_special(upper_thrd=70)
+    assert c.get_special_ids() == [4]
+    assert c.get_j_fraction(1) == pytest.approx(0.25)
+
+    c.reset_special()
+    assert c.get_special_ids() == []
+    assert c.get_j_fraction(0) == pytest.approx(1.0)
