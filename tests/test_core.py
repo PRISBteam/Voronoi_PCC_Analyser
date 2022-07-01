@@ -41,8 +41,8 @@ def test_Vertex_add_neighbors():
     v.add_neighbors([1, 2])
     v.add_neighbors([5, 1, 3])
     v.add_neighbor(2)
-    assert set(v.neighbor_ids) == {1, 2, 3, 5, 21, 34}
-    assert len(v.neighbor_ids) == 6
+    assert set(v.n_ids) == {1, 2, 3, 5, 21, 34}
+    assert len(v.n_ids) == 6
 
 
 def test_Vertex_add_incident():
@@ -163,8 +163,8 @@ def test_Edge_add_neighbors():
     e.add_neighbors([1, 2])
     e.add_neighbors([5, 1, 3])
     e.add_neighbor(2)
-    assert len(e.neighbor_ids) == 6
-    assert set(e.neighbor_ids) == {1, 2, 3, 5, 21, 34}
+    assert len(e.n_ids) == 6
+    assert set(e.n_ids) == {1, 2, 3, 5, 21, 34}
 
 
 def test_Edge_add_incident():
@@ -201,7 +201,7 @@ def test_Edge_set_special():
     assert not e.is_external
     assert not e.is_special
     assert e.theta is None
-    e.set_external()
+    e.set_external(True, dim=2)
     assert e.is_external
     assert not e.is_special
     assert e.theta == pytest.approx(-1)
@@ -285,14 +285,14 @@ def test_Edge_from_tess_file():
     assert set(_edges[20].v_ids) == {20, 21}
     for e in _edges.values():
         assert len(e.v_ids) == 2
-    assert set(_vertices[1].neighbor_ids) == {2, 3, 5}
-    assert len(_vertices[1].neighbor_ids) == 3
+    assert set(_vertices[1].n_ids) == {2, 3, 5}
+    assert len(_vertices[1].n_ids) == 3
     assert set(_vertices[1].e_ids) == {1, 2, 6}
     assert len(_vertices[1].e_ids) == 3
-    assert set(_edges[29].neighbor_ids) == {33, 45, 58, 27, 28, 31}
-    assert len(_edges[29].neighbor_ids) == 6
-    assert set(_edges[59].neighbor_ids) == {2, 3, 10, 60, 61}
-    assert len(_edges[59].neighbor_ids) == 5    
+    assert set(_edges[29].n_ids) == {33, 45, 58, 27, 28, 31}
+    assert len(_edges[29].n_ids) == 6
+    assert set(_edges[59].n_ids) == {2, 3, 10, 60, 61}
+    assert len(_edges[59].n_ids) == 5    
 
     filename = 'tests/test_data/n8-id1-3D-reg.tess'
     _edges = core.Edge.from_tess_file(filename, measure=True)
@@ -369,7 +369,7 @@ def test_Face():
     assert f.v_ids == [5, 1, 2, 7, 8]
     assert f.__str__() == "Face(id=42)"
     assert f.e_ids == []
-    assert f.neighbor_ids == []
+    assert f.n_ids == []
     assert f.p_ids == []
     assert not f.is_special
     assert not f.is_external
@@ -384,8 +384,8 @@ def test_Face_add_neighbors():
     f.add_neighbors([1, 2])
     f.add_neighbors([5, 1, 3])
     f.add_neighbor(2)
-    assert len(f.neighbor_ids) == 6
-    assert set(f.neighbor_ids) == {1, 2, 3, 5, 21, 34}
+    assert len(f.n_ids) == 6
+    assert set(f.n_ids) == {1, 2, 3, 5, 21, 34}
 
 
 def test_Face_add_incident():
@@ -539,18 +539,18 @@ def test_Face_from_tess_file():
     )
     assert _faces[10].d == pytest.approx(-0.0)
 
-    assert set(_faces[1].neighbor_ids) == {
+    assert set(_faces[1].n_ids) == {
         2, 3, 4, 6, 7, 39, 16, 30
     }
-    assert len(_faces[1].neighbor_ids) == 8
-    assert set(_faces[8].neighbor_ids) == {
+    assert len(_faces[1].n_ids) == 8
+    assert set(_faces[8].n_ids) == {
         34, 40, 9, 10, 11, 44, 13, 14, 15, 24
     }
-    assert len(_faces[8].neighbor_ids) == 10
-    assert set(_faces[38].neighbor_ids) == {
+    assert len(_faces[8].n_ids) == 10
+    assert set(_faces[38].n_ids) == {
         33, 34, 35, 37, 39, 40, 41, 42, 13, 14, 20, 21
     }
-    assert len(_faces[38].neighbor_ids) == 12 
+    assert len(_faces[38].n_ids) == 12 
     assert set(_edges[1].f_ids) == {1, 2}
     assert len(_edges[1].f_ids) == 2
     assert set(_edges[33].f_ids) == {28, 14, 15}
@@ -646,7 +646,7 @@ def test_Poly():
     assert p.__str__() == "Poly(id=8)"
     assert p.v_ids == []
     assert p.e_ids == []
-    assert p.neighbor_ids == []
+    assert p.n_ids == []
     # assert not p.is_external
 
 def test_Poly_add():
@@ -658,8 +658,8 @@ def test_Poly_add():
     p.add_neighbors([1, 2])
     p.add_neighbors([5, 1, 3])
     p.add_neighbor(2)
-    assert len(p.neighbor_ids) == 6
-    assert set(p.neighbor_ids) == {1, 2, 3, 5, 21, 34}
+    assert len(p.n_ids) == 6
+    assert set(p.n_ids) == {1, 2, 3, 5, 21, 34}
 
     p.add_face(21)
     p.add_face(34)
@@ -713,22 +713,22 @@ def test_Poly_from_tess_file():
     }
     assert set(_polyhedra[6].f_ids) == {33, 34, 35, 36, 37, 38, 13, 20}
 
-    assert set(_polyhedra[1].neighbor_ids) == {3, 4, 5, 7}
-    assert len(_polyhedra[1].neighbor_ids) == 4
-    assert set(_polyhedra[2].neighbor_ids) == {3, 4, 6, 7, 8}
-    assert len(_polyhedra[2].neighbor_ids) == 5
-    assert set(_polyhedra[3].neighbor_ids) == {1, 2, 4, 5, 6, 7, 8}
-    assert len(_polyhedra[3].neighbor_ids) == 7
-    assert set(_polyhedra[4].neighbor_ids) == {1, 2, 3, 5, 7, 8}
-    assert len(_polyhedra[4].neighbor_ids) == 6
-    assert set(_polyhedra[5].neighbor_ids) == {1, 3, 4}
-    assert len(_polyhedra[5].neighbor_ids) == 3
-    assert set(_polyhedra[6].neighbor_ids) == {2, 3, 7}
-    assert len(_polyhedra[6].neighbor_ids) == 3
-    assert set(_polyhedra[7].neighbor_ids) == {1, 2, 3, 4, 6, 8}
-    assert len(_polyhedra[7].neighbor_ids) == 6
-    assert set(_polyhedra[8].neighbor_ids) == {2, 3, 4, 7}
-    assert len(_polyhedra[8].neighbor_ids) == 4
+    assert set(_polyhedra[1].n_ids) == {3, 4, 5, 7}
+    assert len(_polyhedra[1].n_ids) == 4
+    assert set(_polyhedra[2].n_ids) == {3, 4, 6, 7, 8}
+    assert len(_polyhedra[2].n_ids) == 5
+    assert set(_polyhedra[3].n_ids) == {1, 2, 4, 5, 6, 7, 8}
+    assert len(_polyhedra[3].n_ids) == 7
+    assert set(_polyhedra[4].n_ids) == {1, 2, 3, 5, 7, 8}
+    assert len(_polyhedra[4].n_ids) == 6
+    assert set(_polyhedra[5].n_ids) == {1, 3, 4}
+    assert len(_polyhedra[5].n_ids) == 3
+    assert set(_polyhedra[6].n_ids) == {2, 3, 7}
+    assert len(_polyhedra[6].n_ids) == 3
+    assert set(_polyhedra[7].n_ids) == {1, 2, 3, 4, 6, 8}
+    assert len(_polyhedra[7].n_ids) == 6
+    assert set(_polyhedra[8].n_ids) == {2, 3, 4, 7}
+    assert len(_polyhedra[8].n_ids) == 4
 
     assert _faces[1].p_ids == [1]
     assert set(_faces[38].p_ids) == {6, 7}
@@ -803,12 +803,18 @@ def test_CellComplex():
     assert c.dim == 3
     assert len(c._vertices) == 32
     assert len(c.vertices) == 32
+    assert c.vernb == 32
     assert len(c._edges) == 64
     assert len(c.edges) == 64
+    assert c.edgenb == 64
     assert len(c._faces) == 41
     assert len(c.faces) == 41
+    assert c.facenb == 41
     assert len(c._polyhedra) == 8
     assert len(c.polyhedra) == 8
+    assert c.polynb == 8
+    assert c.__str__() == "<class CellComplex> 3D\n32 vertices" +\
+                          "\n64 edges\n41 faces\n8 polyhedra"
     assert c._edges[11].len == pytest.approx(0.768638704795)
     assert c._faces[11].area == pytest.approx(0.293258891322)
     assert c._polyhedra[3].vol == pytest.approx(0.192734120330)
@@ -868,7 +874,7 @@ def test_CellComplex():
     assert c._faces[4].theta == pytest.approx(99.343932545403)
     assert not c._faces[4].is_external
     assert not c._faces[4].is_special
-
+    
     filename = 'tests/test_data/n8-id1-2D-reg.tess'
     c = core.CellComplex(
         filename,
@@ -904,11 +910,208 @@ def test_CellComplex():
     assert not c._edges[4].is_external
     assert c._edges[4].is_special
 
-    # TODO: test junctions
+def test_CellComplex_choose():
+    """
+    """
+    filename = 'tests/test_data/n8-id1-3D.tess'
+    c = core.CellComplex(filename)
+    assert c._choose_cell_type('v') == c._vertices
+    assert c._choose_cell_type('vertex') == c._vertices
+    assert c._choose_cell_type('0') == c._vertices
+    assert c._choose_cell_type(0) == c._vertices
+    assert c._choose_cell_type('e') == c._edges
+    assert c._choose_cell_type('edge') == c._edges
+    assert c._choose_cell_type('1') == c._edges
+    assert c._choose_cell_type(1) == c._edges
+    assert c._choose_cell_type('f') == c._faces
+    assert c._choose_cell_type('face') == c._faces
+    assert c._choose_cell_type('2') == c._faces
+    assert c._choose_cell_type(2) == c._faces
+    assert c._choose_cell_type('p') == c._polyhedra
+    assert c._choose_cell_type('poly') == c._polyhedra
+    assert c._choose_cell_type('3') == c._polyhedra
+    assert c._choose_cell_type(3) == c._polyhedra
+    with pytest.raises(TypeError, match="Unknown cell type"):
+        c._choose_cell_type(4)
+    with pytest.raises(TypeError, match="Unknown cell type"):
+        c._choose_cell_type('grain')
+    with pytest.raises(TypeError, match="Unknown cell type"):
+        c._choose_cell_type('faces')
+
+    assert c.get_one('v', 23) == c._vertices[23]
+    assert c.get_one(0, 15) == c._vertices[15]
+    assert c.get_one('e', 23) == c._edges[23]
+    assert c.get_one(1, 15) == c._edges[15]
+    assert c.get_one('f', 23) == c._faces[23]
+    assert c.get_one(2, 15) == c._faces[15]
+    assert c.get_one('p', 3) == c._polyhedra[3]
+    assert c.get_one(3, 5) == c._polyhedra[5]
+
+    assert c.get_many('v', [15, 23]) == [c._vertices[15], c._vertices[23]]
+    assert c.get_many(0, [15, 23]) == [c._vertices[15], c._vertices[23]]
+    assert c.get_many('e', [15, 23]) == [c._edges[15], c._edges[23]]
+    assert c.get_many(1, [15, 23]) == [c._edges[15], c._edges[23]]
+    assert c.get_many('f', [15, 23]) == [c._faces[15], c._faces[23]]
+    assert c.get_many(2, [15, 23]) == [c._faces[15], c._faces[23]]
+    assert c.get_many('p', [5, 3]) == [c._polyhedra[5], c._polyhedra[3]]
+    assert c.get_many(3, [5, 3]) == [c._polyhedra[5], c._polyhedra[3]]
 
 
 def test_CellComplex_plot():
     """
     """
-    pass
-    # TODO: test plots
+    # filename = 'tests/test_data/n8-id1-2D.tess'
+    # c = core.CellComplex(filename)
+
+    # _ = c.plot_vertices(c='b')
+    # plt.savefig('tests/figures/vertices-2D-all.png')
+
+    # v_ids_ext = c.get_external_ids(0)
+    # v_ids_int = c.get_internal_ids(0)
+    # ax = c.plot_vertices(v_ids=v_ids_ext, c='k')
+    # ax = c.plot_vertices(v_ids=v_ids_int, ax=ax, labels=True)
+    # plt.savefig('tests/figures/vertices-2D-ext.png')
+
+    # ax = c.plot_vertices([1, 2, 3, 4], labels=True)
+    # plt.savefig('tests/figures/vertices-2D-4.png')
+
+    # _ = c.plot_edges(c='b')
+    # plt.savefig('tests/figures/edges-2D-all.png')
+
+    # e_ids_ext = c.get_external_ids(1)
+    # e_ids_int = c.get_internal_ids('e')
+    # ax = c.plot_edges(e_ids=e_ids_ext, c='k')
+    # ax = c.plot_edges(e_ids_int, ax=ax, labels=True)
+    # plt.savefig('tests/figures/edges-2D-ext.png')
+
+    # ax = c.plot_edges([1, 2, 3, 4], labels=True)
+    # plt.savefig('tests/figures/edges-2D-4.png')
+
+    # ax = c.plot_edges([1, 2, 3, 4], labels=True)
+    # ax = c.plot_vertices([1, 2, 3, 4, 5, 6, 7], labels=True, ax=ax)
+    # plt.savefig('tests/figures/vertices-edges-2D.png')
+
+    # _ = c.plot_faces(labels=True)
+    # plt.savefig('tests/figures/faces-2D-all.png')
+
+    # ax = c.plot_edges([1, 2, 3, 4], labels=True)
+    # ax = c.plot_vertices([1, 2, 3, 4, 5], labels=True, ax=ax)
+    # ax = c.plot_faces([1, 2], labels=True, ax=ax)
+    # plt.savefig('tests/figures/vertices-edges-faces-2D.png')
+
+    filename = 'tests/test_data/n8-id1-3D.tess'
+    c = core.CellComplex(filename)
+
+    ax = c.plot_vertices(c='b')
+    plt.savefig('tests/figures/vertices-3D-all.png')
+
+    v_ids_ext = c.get_external_ids(0)
+    v_ids_int = c.get_internal_ids(0)
+    ax = c.plot_vertices(v_ids=v_ids_ext, c='k')
+    ax = c.plot_vertices(v_ids=v_ids_int, ax=ax, labels=True)
+    plt.savefig('tests/figures/vertices-3D-ext.png')
+
+    ax = c.plot_vertices([1, 2, 3, 4], labels=True)
+    plt.savefig('tests/figures/vertices-3D-4.png')
+
+    _ = c.plot_edges(c='b')
+    plt.savefig('tests/figures/edges-3D-all.png')
+
+    e_ids_ext = c.get_external_ids(1)
+    e_ids_int = c.get_internal_ids('e')
+    ax = c.plot_edges(e_ids=e_ids_ext, c='k')
+    ax = c.plot_edges(e_ids_int, ax=ax, labels=True)
+    plt.savefig('tests/figures/edges-3D-ext.png')
+
+    ax = c.plot_edges([1, 2, 3, 4], labels=True)
+    plt.savefig('tests/figures/edges-3D-4.png')
+
+    ax = c.plot_edges([1, 2, 3, 4], labels=True)
+    ax = c.plot_vertices([1, 2, 3, 4, 5, 6, 7], labels=True, ax=ax)
+    plt.savefig('tests/figures/vertices-edges-3D.png')
+
+    _ = c.plot_faces([1,2])
+    plt.savefig('tests/figures/faces-3D-2.png')
+
+    ax = c.plot_edges([1, 2, 3, 4], labels=True)
+    ax = c.plot_vertices([1, 2, 3, 4, 5], labels=True, ax=ax)
+    ax = c.plot_faces([1, 2], ax=ax)
+    plt.savefig('tests/figures/vertices-edges-faces-3D.png')
+
+    ax = c.plot_polyhedra([1], color='b')
+    ax = c.plot_polyhedra([2], color='r', ax=ax)
+    plt.savefig('tests/figures/polys-3D-2.png')
+
+def test_CellComplex_set_junction():
+    """
+    """
+    filename = 'tests/test_data/n8-id1-2D.tess'
+    c = core.CellComplex(
+        filename,
+        measures=True,
+        theta=True,
+        lower_thrd=160
+    )
+    
+    assert c.get_special_ids() == [3, 10, 13, 14, 18, 22]
+    assert c.get_junction_ids_of_type(0) == [5, 7]
+    assert c.get_junction_ids_of_type(1) == [3, 15, 17]
+    assert c.get_junction_ids_of_type(2) == [8, 10]
+    assert c.get_junction_ids_of_type(3) == [13]
+    
+    e_ext = c.get_external_ids('e')
+    e_int = c.get_internal_ids('e')
+    ax = c.plot_edges(e_ext, color='b')
+    ax = c.plot_edges(e_int, color='r', ax=ax)
+    ax = c.plot_edges(c.get_special_ids(), c='g', ax=ax)
+
+    v_ext = c.get_external_ids('v')
+    ax = c.plot_vertices(v_ext, c='b', ax=ax)
+    ax = c.plot_vertices(c.get_junction_ids_of_type(0), c='r', ax=ax)
+    ax = c.plot_vertices(c.get_junction_ids_of_type(1), c='m', ax=ax)
+    ax = c.plot_vertices(c.get_junction_ids_of_type(2), c='y', ax=ax)
+    ax = c.plot_vertices(c.get_junction_ids_of_type(3), c='g', ax=ax)
+    plt.savefig('tests/figures/specials-2D-theta.png')
+
+    c = core.CellComplex(filename)
+    
+    assert c.get_special_ids() == []
+    assert c.get_junction_ids_of_type(0) == []
+    assert c.get_junction_ids_of_type(1) == []
+    assert c.get_junction_ids_of_type(2) == []
+    assert c.get_junction_ids_of_type(3) == []
+    
+    for e in c.get_many('e', [3, 10, 13, 14, 18, 22]):
+        e.set_special()
+    
+    c.set_junction_types()
+
+    assert c.get_special_ids() == [3, 10, 13, 14, 18, 22]
+    assert c.get_junction_ids_of_type(0) == [5, 7]
+    assert c.get_junction_ids_of_type(1) == [3, 15, 17]
+    assert c.get_junction_ids_of_type(2) == [8, 10]
+    assert c.get_junction_ids_of_type(3) == [13]
+
+    filename = 'tests/test_data/n8-id1-3D.tess'
+    c = core.CellComplex(
+        filename,
+        measures=True,
+        theta=True,
+        lower_thrd=160
+    )
+    
+    assert c.get_special_ids() == [4, 7, 13, 20, 21, 22]
+    assert c.get_junction_ids_of_type(0) == [14, 27, 28, 29, 33, 46, 58]
+    assert c.get_junction_ids_of_type(1) == [12, 13, 31, 32, 45, 48, 49]
+    assert c.get_junction_ids_of_type(2) == [15, 30, 47]
+    assert c.get_junction_ids_of_type(3) == [11]
+    
+    ax = c.plot_faces(c.get_special_ids(), color='g')
+
+    e_ext = c.get_external_ids('e')
+    ax = c.plot_edges(e_ext, c='b', ax=ax)
+    ax = c.plot_edges(c.get_junction_ids_of_type(0), c='r', ax=ax)
+    ax = c.plot_edges(c.get_junction_ids_of_type(1), c='m', ax=ax)
+    ax = c.plot_edges(c.get_junction_ids_of_type(2), c='y', ax=ax)
+    ax = c.plot_edges(c.get_junction_ids_of_type(3), c='g', ax=ax)
+    plt.savefig('tests/figures/specials-3D-theta.png')
