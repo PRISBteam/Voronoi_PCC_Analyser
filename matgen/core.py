@@ -1156,6 +1156,45 @@ class CellComplex():
 
         return junction_ids
 
+    def get_spec_fraction(self):
+        """
+        number_of_special / number_of_internal
+        """
+        n_spec = len(self.get_special_ids())
+        if self.dim == 2:
+            n_int = len(self.get_internal_ids('e'))
+        elif self.dim == 3:
+            n_int = len(self.get_internal_ids('f'))
+
+        frac = n_spec / n_int
+
+        return round(frac, 3)
+
+    def get_ext_fraction(self, cell_type: Union[str, int]):
+        """
+        number_of_external / number_of_cells
+        """
+        n_ext = len(self.get_external_ids(cell_type))
+        n_cells = len(self._choose_cell_type(cell_type))
+
+        frac = n_ext / n_cells
+
+        return round(frac, 3)
+
+    def get_j_fraction(self, junction_type: int):
+        """
+        number_of_junction_of_type / number_of_internal
+        """
+        n_junc = len(self.get_junction_ids_of_type(junction_type))
+        if self.dim == 2:
+            n_int = len(self.get_internal_ids('v'))
+        elif self.dim == 3:
+            n_int = len(self.get_internal_ids('e'))
+
+        frac = n_junc / n_int
+
+        return round(frac, 3)
+    
     def set_junction_types(self) -> None:
         """
         external has None junction type
@@ -1198,6 +1237,38 @@ class CellComplex():
                             f'{e.n_spec_faces} special faces'
                         )
                     e.set_junction_type(e.n_spec_faces)
+
+    def reset_special(
+            self,
+            lower_thrd: float = None,
+            upper_thrd: float = None):
+        """
+        """
+        if self.dim == 2:
+            _cells = self._choose_cell_type('edge')
+        elif self.dim == 3:
+            _cells = self._choose_cell_type('face')
+
+        for cell in _cells.values():
+            if not cell.is_external:
+                if lower_thrd and upper_thrd:
+                    if  cell.theta >= lower_thrd and cell.theta <= upper_thrd:
+                        cell.set_special(True)
+                    else:
+                        cell.set_special(False)
+                elif lower_thrd:
+                    if  cell.theta >= lower_thrd:
+                        cell.set_special(True)
+                    else:
+                        cell.set_special(False)
+                elif upper_thrd:
+                    if  cell.theta <= upper_thrd:
+                        cell.set_special(True)
+                    else:
+                        cell.set_special(False)
+                else:
+                    cell.set_special(False)
+        self.set_junction_types()
 
     def plot_vertices(
             self,
