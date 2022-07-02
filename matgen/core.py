@@ -6,6 +6,7 @@ TODO:
 
 Change lists of incident etc. to sets?
 """
+import os
 from typing import Dict, Iterable, List, Tuple, Union
 import time
 
@@ -1630,7 +1631,7 @@ class CellComplex():
         
         return matutils.get_G_from_cells(_cells)
 
-    def save_into_files(self, work_dir: str = '.', representation=None):
+    def save_to_files(self, work_dir: str = '.', representation=None):
         """
         Can be saved as a set of srapse matrices or cell lists.
         representation: operator form, cells list, neper format?
@@ -1639,4 +1640,23 @@ class CellComplex():
         matutils.save_A(self, work_dir)
         matutils.save_B(self, work_dir)
 
-    
+        nc_filename = os.path.join(work_dir, 'number_of_cells.txt')
+        with open(nc_filename, 'w') as file:
+            file.write(f'{self.vernb}\n{self.edgenb}\n{self.facenb}')
+            if self.dim == 3:
+                file.write(f'\n{self.polynb}')
+        
+        normals_filename = os.path.join(work_dir, 'normals.txt')
+        with open(normals_filename, 'w') as file:
+            for face in self.faces:
+                file.write(f'{face.id} {face.a} {face.b} {face.c}\n')
+
+        seeds_filename = os.path.join(work_dir, 'seeds.txt')
+        with open(seeds_filename, 'w') as file:
+            if self.dim == 2:
+                for face in self.faces:
+                    file.write('%.12f %.12f 0.000000000000\n' % face.seed) 
+            elif self.dim == 3:
+                for poly in self.polyhedra:
+                    file.write('%.12f %.12f %.12f\n' % poly.seed) 
+  

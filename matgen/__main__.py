@@ -27,8 +27,8 @@ args = parser.parse_args()
 if not os.path.exists(args.dir):
     os.mkdir(args.dir)
 
-extract_seeds(args.file, args.dir)
+# extract_seeds(args.file, args.dir)
 # write_matrices(args.file, args.dir, args.is_signed) - wrong
 c = CellComplex(filename=args.file)
-c.save_into_files(work_dir=args.dir)
+c.save_to_files(work_dir=args.dir)
 
