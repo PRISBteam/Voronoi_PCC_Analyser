@@ -7,8 +7,13 @@ from bokeh.layouts import gridplot, layout
 from bokeh.models import Div, RangeSlider, ColumnDataSource
 from matgen import core
 
-filename = 'C:/Users/oubus/Documents/GitHub/Voronoi_DCC_Analyser/tests/test_data/n8-id1-2D.tess'
-c = core.CellComplex(filename=filename, measures=True, theta=True)
+filename = 'tests/test_data/pass1_model_2d.txt'
+#c = core.CellComplex(filename=filename, measures=True, theta=True)
+c = core.CellComplex(filename=filename)
+
+with open('tests/test_data/pass_1_misorientation.txt', 'r') as file:
+    for line, edge in zip(file, c.edges):
+        edge.theta = float(line.strip())
 
 def get_xy(v_ids):
     vs = c.get_many('v', v_ids)
@@ -48,9 +53,9 @@ p3.scatter('x', 'y', source=s3)
 range_slider = RangeSlider(
     title="Choose theta", # a title to display above the slider
     start=0,  # set the minimum value for the slider
-    end=180,  # set the maximum value for the slider
-    step=5,  # increments for the slider
-    value=(0, 180),  # initial values for slider
+    end=62,  # set the maximum value for the slider
+    step=1,  # increments for the slider
+    value=(0, 62),  # initial values for slider
     )
 
 div = Div(
@@ -84,7 +89,7 @@ def update_data(attrname, new, old):
 
 range_slider.on_change('value', update_data)
 
-grid = gridplot([[p0, p1], [p2, p3]], width=250, height=250)
+grid = gridplot([[p1, p2, p3], [p0, None, None]], width=400, height=400)
 
 layout = layout(
     [
