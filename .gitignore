@@ -1,6 +1,5 @@
 # Output and Neper files
 *.out
-*.txt
 *.mat
 *.png
 sample_data/
