@@ -30,25 +30,25 @@ p0 = figure(
     title="J0", x_axis_label='x', y_axis_label='y',
     x_range=(-0.1, 1.1), y_range=(-0.1, 1.1)
 )
-p0.scatter('x', 'y', source=s0)
+p0.scatter('x', 'y', source=s0, color='black', size=2)
 
 p1 = figure(
     title="J1", x_axis_label='x', y_axis_label='y',
     x_range=(-0.1, 1.1), y_range=(-0.1, 1.1)
 )
-p1.scatter('x', 'y', source=s1)
+p1.scatter('x', 'y', source=s1, color='black', size=2)
 
 p2 = figure(
     title="J2", x_axis_label='x', y_axis_label='y',
     x_range=(-0.1, 1.1), y_range=(-0.1, 1.1)
 )
-p2.scatter('x', 'y', source=s2)
+p2.scatter('x', 'y', source=s2, color='black', size=2)
 
 p3 = figure(
     title="J3", x_axis_label='x', y_axis_label='y',
     x_range=(-0.1, 1.1), y_range=(-0.1, 1.1)
     )
-p3.scatter('x', 'y', source=s3)
+p3.scatter('x', 'y', source=s3, color='black', size=2)
 
 range_slider = RangeSlider(
     title="Choose theta", # a title to display above the slider
