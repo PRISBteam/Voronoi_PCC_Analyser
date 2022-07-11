@@ -748,6 +748,7 @@ class Poly():
         self.e_ids = []
         self.n_ids = []
         self.f_ids = f_ids
+        self.is_external = False
 
     @classmethod
     def from_tess_file(
