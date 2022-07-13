@@ -148,7 +148,6 @@ def get_new_seed_3D(c: CellComplex, f_id: int):
 
 
 
-
 def main():
     """
     """
