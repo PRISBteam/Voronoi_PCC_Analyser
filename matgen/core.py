@@ -712,6 +712,13 @@ class Face():
             elif self.theta == -1:
                 self.theta = None
 
+    
+    def set_crystal_ori(self, ori_format: str, ori_components: Tuple):
+        """
+        """
+        self.ori_format = ori_format
+        self.ori = ori_components
+
 
 class Poly():
     """
@@ -991,8 +998,13 @@ class CellComplex():
                             f_id = int(row[0])
                             seed_coord = tuple([*map(float, row[1:3])])
                             self._faces[f_id].set_seed(seed_coord)
+                    if '*ori' in line:
+                        ori_format = file.readline().strip() #.rstrip('\n')
+                        for i in range(N):
+                            row = file.readline().split()
+                            ori_c = tuple([*map(float, row)])
+                            self.faces[i].set_crystal_ori(ori_format, ori_c)
                         break
-                    # TODO: add ori in 2D case
             
             # Set external edges and vertices
             for e in self.edges:
@@ -1637,6 +1649,7 @@ class CellComplex():
         Can be saved as a set of srapse matrices or cell lists.
         representation: operator form, cells list, neper format?
         A, B
+        Change dependancies !!!
         """
         matutils.save_A(self, work_dir)
         matutils.save_B(self, work_dir)
