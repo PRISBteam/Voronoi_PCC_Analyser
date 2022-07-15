@@ -1,7 +1,7 @@
 import os
 import argparse
 
-from matgen.sparsemat import extract_seeds
+# from matgen.sparsemat import extract_seeds
 from matgen.core import CellComplex
 
 
