@@ -1182,7 +1182,7 @@ class CellComplex():
 
         frac = n_spec / n_int
 
-        return round(frac, 3)
+        return frac
 
     def get_ext_fraction(self, cell_type: Union[str, int]):
         """
@@ -1193,7 +1193,7 @@ class CellComplex():
 
         frac = n_ext / n_cells
 
-        return round(frac, 3)
+        return frac
 
     def get_j_fraction(self, junction_type: int):
         """
@@ -1207,7 +1207,7 @@ class CellComplex():
 
         frac = n_junc / n_int
 
-        return round(frac, 3)
+        return frac
     
     def set_junction_types(self) -> None:
         """
