@@ -4,7 +4,7 @@ Bokeh https://docs.bokeh.org/en/latest/docs/first_steps/first_steps_9.html
 
 from bokeh.plotting import figure, show, curdoc
 from bokeh.layouts import gridplot, layout
-from bokeh.models import Div, RangeSlider, ColumnDataSource
+from bokeh.models import Div, RangeSlider, ColumnDataSource, Spinner
 import numpy as np
 from scipy.spatial import Voronoi
 from matgen import core
@@ -37,10 +37,36 @@ def get_xy_for_type(type):
                 ys.append(list((vor.vertices[simplex, 1])))
     return xs, ys
 
+def get_xy_for_edges(n):
+    xs = []
+    ys = []
+    xs_spec = []
+    ys_spec = []
+    xs_ext = []
+    ys_ext = []
+
+    for e in c.edges[:n]:
+        if e.is_special:
+            xs_spec.append([v.x for v in c.get_many('v', e.v_ids)])
+            ys_spec.append([v.y for v in c.get_many('v', e.v_ids)])
+        elif e.is_external:
+            xs_ext.append([v.x for v in c.get_many('v', e.v_ids)])
+            ys_ext.append([v.y for v in c.get_many('v', e.v_ids)])
+        else:
+            xs.append([v.x for v in c.get_many('v', e.v_ids)])
+            ys.append([v.y for v in c.get_many('v', e.v_ids)])
+
+
+    return xs, ys, xs_spec, ys_spec, xs_ext, ys_ext
+
 s0 = ColumnDataSource(data=dict(x=[], y=[]))
 s1 = ColumnDataSource(data=dict(x=[], y=[]))
 s2 = ColumnDataSource(data=dict(x=[], y=[]))
 s3 = ColumnDataSource(data=dict(x=[], y=[]))
+
+s4 = ColumnDataSource(data=dict(x=[], y=[]))
+s5 = ColumnDataSource(data=dict(x=[], y=[]))
+s6 = ColumnDataSource(data=dict(x=[], y=[]))
 
 p0 = figure(
     title="J0", x_axis_label='x', y_axis_label='y',
@@ -70,12 +96,21 @@ p3 = figure(
 # p3.scatter('x', 'y', source=s3)
 p3.multi_line('x', 'y', source=s3, color='black')
 
+p4 = figure(
+    title="Edges", x_axis_label='x', y_axis_label='y',
+    x_range=(-0.1, 1.1), y_range=(-0.1, 1.1)
+    )
+# p3.scatter('x', 'y', source=s3)
+p4.multi_line('x', 'y', source=s4, color='blue')
+p4.multi_line('x', 'y', source=s5, color='red')
+p4.multi_line('x', 'y', source=s6, color='green')
+
 range_slider = RangeSlider(
     title="Choose theta", # a title to display above the slider
     start=0,  # set the minimum value for the slider
     end=62,  # set the maximum value for the slider
-    step=1,  # increments for the slider
-    value=(0, 62),  # initial values for slider
+    step=5,  # increments for the slider
+    value=(0, 0),  # initial values for slider
     )
 
 div = Div(
@@ -86,6 +121,15 @@ div = Div(
     width=200,
     height=30,
 )
+
+spinner = Spinner(
+    title="Number of edges",  # a string to display above the widget
+    low=0,  # the lowest possible number to pick
+    high=c.edgenb,  # the highest possible number to pick
+    step=10,  # the increments by which the number can be adjusted
+    value=0,  # the initial value to display in the widget
+    width=200,  #  the width of the widget in pixels
+    )
 
 def update_data(attrname, new, old):
 
@@ -111,13 +155,29 @@ def update_data(attrname, new, old):
     x, y = get_xy_for_type(3)
     s3.data = dict(x=x, y=y)
 
+    n = spinner.value
+    x, y, x_spec, y_spec, x_ext, y_ext = get_xy_for_edges(n)
+    s4.data = dict(x=x, y=y)
+    s5.data = dict(x=x_spec, y=y_spec)    
+    s6.data = dict(x=x_ext, y=y_ext)
+
+
+def update_data_4(attrname, new, old):
+    n = spinner.value
+    x, y, x_spec, y_spec, x_ext, y_ext = get_xy_for_edges(n)
+    s4.data = dict(x=x, y=y)
+    s5.data = dict(x=x_spec, y=y_spec)    
+    s6.data = dict(x=x_ext, y=y_ext)
+
 range_slider.on_change('value', update_data)
 
-grid = gridplot([[p1, p2, p3], [p0, None, None]], width=400, height=400)
+spinner.on_change('value', update_data_4)
+
+grid = gridplot([[p2, p3, p4], [p0, p1, None]], width=400, height=400)
 
 layout = layout(
     [
-        [range_slider, div],
+        [range_slider, div, spinner],
         [grid],
     ]
 )
