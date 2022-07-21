@@ -48,29 +48,35 @@ def update_c(attrname, new, old):
     try:
         c = core.CellComplex(filename=input_c.filename)
     except:
-        div_errors.text = '<b>Wrong dir!!</b>'
+        div_errors.text = '<b>Wrong dir or file!!</b>'
         return
     global Ne_int
-    Ne_int = len(c.get_external_ids('e'))
+    Ne_int = len(c.get_internal_ids('e'))
     div_c.text = f'Loaded cell complex: {c}'
 
 
 def update_seq(attrname, new, old):
     global seq
     seq = []
-    with open(input_seq.filename, 'r') as file:
-        for line in file:
-            seq.append(int(line.strip()))
-    div_seq.text = f'Loaded {len(seq)} e_ids'
-
+    try:
+        with open(input_seq.filename, 'r') as file:
+            for line in file:
+                seq.append(int(line.strip()))
+        div_seq.text = f'Loaded {len(seq)} e_ids'
+    except:
+        div_errors.text = '<b>Wrong file!!</b>'
 
 def update_cracks(attrname, new, old):
     global cracks
     cracks = []
-    with open(input_cracks.filename, 'r') as file:
-        for line in file:
-            cracks.append(int(line.strip()))
-    div_cracks.text = f'Loaded {len(cracks)} e_ids'
+    try:
+        with open(input_cracks.filename, 'r') as file:
+            for line in file:
+                cracks.append(int(line.strip()))
+        div_cracks.text = f'Loaded {len(cracks)} e_ids'
+    except:
+        div_errors.text = '<b>Wrong file!!</b>'
+        return
     try:
         xs, ys = get_xy_for_edges(cracks)
         s_cracks.data = dict(x=xs, y=ys)
