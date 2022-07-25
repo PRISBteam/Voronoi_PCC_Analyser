@@ -6,6 +6,7 @@ https://docs.scipy.org/doc/scipy/reference/sparse.csgraph.html#module-scipy.spar
 https://docs.scipy.org/doc/scipy/reference/sparse.linalg.html#module-scipy.sparse.linalg
 """
 
+from collections import Counter
 import os
 from typing import Dict, List, Tuple, Union
 from math import sqrt, cos, sin, acos, asin
@@ -395,3 +396,58 @@ Osym = np.array([
         [ -1, 0, 0]
     ]
 ])
+
+def get_entropy(c):
+    """
+    добавить проверку != 0
+    """
+    S = 0
+    for jtype in range(4):
+        j = c.get_j_fraction(jtype)
+        if j != 0:
+            S -= j * math.log2(j)
+    return S
+
+def get_m_entropy(c):
+    """
+    добавить проверку != 0
+    """
+    Sm = 1
+    for jtype in range(4):
+        j = c.get_j_fraction(jtype)
+        if j != 0:
+            Sm *= j
+    Sm = math.log2(Sm) / 4
+
+    return Sm
+
+def get_s_entropy(c):
+    """
+    добавить проверку != 0
+    """
+    Ss = 0
+    for k in range(4):
+        jk = c.get_j_fraction(k)
+        if jk != 0:
+            for l in range(k, 4):
+                jl = c.get_j_fraction(l)
+                if jl != 0:
+                    Ss += (jk - jl) * math.log2(jk / jl)
+    Ss = Ss / 4
+
+    return Ss
+
+def get_vor_entropy(vor):
+    """
+    S = - sum(Pn * log(Pn))
+    """
+    regions = vor.regions
+    n_sides = np.array([len(r) for r in regions])
+    inner_regions = [-1 not in r and len(r) >= 3 for r in regions]
+    n_sides_inner = n_sides[inner_regions]
+    d = Counter(n_sides_inner)
+    N_int = len(n_sides_inner)
+
+    S = - np.array([d[k] / N_int * math.log(d[k] / N_int) for k in d.keys()]).sum()
+
+    return S

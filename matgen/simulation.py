@@ -15,43 +15,6 @@ def choose_boundaries(faces, p):
     pass
 
 
-def get_entropy(c: CellComplex):
-    """
-    добавить проверку != 0
-    """
-    S = 0
-    for jtype in range(4):
-        j = c.get_j_fraction(jtype)
-        S -= j * log2(j)
-    
-    return S
-
-def get_m_entropy(c: CellComplex):
-    """
-    добавить проверку != 0
-    """
-    Sm = 1
-    for jtype in range(4):
-        j = c.get_j_fraction(jtype)
-        Sm *= j
-    Sm = log2(Sm) / 4
-
-    return Sm
-
-def get_s_entropy(c: CellComplex):
-    """
-    добавить проверку != 0
-    """
-    Ss = 0
-    for k in range(4):
-        for l in range(k, 4):
-            jk = c.get_j_fraction(k)
-            jl = c.get_j_fraction(l)
-            Ss += (jk - jl) * log2(jk / jl)
-    Ss = Ss / 4
-
-    return Ss
-
 def _in_polygon(x, y, xp, yp):
     """
     https://ru.wikibooks.org/wiki/%D0%A0%D0%B5%D0%B0%D0%BB%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D0%B8_%D0%B0%D0%BB%D0%B3%D0%BE%D1%80%D0%B8%D1%82%D0%BC%D0%BE%D0%B2/%D0%97%D0%B0%D0%B4%D0%B0%D1%87%D0%B0_%D0%BE_%D0%BF%D1%80%D0%B8%D0%BD%D0%B0%D0%B4%D0%BB%D0%B5%D0%B6%D0%BD%D0%BE%D1%81%D1%82%D0%B8_%D1%82%D0%BE%D1%87%D0%BA%D0%B8_%D0%BC%D0%BD%D0%BE%D0%B3%D0%BE%D1%83%D0%B3%D0%BE%D0%BB%D1%8C%D0%BD%D0%B8%D0%BA%D1%83
