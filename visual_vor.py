@@ -9,7 +9,7 @@ from bokeh.models import (
 )
 import numpy as np
 from scipy.spatial import Voronoi
-from matgen import core
+from matgen import core, matutils
 
 # Widgets
 
@@ -61,12 +61,12 @@ div_complex = Div(
 )
 
 div_p_seq = Div(
-    text="p_seq",
+    text="Grain boundary sequence",
     #width=100#, height=30
 )
 
 div_c_seq = Div(
-    text="c_seq",
+    text="Initial defect microstructure (Faces)",
     width=100#, height=30
 )
 
@@ -76,12 +76,12 @@ div_load_complex = Div(
 )
 
 div_load_p_seq = Div(
-    text="p_seq",
+    text="Grain boundary sequence",
     #width=100#, height=30
 )
 
 div_load_c_seq = Div(
-    text="c_seq",
+    text="Initial defect microstructure (Faces)",
     width=100#, height=30
 )
 
@@ -160,19 +160,21 @@ p_GB.multi_line('x', 'y', source=s_crGB, color='red')
 #     ys = [v.y for v in vs]
 #     return xs, ys
 
-def get_xy_for_type(type):
+def get_xy_S_for_type(type):
     v_ids = c.get_junction_ids_of_type(type)
     points = np.array([v.coord2D for v in c.get_many('v', v_ids)])
     xs = []
     ys = []
+    S = 0
     if len(points) >= 4:
         vor = Voronoi(points)
+        S = matutils.get_vor_entropy(vor)
         for simplex in vor.ridge_vertices:
             simplex = np.asarray(simplex)
             if np.all(simplex >= 0):
                 xs.append(list(vor.vertices[simplex, 0]))
                 ys.append(list((vor.vertices[simplex, 1])))
-    return xs, ys
+    return xs, ys, S
 
 def get_xy_for_edges(e_ids):
     """
@@ -201,44 +203,36 @@ def update_complex(attrname, new, old):
     Ne_int = len(c.get_internal_ids('e'))
     div_complex.text = (
         f"""Complex:
-        <br>{c.facenb} 2-cells
-        <br>{c.edgenb} 1-cells
-        <br>{c.vernb} 0-cells
+        <br># Triple junctions: {len(c.get_internal_ids(0))}
+        <br># Grain boundaries: {len(c.get_internal_ids(1))}
+        <br># Grains: {len(c.get_internal_ids(2))}
         """
     )
+    div_errors.text = 'Loaded!'
 
 def update_p_seq(attrname, new, old):
+    """
+    New sequence reset special GB
+    """
     global seq
     seq = []
+    c.reset_special()
+    spinner.value = 0
     try:
         with open(input_p_seq.filename, 'r') as file:
             for line in file:
                 seq.append(int(line.strip()))
         div_p_seq.text = (
-            f"""p_seq:
-            <br>{len(seq)} 1-cells
+            f"""Grain boundary sequence:
+            <br>{len(seq)} GBs
             """
         )
+        pmax = round(len(seq) / Ne_int, 2)
+        spinner.high = round(int(pmax / 0.05) * 0.05, 2)
     except:
         div_errors.text = '<p style="color:red">Wrong p_seq file!!</p>'
         return
-    try:
-        for e_id in seq:
-            c.get_one('e', e_id).set_special()
-        pmax = round(len(seq) / Ne_int, 2)
-        spinner.high = round(int(pmax / 0.05) * 0.05, 2)
-    except ValueError:
-        div_errors.text = '<p style="color:red">Outer cannot be special</p>'
-    except:
-        div_errors.text = '<p style="color:red">Load complex!</p>'
-
-    c.set_junction_types()
-    x, y = get_xy_for_type(1)
-    s_TJ1.data = dict(x=x, y=y)
-    x, y = get_xy_for_type(2)
-    s_TJ2.data = dict(x=x, y=y)
-    x, y = get_xy_for_type(3)
-    s_TJ3.data = dict(x=x, y=y)
+    div_errors.text = 'Loaded!'
 
 def update_c_seq(attrname, new, old):
     global cracks
@@ -248,7 +242,7 @@ def update_c_seq(attrname, new, old):
             for line in file:
                 cracks.append(int(line.strip()))
         div_c_seq.text = (
-            f"""c_seq:
+            f"""Initial defect microstructure (Faces):
             <br>{len(cracks)} 1-cells
             """
         )
@@ -260,6 +254,8 @@ def update_c_seq(attrname, new, old):
         s_crGB.data = dict(x=xs, y=ys)
     except:
         div_errors.text = '<p style="color:red">Load complex!!</p>'
+        return
+    div_errors.text = 'Loaded!'
 
 def clear_data(event):
     spinner.value = 0
@@ -269,24 +265,16 @@ def clear_data(event):
     s_sGB.data = dict(x=[], y=[])
     s_crGB.data = dict(x=[], y=[])
 
-def update_data(attrname, new, old):
+# def update_data(attrname, new, old):
 
-    div.text = f"""
-          <p>Select {round(range_slider.value[0])}""" +\
-        f""" - {round(range_slider.value[1])}:</p>
-          """
+#     div.text = f"""
+#           <p>Select {round(range_slider.value[0])}""" +\
+#         f""" - {round(range_slider.value[1])}:</p>
+#           """
     
-    lt = round(range_slider.value[0])
-    ut = round(range_slider.value[1])
-    c.reset_special(lt, ut)
-
-
-
-    n = spinner.value
-    x, y, x_spec, y_spec, x_ext, y_ext = get_xy_for_edges(n)
-    s4.data = dict(x=x, y=y)
-    s5.data = dict(x=x_spec, y=y_spec)    
-    s6.data = dict(x=x_ext, y=y_ext)
+#     lt = round(range_slider.value[0])
+#     ut = round(range_slider.value[1])
+#     c.reset_special(lt, ut)
 
 
 def update_GBs(attrname, new, old):
@@ -296,7 +284,6 @@ def update_GBs(attrname, new, old):
     try:
         n = round(Ne_int * p)
         #div_errors.text = f'N = {n}'
-        p_GB.title.text = f"GBs with p = {p}, n = {n}"
     except:
         div_errors.text = '<p style="color:red">Load complex!!</p>'
         return
@@ -305,7 +292,37 @@ def update_GBs(attrname, new, old):
         s_sGB.data = dict(x=xs, y=ys)
     except:
         div_errors.text = '<p style="color:red">Load p_seq!!</p>'
+    
+    try:
+        c.reset_special()
+        for e_id in seq[:n]:
+            c.get_one('e', e_id).set_special()
+    except ValueError:
+        div_errors.text = '<p style="color:red">Outer cannot be special</p>'
+    except:
+        div_errors.text = '<p style="color:red">Load complex!</p>'
 
+    c.set_junction_types()
+    
+    x, y, S = get_xy_S_for_type(1)
+    j = c.get_j_fraction(1)
+    s_TJ1.data = dict(x=x, y=y)
+    p_TJ1.title.text = f'J1 with j1 = {round(j, 3)}, Sv1 = {round(S, 3)}'
+    
+    x, y, S = get_xy_S_for_type(2)
+    j = c.get_j_fraction(2)
+    s_TJ2.data = dict(x=x, y=y)
+    p_TJ2.title.text = f'J2 with j2 = {round(j, 3)}, Sv2 = {round(S, 3)}'
+
+    x, y, S = get_xy_S_for_type(3)
+    j = c.get_j_fraction(3)
+    s_TJ3.data = dict(x=x, y=y)
+    p_TJ3.title.text = f'J3 with j3 = {round(j, 3)}, Sv3 = {round(S, 3)}'
+
+    S = matutils.get_entropy(c)
+    Ss = matutils.get_s_entropy(c)
+    p_GB.title.text = f"""
+        GBs with p = {p}, n = {n}, S = {round(S, 3)}, Ss = {round(Ss, 3)}"""
 
 # Actions
 
