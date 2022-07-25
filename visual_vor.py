@@ -283,24 +283,38 @@ def update_GBs(attrname, new, old):
     p = spinner.value
     try:
         n = round(Ne_int * p)
+        N = 0
+        i = 0
+        for e_id in seq:
+            N += 1
+            if not c.get_one('e', e_id).is_external:
+                i += 1
+            if i >= n:
+                break
+        print(f'n={n}, N={N}')
         #div_errors.text = f'N = {n}'
     except:
         div_errors.text = '<p style="color:red">Load complex!!</p>'
         return
     try:
-        xs, ys = get_xy_for_edges(seq[:n])
+        c.reset_special()
+        for e_id in seq[:N]:
+            e = c.get_one('e', e_id)
+            if not e.is_external:
+                e.set_special()
+    except ValueError:
+        div_errors.text = '<p style="color:red">Outer cannot be special</p>'
+        return
+    except:
+        div_errors.text = '<p style="color:red">Load complex!</p>'
+        return
+    try:
+        xs, ys = get_xy_for_edges(seq[:N])
         s_sGB.data = dict(x=xs, y=ys)
     except:
         div_errors.text = '<p style="color:red">Load p_seq!!</p>'
-    
-    try:
-        c.reset_special()
-        for e_id in seq[:n]:
-            c.get_one('e', e_id).set_special()
-    except ValueError:
-        div_errors.text = '<p style="color:red">Outer cannot be special</p>'
-    except:
-        div_errors.text = '<p style="color:red">Load complex!</p>'
+        return
+
 
     c.set_junction_types()
     
