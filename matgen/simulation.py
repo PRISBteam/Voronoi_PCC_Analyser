@@ -120,12 +120,12 @@ def get_new_seed_2D(c: CellComplex, e_id: int):
     if isclose(xp[0], xp[1]):
         x = xp[0]
         y = _get_random(yp[0], yp[1])
-        if isclose(y, yp[0]):
-            y = _get_random(yp[0], yp[1])
+        # if isclose(y, yp[0]):
+        #     y = _get_random(yp[0], yp[1])
     else:
         x = _get_random(xp[0], xp[1])
-        if isclose(x, xp[0]):
-            x = _get_random(xp[0], xp[1])    
+        # if isclose(x, xp[0]):
+        #     x = _get_random(xp[0], xp[1])    
         y = (yp[1] - yp[0]) / (xp[1] - xp[0]) * (x - xp[0]) + yp[0]
 
     return (x, y)
