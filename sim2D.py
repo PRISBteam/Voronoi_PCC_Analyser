@@ -3,7 +3,7 @@ import subprocess
 import random
 import matplotlib.pyplot as plt
 import time
-from tqdm import tqdm
+# from tqdm import tqdm
 import shutil
 
 
@@ -18,7 +18,12 @@ shutil.copy(seeds_ini, seeds_filename)
 
 st = time.time()
 
-for m in tqdm(range(15)):
+
+m = 0
+
+# for m in tqdm(range(15)):
+while True:
+    m += 1
     n = n0 + m
     output_file = wdir + '/' + f'n{n}-id{neper_id}-{dim}D.tess'
     com_line_list = ['neper', '-T', '-n', str(n), '-id', str(neper_id), '-dim', str(dim), '-morphooptiini', f'coo:file({seeds_filename})', '-o', output_file.rstrip('.tess')]
@@ -40,6 +45,11 @@ for m in tqdm(range(15)):
         e_id_sampled = random.sample(e_sel, 1)[0]
     else:
         print('All GB are special')
+        ax = c.plot_edges(e_spec, color='g')
+        ax = c.plot_edges(e_ext, color='k', ax=ax)
+        ax.set_title(f'New G: {m} | G frac: {G_frac} | GB frac: {GB_frac}')
+        plt.savefig(output_file.rstrip('.tess') + '.png')
+        plt.close()
         break
     
     G_frac = round(m / n, 3)
@@ -51,7 +61,7 @@ for m in tqdm(range(15)):
         ax = c.plot_edges(e_spec, color='g', ax=ax)
     ax = c.plot_edges(e_ext, color='k', ax=ax)
     ax.scatter(x, y, color='r')
-    ax.set_title(f'New G: {m} G frac: {G_frac} GB frac: {GB_frac}')
+    ax.set_title(f'New G: {m} | G frac: {G_frac} | GB frac: {GB_frac}')
     plt.savefig(output_file.rstrip('.tess') + '.png')
     plt.close()
     with open(seeds_filename, 'a') as file:
