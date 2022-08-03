@@ -140,7 +140,7 @@ def main():
         print('Total grains:', n, 'New grains:', m)
         print('New grain fraction:', G_frac)
         print('Special GB fraction:', GB_frac)
-        print(f'D0 = {D0}, D1 = {D1}, D2 = {D2} w = {w}\n')
+        print(f'D0 = {D0}, D1 = {D1}, D2 = {D2}, w = {w}\n')
 
         m += 1
 
