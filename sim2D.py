@@ -25,7 +25,6 @@ def main():
 
     # for m in tqdm(range(15)):
     while True:
-        m += 1
         n = n0 + m
         output_file = wdir + '/' + f'n{n}-id{neper_id}-{dim}D.tess'
         com_line_list = ['neper', '-T', '-n', str(n), '-id', str(neper_id), '-dim', str(dim), '-morphooptiini', f'coo:file({seeds_filename})', '-o', output_file.rstrip('.tess')]
@@ -71,6 +70,8 @@ def main():
         print('Total grains:', n, 'New grains:', m)
         print('New grain fraction:', G_frac)
         print('Special GB fraction:', GB_frac)
+
+        m += 1
 
     print('\nTotal time:', time.time() - st, 's')
 
