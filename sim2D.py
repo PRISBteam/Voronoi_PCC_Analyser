@@ -39,7 +39,8 @@ for m in tqdm(range(10)):
     e_id_sampled = random.sample(e_sel, 1)[0]
     x, y = simulation.get_new_seed_2D(c, e_id_sampled)
     ax = c.plot_edges(e_sel, color='b')
-    ax = c.plot_edges(e_spec, color='g', ax=ax)
+    if e_spec:
+        ax = c.plot_edges(e_spec, color='g', ax=ax)
     ax = c.plot_edges(e_ext, color='k', ax=ax)
     ax.scatter(x, y, color='r')
     plt.savefig(output_file.rstrip('.tess') + '.png')
@@ -50,4 +51,4 @@ for m in tqdm(range(10)):
     print('New grain fraction:', m / n)
     print('Special GB fraction:', len(e_spec) / len(e_int))
 
-print('\nTotal time:', time.time() - st)
+print('\nTotal time:', time.time() - st, 's')
