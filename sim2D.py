@@ -6,13 +6,48 @@ import time
 # from tqdm import tqdm
 import shutil
 import argparse
+import numpy as np
 
 
 def main():
-    n0 = 100
-    neper_id = 1
-    dim = 2
-    wdir = 'simul2D_3'
+    """
+    """
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        '-id',
+        nargs=1,
+        type=int,
+        default=1
+    )
+
+    parser.add_argument(
+        '-n',
+        nargs=1,
+        type=int,
+        default=8
+    )
+    
+    parser.add_argument(
+        '--dir',
+        nargs=1,
+        type=str,
+        default='.'
+    )
+
+    parser.add_argument(
+        '-dim',
+        nargs=1,
+        type=int,
+        default=2
+    )
+
+    args = parser.parse_args()
+
+    n0 = args.n
+    neper_id = args.id
+    dim = args.dim
+    wdir = args.dir
     seeds_ini = wdir + '/' + 'seeds_initial.txt'
     seeds_filename = wdir + '/' + 'seeds.txt'
 
@@ -20,6 +55,9 @@ def main():
 
     st = time.time()
 
+    D0 = 0
+    D1 = 0
+    D2 = 0
 
     m = 0
 
@@ -48,11 +86,28 @@ def main():
             print('All GB are special')
             ax = c.plot_edges(e_spec, color='g')
             ax = c.plot_edges(e_ext, color='k', ax=ax)
-            ax.set_title(f'New G: {m} | G frac: {G_frac} | GB frac: {GB_frac}')
+            ax.set_title(f'm = {m} | p = {G_frac} | P_HAGBs = {GB_frac}')
             plt.savefig(output_file.rstrip('.tess') + '.png')
             plt.close()
             break
         
+        for e in c.edges:
+            if not e.is_external:
+                f_ids = np.array(e.f_ids)
+                d = (f_ids > n0).sum()
+                if d == 2:
+                    D2 += 1
+                elif d == 1:
+                    D1 += 1
+                elif d == 0:
+                    D0 += 1
+                else:
+                    raise ValueError("Number of new grains must be 0, 1 or 2")
+
+        D2 = D2 / len(e_int)
+        D1 = D1 / len(e_int)    
+        D0 = D0 / len(e_int)
+
         G_frac = round(m / n, 3)
         GB_frac = round(len(e_spec) / len(e_int), 3)
 
@@ -62,14 +117,15 @@ def main():
             ax = c.plot_edges(e_spec, color='g', ax=ax)
         ax = c.plot_edges(e_ext, color='k', ax=ax)
         ax.scatter(x, y, color='r')
-        ax.set_title(f'New G: {m} | G frac: {G_frac} | GB frac: {GB_frac}')
+        ax.set_title(f'm = {m} | p = {G_frac} | P_HAGBs = {GB_frac}')
         plt.savefig(output_file.rstrip('.tess') + '.png')
         plt.close()
         with open(seeds_filename, 'a') as file:
             file.write('%.12f %.12f\n' % (x, y))
         print('Total grains:', n, 'New grains:', m)
         print('New grain fraction:', G_frac)
-        print('Special GB fraction:', GB_frac)
+        print('Special GB fraction:', GB_frac, '\n')
+        print(f'D0 = {D0}, D1 = {D1}, D2 = {D2}')
 
         m += 1
 
