@@ -24,7 +24,7 @@ for m in tqdm(range(10)):
         for e_id in e_ids:
             c.get_one('e', e_id).set_special()
     e_int = c.get_internal_ids('e')
-    e_spec = c.get_special_ids('e')
+    e_spec = c.get_special_ids()
     e_ext = c.get_external_ids('e')
     
     e_sel = list(set(e_int) - set(e_spec))
