@@ -74,5 +74,5 @@ def main():
 
     print('\nTotal time:', time.time() - st, 's')
 
-if __name__ == '__main':
+if __name__ == '__main__':
     main()
