@@ -19,13 +19,17 @@ for m in tqdm(range(10)):
     com_line_list = ['neper', '-T', '-n', str(n), '-id', str(neper_id), '-dim', str(dim), '-morphooptiini', f'coo:file({seeds_filename})', '-o', output_file.rstrip('.tess')]
     run = subprocess.run(com_line_list, capture_output=True)
     c = core.CellComplex(output_file)
+    e_int = c.get_internal_ids('e')
+    e_ext = c.get_external_ids('e')
+
     for f_id in range(n0 + 1, n + 1):
         e_ids = c.get_one('f', f_id).e_ids
         for e_id in e_ids:
-            c.get_one('e', e_id).set_special()
-    e_int = c.get_internal_ids('e')
+            if e_id not in e_ext:
+                c.get_one('e', e_id).set_special()
+    
     e_spec = c.get_special_ids()
-    e_ext = c.get_external_ids('e')
+    
     
     e_sel = list(set(e_int) - set(e_spec))
     e_id_sampled = random.sample(e_sel, 1)[0]
