@@ -55,9 +55,7 @@ def main():
 
     st = time.time()
 
-    D0 = 0
-    D1 = 0
-    D2 = 0
+
 
     m = 0
 
@@ -91,6 +89,10 @@ def main():
             plt.close()
             break
         
+        D0 = 0
+        D1 = 0
+        D2 = 0
+
         for e in c.edges:
             if not e.is_external:
                 f_ids = np.array(e.f_ids)
@@ -124,8 +126,8 @@ def main():
             file.write('%.12f %.12f\n' % (x, y))
         print('Total grains:', n, 'New grains:', m)
         print('New grain fraction:', G_frac)
-        print('Special GB fraction:', GB_frac, '\n')
-        print(f'D0 = {D0}, D1 = {D1}, D2 = {D2}')
+        print('Special GB fraction:', GB_frac)
+        print(f'D0 = {D0}, D1 = {D1}, D2 = {D2}', '\n')
 
         m += 1
 
