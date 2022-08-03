@@ -42,6 +42,8 @@ def main():
 
     args = parser.parse_args()
 
+    print(args.n, args.id, args.dim, args.dir)
+
     n0 = args.n
     neper_id = args.id
     dim = args.dim
