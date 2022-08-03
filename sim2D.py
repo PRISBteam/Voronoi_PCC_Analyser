@@ -92,6 +92,7 @@ def main():
         D0 = 0
         D1 = 0
         D2 = 0
+        w = 0
 
         for e in c.edges:
             if not e.is_external:
@@ -113,6 +114,18 @@ def main():
         G_frac = round(m / n, 3)
         GB_frac = round(len(e_spec) / len(e_int), 3)
 
+        p = m / n
+        D0r = (1 - p) * (1 - p)
+        D1r = 2 * (1 - p) * p
+        D2r = p * p
+        
+        if D1 <= D1r and p != 0:
+            w = 1 - D1 / D1r
+        elif D1 > D1r and p !=0:
+            w = D0 * D2 / D0r / D2r - 1
+        else:
+            w = -9999
+
         x, y = simulation.get_new_seed_2D(c, e_id_sampled)
         ax = c.plot_edges(e_sel, color='b')
         if e_spec:
@@ -127,7 +140,7 @@ def main():
         print('Total grains:', n, 'New grains:', m)
         print('New grain fraction:', G_frac)
         print('Special GB fraction:', GB_frac)
-        print(f'D0 = {D0}, D1 = {D1}, D2 = {D2}', '\n')
+        print(f'D0 = {D0}, D1 = {D1}, D2 = {D2} w = {w}\n')
 
         m += 1
 
