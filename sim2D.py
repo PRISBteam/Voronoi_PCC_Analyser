@@ -30,8 +30,6 @@ def main():
     
     parser.add_argument(
         '--dir',
-        nargs=1,
-        type=str,
         default='.'
     )
 
