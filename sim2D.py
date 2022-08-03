@@ -18,7 +18,7 @@ shutil.copy(seeds_ini, seeds_filename)
 
 st = time.time()
 
-for m in tqdm(range(10)):
+for m in tqdm(range(15)):
     n = n0 + m
     output_file = wdir + '/' + f'n{n}-id{neper_id}-{dim}D.tess'
     com_line_list = ['neper', '-T', '-n', str(n), '-id', str(neper_id), '-dim', str(dim), '-morphooptiini', f'coo:file({seeds_filename})', '-o', output_file.rstrip('.tess')]
