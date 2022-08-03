@@ -1669,7 +1669,7 @@ class CellComplex():
         with open(seeds_filename, 'w') as file:
             if self.dim == 2:
                 for face in self.faces:
-                    file.write('%.12f %.12f 0.000000000000\n' % face.seed) 
+                    file.write('%.12f %.12f\n' % face.seed) 
             elif self.dim == 3:
                 for poly in self.polyhedra:
                     file.write('%.12f %.12f %.12f\n' % poly.seed) 
