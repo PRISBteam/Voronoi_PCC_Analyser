@@ -16,14 +16,14 @@ def main():
 
     parser.add_argument(
         '-id',
-        nargs=1,
+        #nargs=1,
         type=int,
         default=1
     )
 
     parser.add_argument(
         '-n',
-        nargs=1,
+        #nargs=1,
         type=int,
         default=8
     )
@@ -35,7 +35,7 @@ def main():
 
     parser.add_argument(
         '-dim',
-        nargs=1,
+        #nargs=1,
         type=int,
         default=2
     )
