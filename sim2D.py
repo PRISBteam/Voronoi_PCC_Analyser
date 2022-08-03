@@ -4,12 +4,17 @@ import random
 import matplotlib.pyplot as plt
 import time
 from tqdm import tqdm
+import shutil
+
 
 n0 = 8
 neper_id = 1
 dim = 2
 wdir = 'simul2D_2'
+seeds_ini = wdir + '/' + 'seeds_initial.txt'
 seeds_filename = wdir + '/' + 'seeds.txt'
+
+shutil.copy(seeds_ini, seeds_filename) 
 
 st = time.time()
 
@@ -29,7 +34,6 @@ for m in tqdm(range(10)):
                 c.get_one('e', e_id).set_special()
     
     e_spec = c.get_special_ids()
-    
     
     e_sel = list(set(e_int) - set(e_spec))
     e_id_sampled = random.sample(e_sel, 1)[0]
