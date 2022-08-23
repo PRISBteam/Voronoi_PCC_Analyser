@@ -6,7 +6,7 @@ import io
 from bokeh.plotting import figure, show, curdoc
 from bokeh.layouts import gridplot, layout, column, row
 from bokeh.models import (
-    Div, RangeSlider, ColumnDataSource, FileInput
+    Div, RangeSlider, ColumnDataSource, FileInput, Button, TextInput
 )
 from matgen import core
 
@@ -20,6 +20,15 @@ div_complex = Div(
 )
 
 div_theta = Div(
+    text="",
+    #width=100#, height=30
+)
+
+text = TextInput(title='Enter filename', value='spec_edges.txt')
+
+button = Button(label="Save special GB")
+
+div_saved = Div(
     text="",
     #width=100#, height=30
 )
@@ -111,6 +120,7 @@ def update_complex(attrname, old, new):
 def update_theta(attrname, old, new):
     """
     """
+    div_saved.text = ''
     try:
         file = io.StringIO(b64decode(new).decode())
         for line, edge in zip(file, c.edges):
@@ -128,6 +138,7 @@ def update_theta(attrname, old, new):
 
 def update_data(attrname, old, new):
 
+    div_saved.text = ''
     div.text = f"""
           <p>Select {round(range_slider.value[0])}""" +\
         f""" - {round(range_slider.value[1])}:</p>
@@ -146,16 +157,41 @@ def update_data(attrname, old, new):
     x, y = get_xy(c.get_junction_ids_of_type(3))
     s3.data = dict(x=x, y=y)
 
+def update_out(attrname, old, new):
+    """
+    """
+    pass
+
+def save_edges(event):
+    """
+    """
+    try:
+        with open(text.value, 'w') as file:
+            for e_id in c.get_special_ids():
+                file.write(str(e_id) + '\n')
+        div_saved.text = 'Saved!'
+    except:
+        div_saved.text = '<p style="color:red">Not saved!!</p>'
+
+
 range_slider.on_change('value', update_data)
 
 input_complex.on_change('value', update_complex)
 input_theta.on_change('value', update_theta)
 
+text.on_change('value', update_out)
+button.on_click(save_edges)
+
 grid = gridplot([[p1, p2, p3], [p0, None, None]], width=400, height=400)
 
 layout = layout(
     [
-        [column(input_complex, div_complex), column(input_theta, div_theta)],
+        [
+            column(input_complex, div_complex),
+            column(input_theta, div_theta),
+            column(text, button),
+            div_saved
+        ],
         [range_slider, div],
         [grid],
     ]
