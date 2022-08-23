@@ -3,17 +3,34 @@ Bokeh https://docs.bokeh.org/en/latest/docs/first_steps/first_steps_9.html
 '''
 
 from bokeh.plotting import figure, show, curdoc
-from bokeh.layouts import gridplot, layout
-from bokeh.models import Div, RangeSlider, ColumnDataSource
+from bokeh.layouts import gridplot, layout, column, row
+from bokeh.models import (
+    Div, RangeSlider, ColumnDataSource, FileInput
+)
 from matgen import core
 
-filename = 'tests/test_data/pass1_model_2d.txt'
-#c = core.CellComplex(filename=filename, measures=True, theta=True)
-c = core.CellComplex(filename=filename)
+input_complex = FileInput(accept='.tess')
 
-with open('tests/test_data/pass_1_misorientation.txt', 'r') as file:
-    for line, edge in zip(file, c.edges):
-        edge.theta = float(line.strip())
+input_theta = FileInput()
+
+div_complex = Div(
+    text="",
+    #width=100#, height=30
+)
+
+div_theta = Div(
+    text="",
+    #width=100#, height=30
+)
+
+
+# filename = 'tests/test_data/pass1_model_2d.txt'
+# #c = core.CellComplex(filename=filename, measures=True, theta=True)
+# c = core.CellComplex(filename=filename)
+
+# with open('tests/test_data/pass_1_misorientation.txt', 'r') as file:
+#     for line, edge in zip(file, c.edges):
+#         edge.theta = float(line.strip())
 
 def get_xy(v_ids):
     vs = c.get_many('v', v_ids)
@@ -67,6 +84,36 @@ div = Div(
     height=30,
 )
 
+
+def update_complex(attrname, new, old):
+    """
+    """
+    global c
+    try:
+        c = core.CellComplex(filename=input_complex.filename)
+        div_complex.text = 'Loaded!'
+        x = y = []
+        s0.data = dict(x=x, y=y)
+        s1.data = dict(x=x, y=y)
+        s2.data = dict(x=x, y=y)
+        s3.data = dict(x=x, y=y)
+    except:
+        div_complex.text = '<p style="color:red">Wrong dir or file!!</p>'
+
+
+def update_theta(attrname, new, old):
+    """
+    """
+    try:
+        with open(input_theta.filename, 'r') as file:
+            for line, edge in zip(file, c.edges):
+                edge.theta = float(line.strip())
+        div_theta.text = 'Loaded!'
+    except NameError:
+        div_theta.text = '<p style="color:red">Load complex!!</p>'
+    except:
+        div_theta.text = '<p style="color:red">Wrong dir or file!!</p>'
+
 def update_data(attrname, new, old):
 
     div.text = f"""
@@ -89,10 +136,14 @@ def update_data(attrname, new, old):
 
 range_slider.on_change('value', update_data)
 
+input_complex.on_change('filename', update_complex)
+input_theta.on_change('filename', update_theta)
+
 grid = gridplot([[p1, p2, p3], [p0, None, None]], width=400, height=400)
 
 layout = layout(
     [
+        [column(input_complex, div_complex), column(input_theta, div_theta)],
         [range_slider, div],
         [grid],
     ]
