@@ -1,7 +1,8 @@
 '''
 Bokeh https://docs.bokeh.org/en/latest/docs/first_steps/first_steps_9.html
 '''
-
+from base64 import b64decode
+import io
 from bokeh.plotting import figure, show, curdoc
 from bokeh.layouts import gridplot, layout, column, row
 from bokeh.models import (
@@ -9,7 +10,7 @@ from bokeh.models import (
 )
 from matgen import core
 
-input_complex = FileInput(accept='.tess')
+input_complex = FileInput(accept='.tess,.txt')
 
 input_theta = FileInput()
 
@@ -101,20 +102,26 @@ def update_complex(attrname, new, old):
         div_complex.text = '<p style="color:red">Wrong dir or file!!</p>'
 
 
-def update_theta(attrname, new, old):
+def update_theta(attrname, old, new):
     """
     """
     try:
-        with open(input_theta.filename, 'r') as file:
-            for line, edge in zip(file, c.edges):
-                edge.theta = float(line.strip())
+        decoded = b64decode(new)
+        file = io.StringIO(decoded.decode())
+        for line, edge in zip(file, c.edges):
+            edge.theta = float(line.strip())
+        #         edge.theta = float(line.strip())
+        # with open(input_theta.filename, 'r') as file:
+        #     for line, edge in zip(file, c.edges):
+        #         edge.theta = float(line.strip())
+
         div_theta.text = 'Loaded!'
     except NameError:
         div_theta.text = '<p style="color:red">Load complex!!</p>'
     except:
         div_theta.text = '<p style="color:red">Wrong dir or file!!</p>'
 
-def update_data(attrname, new, old):
+def update_data(attrname, old, new):
 
     div.text = f"""
           <p>Select {round(range_slider.value[0])}""" +\
@@ -137,7 +144,7 @@ def update_data(attrname, new, old):
 range_slider.on_change('value', update_data)
 
 input_complex.on_change('filename', update_complex)
-input_theta.on_change('filename', update_theta)
+input_theta.on_change('value', update_theta)
 
 grid = gridplot([[p1, p2, p3], [p0, None, None]], width=400, height=400)
 
