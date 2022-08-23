@@ -86,12 +86,18 @@ div = Div(
 )
 
 
-def update_complex(attrname, new, old):
+def update_complex(attrname, old, new):
     """
     """
+    # copies .tess file to working dir
+    temp_fname = 'complex_copied.tess'
+    with open(temp_fname, 'w', encoding='utf-8', newline='') as file:
+        file.write(b64decode(new).decode(encoding='utf-8'))
+    
+    # read the file from working dir
     global c
     try:
-        c = core.CellComplex(filename=input_complex.filename)
+        c = core.CellComplex(filename=temp_fname)
         div_complex.text = 'Loaded!'
         x = y = []
         s0.data = dict(x=x, y=y)
@@ -106,8 +112,7 @@ def update_theta(attrname, old, new):
     """
     """
     try:
-        decoded = b64decode(new)
-        file = io.StringIO(decoded.decode())
+        file = io.StringIO(b64decode(new).decode())
         for line, edge in zip(file, c.edges):
             edge.theta = float(line.strip())
         #         edge.theta = float(line.strip())
@@ -143,7 +148,7 @@ def update_data(attrname, old, new):
 
 range_slider.on_change('value', update_data)
 
-input_complex.on_change('filename', update_complex)
+input_complex.on_change('value', update_complex)
 input_theta.on_change('value', update_theta)
 
 grid = gridplot([[p1, p2, p3], [p0, None, None]], width=400, height=400)
