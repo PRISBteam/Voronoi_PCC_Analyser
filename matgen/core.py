@@ -1694,4 +1694,5 @@ class ReducedCellComplex():
         self.S_m = matutils.entropy_m(*j_tuple)
         self.S_s = matutils.entropy_s(*j_tuple)
         self.kappa = self.S_m / self.S_s if self.S_s != 0 else 0
+        self.delta_S = self.p_entropy - self.S
 
