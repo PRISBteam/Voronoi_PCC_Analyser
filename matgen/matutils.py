@@ -8,13 +8,16 @@ https://docs.scipy.org/doc/scipy/reference/sparse.linalg.html#module-scipy.spars
 
 from collections import Counter
 import os
+from random import SystemRandom
 from typing import Dict, List, Tuple, Union
-from math import sqrt, cos, sin, acos, asin
-import math
+from math import (
+    log2, sqrt, cos, sin, acos, asin, radians, degrees, isclose
+)
 import numpy as np
 from scipy import sparse
 import networkx as nx
 from scipy.spatial import Delaunay
+import logging
 
 
 def load_matrix_coo(f: open, matrix_shape=None) -> sparse.coo_matrix:
@@ -104,6 +107,7 @@ def get_A_from_cells(_cells: Dict):
     I, J, V = _get_IJV_from_neighbors(_cells)
     A_coo = sparse.coo_matrix((V,(I,J)))
     return A_coo
+
 
 def get_B_from_cells(_cells: Dict):
     """
@@ -215,13 +219,13 @@ def _ori_mat(ori, oridesc: str ='euler-bunge:active'):
     """
     
     if oridesc == 'euler-bunge:active':
-        f1 = math.radians(ori[0])
-        F = math.radians(ori[1])
-        f2 = math.radians(ori[2])
+        f1 = radians(ori[0])
+        F = radians(ori[1])
+        f2 = radians(ori[2])
     elif oridesc == 'euler-roe:active':
-        f1 = math.radians(ori[0] + 90)
-        F = math.radians(ori[1])
-        f2 = math.radians(ori[2] - 90)
+        f1 = radians(ori[0] + 90)
+        F = radians(ori[1])
+        f2 = radians(ori[2] - 90)
 
     #print(f1, F, f2)
 
@@ -270,7 +274,7 @@ def calculate_theta_2D(c, e_id, crysym: str = 'cubic'):
                     if theta < theta_min:
                         theta_min = theta
        
-    return math.degrees(theta_min)
+    return degrees(theta_min)
 
 
 
@@ -397,6 +401,85 @@ Osym = np.array([
     ]
 ])
 
+
+def entropy(*args):
+    """
+    """
+    j_array = np.array(args)
+    if len(j_array) > 1 and not isclose(j_array.sum(), 1):
+        logging.warning('Sum is not equal to 1')
+
+    if len(j_array) == 1 and j_array[0] != 1:
+        p = j_array[0]
+        return -(p*log2(p) + (1 - p)*log2(1 - p))
+    elif len(j_array) > 1:
+        return -np.sum(j_array[j_array > 0] * np.log2(j_array[j_array > 0]))
+
+
+def entropy_m(*args):
+    """
+    """
+    j_array = np.array(args)
+    if len(j_array) > 1 and not isclose(j_array.sum(), 1):
+        logging.warning('Sum is not equal to 1')
+
+    if np.any(j_array == 0):
+        logging.warning('One or more j is equal to 0')
+
+    if len(j_array) == 1 and j_array[0] != 1:
+        p = j_array[0]
+        return log2(p*(1 - p)) / 2
+    elif len(j_array) > 1:
+        return np.log2(np.prod(j_array[j_array > 0])) / len(j_array)
+
+
+def entropy_s(*args):
+    """
+    """
+    j_array = np.array(args)
+    if len(j_array) > 1 and not isclose(j_array.sum(), 1):
+        logging.warning('Sum is not equal to 1')
+
+    if np.any(j_array == 0):
+        logging.warning('One or more j is equal to 0')
+
+    if len(j_array) == 1 and j_array[0] != 1:
+        p = j_array[0]
+        q = 1 - p
+        return (p - q) / 2 * log2(p / q)
+    elif len(j_array) > 1:
+        Ss = 0
+        for k in range(len(j_array)):
+            jk = j_array[k]
+            if jk != 0:
+                for l in range(k + 1, len(j_array)):
+                    jl = j_array[l]
+                    if jl != 0:
+                        Ss += (jk - jl) * log2(jk / jl)
+        Ss = Ss / len(j_array)
+        return Ss
+
+
+def metastability(S, Smax, Smin, Srand):
+    """
+    """    
+    if S >= Srand and Smax != Srand:
+        return (S - Srand) / (Smax - Srand)
+    elif S < Srand and Smin != Srand:
+        return (S - Srand) / (Srand - Smin)
+
+
+def S_rand(p):
+    """
+    """
+    jr0 = (1 - p)**3
+    jr1 = 3 * p * (1 - p)**2
+    jr2 = 3 * p**2 * (1 - p)
+    jr3 = p**3
+
+    return entropy(jr0, jr1, jr2, jr3)
+
+
 def get_entropy(c):
     """
     добавить проверку != 0
@@ -405,7 +488,7 @@ def get_entropy(c):
     for jtype in range(4):
         j = c.get_j_fraction(jtype)
         if j != 0:
-            S -= j * math.log2(j)
+            S -= j * log2(j)
     return S
 
 def get_m_entropy(c):
@@ -417,7 +500,7 @@ def get_m_entropy(c):
         j = c.get_j_fraction(jtype)
         if j != 0:
             Sm *= j
-    Sm = math.log2(Sm) / 4
+    Sm = log2(Sm) / 4
 
     return Sm
 
@@ -432,7 +515,7 @@ def get_s_entropy(c):
             for l in range(k, 4):
                 jl = c.get_j_fraction(l)
                 if jl != 0:
-                    Ss += (jk - jl) * math.log2(jk / jl)
+                    Ss += (jk - jl) * log2(jk / jl)
     Ss = Ss / 4
 
     return Ss
@@ -448,6 +531,6 @@ def get_vor_entropy(vor):
     d = Counter(n_sides_inner)
     N_int = len(n_sides_inner)
 
-    S = - np.array([d[k] / N_int * math.log(d[k] / N_int) for k in d.keys()]).sum()
+    S = - np.array([d[k] / N_int * log2(d[k] / N_int) for k in d.keys()]).sum()
 
     return S

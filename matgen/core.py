@@ -1674,3 +1674,24 @@ class CellComplex():
                 for poly in self.polyhedra:
                     file.write('%.12f %.12f %.12f\n' % poly.seed) 
   
+
+class ReducedCellComplex():
+    """
+    """
+
+    def __init__(self, p, j_tuple) -> None:
+        """
+        """
+        self.p = p
+        self.q = 1 - p
+        self.p_entropy = matutils.entropy(p)
+        self.p_entropy_m = matutils.entropy_m(p)
+        self.p_entropy_s = matutils.entropy_s(p)
+        self.j0, self.j1, self.j2, self.j3 = j_tuple
+        self.p_expected = (self.j1 + 2*self.j2 + 3*self.j3) / 3
+        self.delta_p = abs(self.p_expected - self.p)
+        self.S = matutils.entropy(*j_tuple)
+        self.S_m = matutils.entropy_m(*j_tuple)
+        self.S_s = matutils.entropy_s(*j_tuple)
+        self.kappa = self.S_m / self.S_s if self.S_s != 0 else 0
+
