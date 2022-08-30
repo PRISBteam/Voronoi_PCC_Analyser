@@ -7,6 +7,7 @@ https://docs.scipy.org/doc/scipy/reference/sparse.linalg.html#module-scipy.spars
 """
 
 from collections import Counter
+from collections.abc import Iterable
 import os
 from random import SystemRandom
 from typing import Dict, List, Tuple, Union
@@ -405,21 +406,33 @@ Osym = np.array([
 def entropy(*args):
     """
     """
-    j_array = np.array(args)
+    if len(args) == 1 and isinstance(args[0], Iterable):
+        j_array = np.array(args[0])
+    else:
+        j_array = np.array(args)
+
     if len(j_array) > 1 and not isclose(j_array.sum(), 1):
         logging.warning('Sum is not equal to 1')
 
     if len(j_array) == 1 and j_array[0] != 1:
         p = j_array[0]
-        return -(p*log2(p) + (1 - p)*log2(1 - p))
+        if p == 0 or p == 1:
+            return 0
+        elif p > 0 and p < 1:
+            return - (p*log2(p) + (1 - p)*log2(1 - p))
     elif len(j_array) > 1:
-        return -np.sum(j_array[j_array > 0] * np.log2(j_array[j_array > 0]))
+        nonzeros = j_array[j_array > 0]
+        return - np.sum(nonzeros * np.log2(nonzeros))
 
 
 def entropy_m(*args):
     """
     """
-    j_array = np.array(args)
+    if len(args) == 1 and isinstance(args[0], Iterable):
+        j_array = np.array(args[0])
+    else:
+        j_array = np.array(args)
+
     if len(j_array) > 1 and not isclose(j_array.sum(), 1):
         logging.warning('Sum is not equal to 1')
 
@@ -428,15 +441,20 @@ def entropy_m(*args):
 
     if len(j_array) == 1 and j_array[0] != 1:
         p = j_array[0]
-        return log2(p*(1 - p)) / 2
+        return - log2(p*(1 - p)) / 2
     elif len(j_array) > 1:
-        return np.log2(np.prod(j_array[j_array > 0])) / len(j_array)
+        nonzeros = j_array[j_array > 0]
+        return - np.log2(np.prod(nonzeros)) / len(nonzeros)
 
 
 def entropy_s(*args):
     """
     """
-    j_array = np.array(args)
+    if len(args) == 1 and isinstance(args[0], Iterable):
+        j_array = np.array(args[0])
+    else:
+        j_array = np.array(args)
+
     if len(j_array) > 1 and not isclose(j_array.sum(), 1):
         logging.warning('Sum is not equal to 1')
 
@@ -446,7 +464,7 @@ def entropy_s(*args):
     if len(j_array) == 1 and j_array[0] != 1:
         p = j_array[0]
         q = 1 - p
-        return (p - q) / 2 * log2(p / q)
+        return - (p - q) / 2 * log2(p / q)
     elif len(j_array) > 1:
         Ss = 0
         for k in range(len(j_array)):
@@ -456,8 +474,8 @@ def entropy_s(*args):
                     jl = j_array[l]
                     if jl != 0:
                         Ss += (jk - jl) * log2(jk / jl)
-        Ss = Ss / len(j_array)
-        return Ss
+        Ss = Ss / len(j_array[j_array > 0])
+        return - Ss
 
 
 def metastability(S, Smax, Smin, Srand):
