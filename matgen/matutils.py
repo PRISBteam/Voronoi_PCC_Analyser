@@ -405,16 +405,20 @@ Osym = np.array([
 
 def entropy(*args):
     """
+    S
     """
+    # input arguments may be a scalar, a tuple or several scalars
     if len(args) == 1 and isinstance(args[0], Iterable):
         j_array = np.array(args[0])
     else:
         j_array = np.array(args)
 
+    # check sum of input parameters
     if len(j_array) > 1 and not isclose(j_array.sum(), 1):
         logging.warning('Sum is not equal to 1')
 
-    if len(j_array) == 1 and j_array[0] != 1:
+    # calculate entropy
+    if len(j_array) == 1:
         p = j_array[0]
         if p == 0 or p == 1:
             return 0
@@ -427,54 +431,69 @@ def entropy(*args):
 
 def entropy_m(*args):
     """
+    mean part of S
     """
+    # input arguments may be a scalar, a tuple or several scalars
     if len(args) == 1 and isinstance(args[0], Iterable):
         j_array = np.array(args[0])
     else:
         j_array = np.array(args)
 
+    # check sum of input parameters
     if len(j_array) > 1 and not isclose(j_array.sum(), 1):
         logging.warning('Sum is not equal to 1')
 
+    # check zero elements
     if np.any(j_array == 0):
         logging.warning('One or more j is equal to 0')
+        return np.inf
 
-    if len(j_array) == 1 and j_array[0] != 1:
+    # calculate mean entropy
+    if len(j_array) == 1:
         p = j_array[0]
-        return - log2(p*(1 - p)) / 2
+        if p == 1:
+            return np.inf
+        elif p > 0 and p < 1:
+            return - log2(p * (1 - p)) / 2
     elif len(j_array) > 1:
-        nonzeros = j_array[j_array > 0]
-        return - np.log2(np.prod(nonzeros)) / len(nonzeros)
+        return - np.log2(np.prod(j_array)) / len(j_array)
 
 
 def entropy_s(*args):
     """
+    deviatoric part of S
     """
+    # input arguments may be a scalar, a tuple or several scalars
     if len(args) == 1 and isinstance(args[0], Iterable):
         j_array = np.array(args[0])
     else:
         j_array = np.array(args)
 
+    # check sum of input parameters
     if len(j_array) > 1 and not isclose(j_array.sum(), 1):
         logging.warning('Sum is not equal to 1')
 
+    # check zero elements
     if np.any(j_array == 0):
         logging.warning('One or more j is equal to 0')
-
-    if len(j_array) == 1 and j_array[0] != 1:
+        return - np.inf
+    
+    # calculate deviatoric entropy
+    if len(j_array) == 1:
         p = j_array[0]
-        q = 1 - p
-        return - (p - q) / 2 * log2(p / q)
+        if p == 1:
+            return - np.inf
+        elif p > 0 and p < 1:
+            q = 1 - p
+            return - (p - q) / 2 * log2(p / q)
     elif len(j_array) > 1:
         Ss = 0
         for k in range(len(j_array)):
             jk = j_array[k]
-            if jk != 0:
-                for l in range(k + 1, len(j_array)):
-                    jl = j_array[l]
-                    if jl != 0:
-                        Ss += (jk - jl) * log2(jk / jl)
-        Ss = Ss / len(j_array[j_array > 0])
+            for l in range(k + 1, len(j_array)):
+                jl = j_array[l]
+                Ss += (jk - jl) * log2(jk / jl)
+        Ss = Ss / len(j_array)
         return - Ss
 
 
