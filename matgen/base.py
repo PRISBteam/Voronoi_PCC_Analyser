@@ -1,4 +1,4 @@
-"""
+"""Base classes for complex analysis.
 """
 from typing import Iterable, List
 # import numpy as np
@@ -13,6 +13,18 @@ class Cell():
 
         self.id = id
         self.n_ids = [] # neighbour ids
+
+    def __str__(self):
+        """
+        """
+        cell_str = "Cell(id=%d)" % self.id
+        
+        return cell_str
+    
+    def __repr__(self) -> str:
+        """
+        """
+        return self.__str__()
 
     def add_neighbor(self, n_id: int):
         """
@@ -33,6 +45,13 @@ class CellLowerDim(Cell):
     def __init__(self, id: int):
         super().__init__(id)
         self.incident_ids = []
+
+    def __str__(self):
+        """
+        """
+        cell_str = "CellLowerDim(id=%d)" % self.id
+        
+        return cell_str
     
     def add_incident_cell(self, incident_id: int):
         """
@@ -56,6 +75,14 @@ class Vertex(CellLowerDim):
         self.y = y
         self.z = z
 
+    def __str__(self) -> str:
+        """
+        """
+        v_str = "Vertex(id=%d, x=%.3f, y=%.3f, z=%.3f)" % (
+            self.id, self.x, self.y, self.z
+        )
+        return v_str
+
 
 class Edge(CellLowerDim):
     """
@@ -63,6 +90,13 @@ class Edge(CellLowerDim):
     def __init__(self, id: int, v_ids: Iterable):
         super().__init__(id)
         self.v_ids = v_ids
+
+    def __str__(self):
+        """
+        """
+        e_str = "Edge(id=%d)" % self.id
+        
+        return e_str
     
 
 class Face(CellLowerDim):
@@ -72,6 +106,13 @@ class Face(CellLowerDim):
         super().__init__(id)
         self.v_ids = v_ids
         self.e_ids = []
+
+    def __str__(self):
+        """
+        """
+        f_str = "Face(id=%d)" % self.id
+        
+        return f_str
 
     def add_edge(self, e_id: int):
         """
@@ -104,6 +145,13 @@ class Poly(Cell):
         self.e_ids = []
         self.f_ids = f_ids
 
+    def __str__(self):
+        """
+        """
+        p_str = "Poly(id=%d)" % self.id
+        
+        return p_str
+
     def add_vertex(self, v_id: int):
         """
         """
@@ -127,11 +175,5 @@ class Poly(Cell):
         """
         self.e_ids += e_ids
         self.e_ids = list(set(self.e_ids))
-# class Vertex3D(Vertex):
-#     """
-#     """
-#     def __init__(self, id: int, x: float, y: float, z: float):
-#         super().__init__(id)
-#         self.x = x
-#         self.y = y
+
 
