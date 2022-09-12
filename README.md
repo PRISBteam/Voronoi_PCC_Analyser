@@ -1,14 +1,21 @@
+Release notes:
+The code addressed the practical needs of creating discrete (combinatorial) cell complex (DCC) 
+based on the Voronoi tessellation of space provided by the Neper software (https://neper.info). Such complexes arise from Voronoi tessellations of spatial domains around arbitrary sets of points, which ensure that each 1-cell is in the boundary of exactly three 2-cells and three 3-cells, and each 0-cell is in the boundary of exactly four 1-cells, six 2-cells and four 3-cells. This description is very close to real material microstructures and is widely used in molecular dynamics and other types of simulations.
+
+DCC definition and algebraic representation:
+In algebraic topology, a discrete topological n-complex is a collection of cells of dimensions k <= n, where every k-cell for any 0 < k <= n has a boundary formed by (k-1)-cells belonging to the complex. The co-boundary of every k-cell for 0 <= k < n is the set of (k+1)-cells whose boundaries contain the k-cell. In this terminology, 1-complex is a multigraph. Polyhedral complexes are a special class of regular quasi-convex discrete topological complexes, in the geometric realisation of which, 0-cells are identified with points or vertices, 1-cells with line segments or edges, 2-cells with planar polygons or faces, 3-cells with polyhedrons or simply cells, etc. We restrict our consideration to the polyhedral 3-complexes whose 3-cells are convex polyhedrons, whose 0-cells are in the boundary of exactly three 1-cells. 
+
+The geometric properties of the DCC are encoded in the volumes of different cells: 1 for 0-cells, length for 1-cells, area for 2-cells, and volume for 3-cells. The topological properties of the DCC are encoded in the boundary operator B_k, which maps all (k+1)-cells to the k-cells in their boundaries, taking into account cell orientations.
+The algebraic realisation of the operator for the [k,(k+1)] pair of cells is referred to as the k-th incidence matrix, B_k, which has N_k rows (where N_k denote the number of k-cells in a complex) and N_{k+1} columns and contains 0, 1, -1, indicating non-adjacency, adjacency with agreeing and with opposite orientations, respectively, between k-cells and (k+1)-cells. A standard way is to decide on a consistent orientation of all top-dimensional cells, e.g., to select the positive orientation to be from interior to exterior of the 3-cells and assign arbitrary orientations for all lower-dimensional cells. There are exactly three options for the relation between k-cell and (k+1)-cell in an oriented complex: they are not coincident - encoded by 0; the k-cell is on the boundary (k+1)-cell, and they have consistent orientations, encoded by 1; the k-cell is on the boundary (k+1)-cell and they have opposite orientations, encoded by -1. The transpose of the k-th incidence matrix is a matrix representing the k-th co-boundary operator, which maps all k-cells to the (k+1)-cells in their co-boundaries.
+
+Terminal commands:
 ```
 conda create --name neper-env --file requirements.txt
 conda activate neper-env
 python sparsemat.py --file filename.tess --dir my_dir
 ```
-
-Neper
-
-Complexes
-
-Output files
+Output files:
+The code generates a sparse representation of matrices: for any matrix element a(i, j) = c, the files of the matrices contain the list of triplets in the form (i, j, c). For instance, the line (5, 7, 1) in an adjacency matrix A_k means that k-cell #5 is the neighbour of k-cell #7. For any incidence matrices B_k, a triplet (5, 7, 1) means that (k-1)-cell #5 is on the boundary of k-cell #7, and their orientations coincide (c = -1 for the opposite orientations). 
 
 A0.txt - adjacency matrix for 0-cells (vertices)  
 A1.txt - adjacency matrix for 1-cells (edges)  
@@ -32,3 +39,14 @@ Format: face_id a b c
 
 seeds.txt
 
+Applications of DCCs:
+[1] Borodin, A.P. Jivkov, A.G. Sheinerman, M.Yu. Gutkin, 2021. Optimisation of rGO-enriched nanoceramics by combinatorial analysis. Materials & Design 212, 110191. doi: 10.1016/j.matdes.2021.110191. 
+[2] S. Zhu, E.N. Borodin, A.P. Jivkov, 2021. Triple junctions network as the key structure for characterisation of SPD processed copper alloys. Materials & Design 198(24), 109352. doi: 10.1016/j.matdes.2020.109352. 
+[3] E. N. Borodin, A. P. Jivkov, 2019. Evolution of triple junctions’ network during severe plastic deformation of copper alloys – a discrete stochastic modelling. Philosophical Magazine 100(4), 467-485. doi: 10.1080/14786435.2019.1695071. 
+[4] 
+[5] 
+[6] 
+[7] 
+
+Acknowledgements:
+This code has been created as a part of the EPSRC-funded project EP/V022687/1 “Patterns recognition inside shear bands: tailoring microstructure against localisation” (PRISB).
