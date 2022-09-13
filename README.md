@@ -41,8 +41,8 @@ face_id coincide with the numeration of faces in _A2_ and _B2_ matrices; a, b an
 `primal_seeds.txt` - coordinates of the seed points of 3-cells used for Voronoi tessellation of space.
 
 ### For a dual (Delaunay) complex:
-<ul>
-<li> `a0.txt` - adjacency matrix for 0-cells (vertices) </li>
+
+`a0.txt` - adjacency matrix for 0-cells (vertices)
 `a1.txt` - adjacency matrix for 1-cells (edges) 
 `a2.txt` - adjacency matrix for 2-cells (faces) 
 `a3.txt` - adjacency matrix for 3-cells (polyhedra) 
@@ -50,7 +50,7 @@ face_id coincide with the numeration of faces in _A2_ and _B2_ matrices; a, b an
 `b1.txt` - incidence matrix (0-cells are row indexes, 1-cells are columns) 
 `b2.txt` - incidence matrix (1-cells are row indexes, 2-cells are columns) 
 `b3.txt` - incidence matrix (2-cells are row indexes, 3-cells are columns) 
-</ul>
+
 In the 2D case, there are no _a3_ and _b3_ matrices.
 
 `dual_Ncells.txt` - each row in the file corresponds to the numbers of different _k_-cells: the first row is the number of 0-cells,
@@ -70,13 +70,13 @@ face_id coincide with the numeration of faces in _a2_ and _b2_ matrices; a, b an
 
 <li> Borodin, A.P. Jivkov, A.G. Sheinerman, M.Yu. Gutkin, 2021. Optimisation of rGO-enriched nanoceramics by combinatorial analysis. Materials & Design 212, 110191. [doi: 10.1016/j.matdes.2021.110191.](https://doi.org/10.1016/j.matdes.2021.110191) </li>
 
-4. S. Zhu, E.N. Borodin, A.P. Jivkov, 2021. Triple junctions network as the key structure for characterisation of SPD processed copper alloys. Materials & Design 198(24), 109352. [doi: 10.1016/j.matdes.2020.109352.](https://doi.org/10.1016/j.matdes.2020.109352)
+<li> S. Zhu, E.N. Borodin, A.P. Jivkov, 2021. Triple junctions network as the key structure for characterisation of SPD processed copper alloys. Materials & Design 198(24), 109352. [doi: 10.1016/j.matdes.2020.109352.](https://doi.org/10.1016/j.matdes.2020.109352) </li>
 
-[5] D. Šeruga, O. Kosmas, A.P. Jivkov, 2020. Geometric modelling of elastic and elastic- plastic solids by separation of deformation energy and Prandtl operators, Int. J. Solids Struct. 198, 136–148. [doi: 10.1016/j.ijsolstr.2020.04.019.](https://doi.org/10.1016/j.ijsolstr.2020.04.019)
+<li> D. Šeruga, O. Kosmas, A.P. Jivkov, 2020. Geometric modelling of elastic and elastic- plastic solids by separation of deformation energy and Prandtl operators, Int. J. Solids Struct. 198, 136–148. [doi: 10.1016/j.ijsolstr.2020.04.019.](https://doi.org/10.1016/j.ijsolstr.2020.04.019) </li>
 
-[6] E. N. Borodin, A. P. Jivkov, 2019. Evolution of triple junctions’ network during severe plastic deformation of copper alloys – a discrete stochastic modelling. Philosophical Magazine 100(4), 467-485. [doi: 10.1080/14786435.2019.1695071.](https://doi.org/10.1080/14786435.2019.1695071)
+<li> E. N. Borodin, A. P. Jivkov, 2019. Evolution of triple junctions’ network during severe plastic deformation of copper alloys – a discrete stochastic modelling. Philosophical Magazine 100(4), 467-485. [doi: 10.1080/14786435.2019.1695071.](https://doi.org/10.1080/14786435.2019.1695071) </li>
 
-[7] I. Dassios, G. O’Keeffe, A.P. Jivkov, 2018. A mathematical model for elasticity using calculus on discrete manifolds, Math. Methods Appl. Sci. 41(18), 9057– 9070. [doi: 10.1002/mma.4892](https://doi.org/10.1002/mma.4892)
+<li> I. Dassios, G. O’Keeffe, A.P. Jivkov, 2018. A mathematical model for elasticity using calculus on discrete manifolds, Math. Methods Appl. Sci. 41(18), 9057– 9070. [doi: 10.1002/mma.4892](https://doi.org/10.1002/mma.4892) </li>
 </ol>
 
 ## Acknowledgements
