@@ -17,7 +17,7 @@ python sparsemat.py --file filename.tess --dir my_dir
 ```
 
 ## Output files
-The code generates a sparse representation of matrices: for any matrix element _a_(_i_, _j_) = _c_, the files of the matrices contain the list of triplets in the form (_i_, _j_, _c_). Indices start from 0, and, for instance, the line (5, 7, 1) in an adjacency matrix _A<sub>k</sub> means that _k_-cell #6 is the neighbour of _k_-cell #8. For any incidence matrices B<sub>k</sub>, a triplet (5, 7, 1) means that (_k_-1)-cell #6 is on the boundary of _k_-cell #8, and their orientations coincide (_c_ = -1 for the opposite orientations). 
+The code generates a sparse representation of matrices: for any matrix element _a_(_i_, _j_) = _c_, the files of the matrices contain the list of triplets in the form (_i_, _j_, _c_). Indices start from 0, and, for instance, the line (5, 7, 1) in an adjacency matrix A<sub>k</sub> means that _k_-cell #6 is the neighbour of _k_-cell #8. For any incidence matrices B<sub>k</sub>, a triplet (5, 7, 1) means that (_k_-1)-cell #6 is on the boundary of _k_-cell #8, and their orientations coincide (_c_ = -1 for the opposite orientations). 
 
 ### For the primal (Voronoi) complex:
 All sparse matrices are stored in _*.txt_ files.
@@ -74,10 +74,10 @@ face_id coincide with the numeration of faces in _a2_ and _b2_ matrices; _a_, _b
 
 <li> D. Šeruga, O. Kosmas, A.P. Jivkov, 2020. Geometric modelling of elastic and elastic- plastic solids by separation of deformation energy and Prandtl operators, Int. J. Solids Struct. 198, 136–148. [doi: 10.1016/j.ijsolstr.2020.04.019.](https://doi.org/10.1016/j.ijsolstr.2020.04.019) </li>
 
-<li> E. N. Borodin, A. P. Jivkov, 2019. Evolution of triple junctions’ network during severe plastic deformation of copper alloys – a discrete stochastic modelling. Philosophical Magazine 100(4), 467-485. [doi: 10.1080/14786435.2019.1695071.](https://doi.org/10.1080/14786435.2019.1695071) </li>
+<li> E. N. Borodin, A. P. Jivkov, 2019. Evolution of triple junctions’ network during severe plastic deformation of copper alloys – a discrete stochastic modelling. Philosophical Magazine 100(4), 467-485. </li> [doi: 10.1080/14786435.2019.1695071.](https://doi.org/10.1080/14786435.2019.1695071) 
 
-<li> I. Dassios, G. O’Keeffe, A.P. Jivkov, 2018. A mathematical model for elasticity using calculus on discrete manifolds, Math. Methods Appl. Sci. 41(18), 9057– 9070. [doi: 10.1002/mma.4892](https://doi.org/10.1002/mma.4892) </li>
+<li> I. Dassios, G. O’Keeffe, A.P. Jivkov, 2018. A mathematical model for elasticity using calculus on discrete manifolds, Math. Methods Appl. Sci. 41(18), 9057– 9070. </li> [doi: 10.1002/mma.4892](https://doi.org/10.1002/mma.4892) 
 </ol>
 
 ## Acknowledgements
-This code has been created as a part of the EPSRC-funded project _EP/V022687/1 “Patterns recognition inside shear bands: tailoring microstructure against localisation” (PRISB)_.
+This code has been created as a part of the EPSRC-funded project EP/V022687/1 _“Patterns recognition inside shear bands: tailoring microstructure against localisation”_ (PRISB).
