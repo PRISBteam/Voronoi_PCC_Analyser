@@ -1,17 +1,8 @@
 """Stand-alone module to create sparse matrices from Neper output.
 
-Arguments:
----------
-filepath
-    Filepath to .tess file with a tesselation (Neper output)
-destination_folder
-    Path to folder which will contain generated matrices. In case
-    there is no need for a folder, type "."
--o, optional
-    Use orientation (negative edges and faces) or not.
+Examples
 
-Functions
--------
+    $ python sparsemat.py --file filename.tess --dir my_dir
 
 """
 
@@ -24,10 +15,26 @@ import numpy as np
 from matgen import base
 
 
-def extract_seeds(        
-        filename: str,
-        work_dir: str = '.') -> None:
-    """
+def extract_seeds(
+    filename: str,
+    work_dir: str = '.'
+) -> Dict:
+    """Extract seeds from .tess file and save as seeds.txt.
+
+    Parameters
+    ----------
+    filename
+        Filepath to .tess file with a tesselation (Neper output).
+    work_dir
+        Path to folder which will contain a new file seeds.txt.
+
+    Returns
+    -------
+    poly_seeds
+        Dictionary of seeds form .tess file. Keys are grain ids,
+        values - lists of three seed coordinates. If the complex
+        is 2D, third coordinate (z) is equal to 0.
+
     """
     poly_seeds = {}
     with open(filename, 'r', encoding="utf-8") as f:
@@ -35,7 +42,8 @@ def extract_seeds(
             if '**cell' in line:
                 n = int(f.readline().rstrip('\n').lstrip())
             if '*seed' in line:
-                with open(os.path.join(work_dir, 'seeds.txt'), 'w') as f_seeds:
+                filename_s = os.path.join(work_dir, 'seeds.txt')
+                with open(filename_s, 'w') as f_seeds:
                     for i in range(n):
                         row = f.readline().split()
                         f_seeds.write(' '.join(row[1:4]) + '\n')
@@ -44,8 +52,24 @@ def extract_seeds(
 
 
 def _get_IJV_from_neighbors(_cells: Dict) -> Tuple[List]:
-    """
-    index of an element is element_id - 1
+    """Get I, J, V lists of the adjacency matrix from a dictionary of cells.
+
+    Cells can be vertices, edges, faces or polyhedra of a corresponding
+    base class.
+
+    Parameters
+    ----------
+    _cells
+        A dictionary of cells. Keys - cell ids, values - cell objects
+        which have `n_ids` attribute.
+    
+    Returns
+    -------
+    tuple
+        A tuple of lists in the form of (I, J, V) where I - row index,
+        J - column index of elements of the adjacency matrix with nonzero
+        values. All elements of V is equal to 1. Index of an element is
+        (element_id - 1). 
     """
 
     I = []
@@ -59,9 +83,27 @@ def _get_IJV_from_neighbors(_cells: Dict) -> Tuple[List]:
     
     return (I, J, V)
 
+
 def _get_IJV_from_incidence(_cells: Dict) -> Tuple[List]:
-    """
-    index of an element is element_id - 1
+    """Get I, J, V lists of the incidence matrix from a dictionary of cells.
+
+    Cells can be vertices, edges, faces or polyhedra of a corresponding
+    base class.
+
+    Parameters
+    ----------
+    _cells
+        A dictionary of cells. Keys - cell ids, values - cell objects
+        which have `incident_ids` attribute.
+    
+    Returns
+    -------
+    tuple
+        A tuple of lists in the form of (I, J, V) where I - row index,
+        J - column index of elements of the incidence matrix with nonzero
+        values. All elements of V is equal to 1. Index of an element is
+        (element_id - 1). Rows correspond to (k - 1)-cells, while columns to
+        k-cells.
     """
 
     I = []
@@ -76,72 +118,52 @@ def _get_IJV_from_incidence(_cells: Dict) -> Tuple[List]:
     return (I, J, V)
 
 
-def _save_A(_cells: Dict, filename: str):
-    """
+def _save_A(_cells: Dict, filename: str) -> None:
+    """Save adjacency matrix into a file.
+
+    Parameters
+    ----------
+    _cells
+        A dictionary of cells. Keys - cell ids, values - cell objects
+        which have `n_ids` attribute.
+    filename
+        Filename of a new file with the adjacency matrix in sparse format.    
     """
     I, J, V = _get_IJV_from_neighbors(_cells)
     np.savetxt(filename, [*zip(I, J, V)], fmt='%d')
 
 
 def _save_B(_cells: Dict, filename: str):
-    """
+    """Save incidence matrix into a file.
+
+    Parameters
+    ----------
+    _cells
+        A dictionary of cells. Keys - cell ids, values - cell objects
+        which have `incident_ids` attribute.
+    filename
+        Filename of a new file with the incidence matrix in sparse format.
     """
     I, J, V = _get_IJV_from_incidence(_cells)
     np.savetxt(filename, [*zip(I, J, V)], fmt='%d')
 
 
-# def save_A(
-#         c,
-#         work_dir: str = '.'):
-#     """
-#     """
+def parse_tess_file(filename) -> Tuple:
+    """Parse .tess file and produce a tuple of cell dictionaries.
 
-#     # Save A0.txt
-#     filename = os.path.join(work_dir, 'A0.txt')
-#     I, J, V = _get_IJV_from_neighbors(c._vertices)
-#     np.savetxt(filename, [*zip(I, J, V)], fmt='%d')
+    Parameters
+    ----------
+    filename
+        Filepath to .tess file with a tesselation (Neper output).
+    
+    Returns
+    -------
+    dim
+        Complex dimension - can be 2 or 3.
+    tuple
+        A tuple of dictionaries with vertices, edges, faces (and
+        polyhedra in 3D case).
 
-#     # Save A1.txt
-#     filename = os.path.join(work_dir, 'A1.txt')
-#     I, J, V = _get_IJV_from_neighbors(c._edges)
-#     np.savetxt(filename, [*zip(I, J, V)], fmt='%d')
-
-#     # Save A2.txt
-#     filename = os.path.join(work_dir, 'A2.txt')
-#     I, J, V = _get_IJV_from_neighbors(c._faces)
-#     np.savetxt(filename, [*zip(I, J, V)], fmt='%d')
-
-#     # Save A3.txt
-#     if c.dim == 3:
-#         filename = os.path.join(work_dir, 'A3.txt')
-#         I, J, V = _get_IJV_from_neighbors(c._polyhedra)
-#         np.savetxt(filename, [*zip(I, J, V)], fmt='%d')
-
-# def save_B(
-#         c,
-#         work_dir: str = '.'):
-#     """
-#     """
-#     if not os.path.exists(work_dir):
-#         os.mkdir(work_dir)
-#     # Save B1.txt
-#     filename = os.path.join(work_dir, 'B1.txt')
-#     I, J, V = _get_IJV_from_incidence(c._vertices)
-#     np.savetxt(filename, [*zip(I, J, V)], fmt='%d')
-
-#     # Save B2.txt
-#     filename = os.path.join(work_dir, 'B2.txt')
-#     I, J, V = _get_IJV_from_incidence(c._edges)
-#     np.savetxt(filename, [*zip(I, J, V)], fmt='%d')
-
-#     # Save B3.txt
-#     if c.dim == 3:
-#         filename = os.path.join(work_dir, 'B3.txt')
-#         I, J, V = _get_IJV_from_incidence(c._faces)
-#         np.savetxt(filename, [*zip(I, J, V)], fmt='%d')
-
-def parse_tess_file(filename):
-    """
     """
     _vertices = {}
     _edges = {}
@@ -213,6 +235,7 @@ def parse_tess_file(filename):
                     _ = file.readline()
                     
                     _faces[f_id] = face
+                # Add neighbors to faces from common edges
                 for e in _edges.values():
                     for f_id in e.incident_ids:
                         s = set(e.incident_ids)
@@ -238,6 +261,7 @@ def parse_tess_file(filename):
                     poly.add_vertices(v_ids)
                     poly.add_edges(e_ids)
                     _polyhedra[p_id] = poly
+                # Add neighbors to polyhedra from common faces
                 for f in _faces.values():
                     for p_id in f.incident_ids:
                         s = set(f.incident_ids)
@@ -250,8 +274,28 @@ def parse_tess_file(filename):
                     return dim, (_vertices, _edges, _faces, _polyhedra)
 
 
-def save_matrices(filename, work_dir: str = '.'):
-    """
+def save_matrices(filename, work_dir: str = '.') -> None:
+    """Save new files.
+
+    A0 - adjacency matrix for 0-cells (vertices)
+    A1 - adjacency matrix for 1-cells (edges)
+    A2 - adjacency matrix for 2-cells (faces)
+    A3 - adjacency matrix for 3-cells (polyhedra)
+
+    B1 - incidence matrix (0-cells are row indexes, 1-cells are columns)
+    B2 - incidence matrix (1-cells are row indexes, 2-cells are columns)
+    B3 - incidence matrix (2-cells are row indexes, 3-cells are columns)
+
+    In 2D case there are no A3 and B3 matrices.
+
+    Matrices are stored in *.txt files.
+
+    Number of cells are stored in 'number_of_cells.txt' file.
+    Each row corresponds to number of cells: first row is number of 0-cells,
+    second is number of 1-cells and so on.
+
+    Components of a normal vector for each face are stored in 'normals.txt'.
+    Format: face_id a b c
     """
     if not os.path.exists(work_dir):
         os.mkdir(work_dir)
@@ -284,155 +328,25 @@ def save_matrices(filename, work_dir: str = '.'):
         for face in _faces.values():
             file.write(f'{face.id} {face.a} {face.b} {face.c}\n')
 
-# def _write_matrices(
-#         arcs: np.array,
-#         node: str,
-#         is_signed: bool,
-#         d: Dict,
-#         A_out,
-#         B_out) -> Dict:
-#     """
-#     """
-#     for arc in arcs:
-#         _arc = abs(arc)
-#         if is_signed and arc < 0:
-#             B_out.write(str(_arc) + ' ' + node + ' -1\n')
-#         else:
-#             B_out.write(str(_arc) + ' ' + node + ' 1\n')
-#         if _arc in d.keys():
-#             A_out.write(d[_arc] + ' ' + node + ' 1\n')
-#             A_out.write(node + ' ' + d[_arc] + ' 1\n')
-#         else:
-#             d[_arc] = node
-
-#     return d
-
-
-# def write_matrices(
-#         filename: str,
-#         directory: str = '.',
-#         is_signed: bool = False) -> None:
-#     """Write A and B matrices from a .tess file.
-
-#     Writes following matrices:
-#     A0 - adjacency matrix for 0-cells (vertices)
-#     A1 - adjacency matrix for 1-cells (edges)
-#     A2 - adjacency matrix for 2-cells (faces)
-#     A3 - adjacency matrix for 3-cells (polyhedra)
-
-#     B01 - incidence matrix (0-cells are row indexes, 1-cells are columns)
-#     B12 - incidence matrix (1-cells are row indexes, 2-cells are columns)
-#     B23 - incidence matrix (2-cells are row indexes, 3-cells are columns)
-
-#     All matrices are in sparse COO format, i.e. each row of the file contains
-#     three elements - i (matrix row index), j (matrix column index), v (value).
-#     Indexes start from 1.
-
-#     In 2D case there are no A3 and B32 matrices.
-
-#     Matrices are stored in *.txt files.
-
-#     Number of cells are stored in 'number_of_cells.txt' file.
-#     Each row corresponds to number of cells: first row is number of 0-cells,
-#     second is number of 1-cells and so on.
-
-#     Components of a normal vector for each face are stored in 'Normal.txt'.
-#     Format: face_id a b c
-
-#     Parameters
-#     ----------
-#     filename
-
-#     directory
-
-#     is_signed
-
-#     Returns
-#     -------
-#     None
-#     """
-
-#     nc_filename = 'number_of_cells.txt'
-#     euler_c = 0
-#     with open(filename, 'r', encoding="utf-8") as f:
-#         for line in f:
-#             if '**vertex' in line:
-#                 n = int(f.readline().rstrip('\n').lstrip())
-#                 euler_c += n
-#                 with open(os.path.join(directory, nc_filename), 'w') as f_n:
-#                     f_n.write(str(n) + '\n')
-#             if '**edge' in line:
-#                 n = int(f.readline().rstrip('\n').lstrip())
-#                 euler_c -= n
-#                 with open(os.path.join(directory, nc_filename), 'a') as f_n:
-#                     f_n.write(str(n) + '\n')
-#                 d = {}
-#                 with open(os.path.join(directory, 'B1.txt'), 'w') as B_out,\
-#                         open(os.path.join(directory, 'A1.txt'), 'w') as A_out,\
-#                         open(os.path.join(directory, 'A0.txt'), 'w') as A0_out:
-#                     for i in range(n):
-#                         row = f.readline().rstrip('\n').lstrip().split()
-#                         A0_out.write(row[1] + ' ' + row[2] + ' 1\n')
-#                         A0_out.write(row[2] + ' ' + row[1] + ' 1\n')
-#                         arcs = np.array(row[1:-1], dtype=int)
-#                         node = row[0]
-#                         d = _write_matrices(arcs, node, is_signed, d, A_out, B_out)
-#             if '**face' in line:
-#                 n = int(f.readline().rstrip('\n').lstrip())
-#                 euler_c += n
-#                 with open(os.path.join(directory, nc_filename), 'a') as f_n:
-#                     f_n.write(str(n) + '\n')
-#                 d = {}
-#                 with open(os.path.join(directory, 'B2.txt'), 'w') as B_out,\
-#                         open(os.path.join(directory, 'A2.txt'), 'w') as A_out,\
-#                         open(os.path.join(directory, 'normals.txt'), 'w') as N_out:
-#                     for i in range(n):
-#                         node = f.readline().split()[0]
-#                         row = f.readline().split()
-#                         face_normal = f.readline().split()
-#                         face_row = face_normal[1:]
-#                         _ = f.readline()
-#                         N_out.write(node + ' ' + ' '.join(face_row) + '\n')
-#                         arcs = np.array(row[1:], dtype=int)
-#                         d = _write_matrices(arcs, node, is_signed, d, A_out, B_out)
-#             if '**polyhedron' in line:
-#                 n = int(f.readline().rstrip('\n').lstrip())
-#                 euler_c -= n
-#                 with open(os.path.join(directory, nc_filename), 'a') as f_n:
-#                     f_n.write(str(n) + '\n')
-#                 d = {}
-#                 with open(os.path.join(directory, 'B3.txt'), 'w') as B_out,\
-#                         open(os.path.join(directory, 'A3.txt'), 'w') as A_out:
-#                     for i in range(n):
-#                         row = f.readline().split()
-#                         node = row[0]
-#                         arcs = np.array(row[2:], dtype=int)
-#                         d = _write_matrices(arcs, node, is_signed, d, A_out, B_out)
-#             if '**domain' in line:
-#                 break
-        
-#     if not euler_c == 1:
-#         print('Euler characteristic is not equal to 1!')
 
 def main() -> None:
+    """
+    """
     start = time.time()
     
     parser = argparse.ArgumentParser()
+
     parser.add_argument(
         "--file",
         default='complex.tess',
         help="Filepath to .tess file with a tesselation (Neper output)"
     )
+
     parser.add_argument(
         "--dir",
         default='.',
         help="Path to folder which will contain generated matrices"
     )
-    # parser.add_argument(
-    #     "-o", dest='is_signed',
-    #     action='store_true',
-    #     help="Orientation"
-    # )
 
     args = parser.parse_args()
 
@@ -442,11 +356,7 @@ def main() -> None:
     _ = extract_seeds(args.file, args.dir)
     save_matrices(args.file, args.dir)
 
-    # write_matrices(args.file, args.dir, args.is_signed) - wrong
-    # c = core.CellComplex(filename=args.file)
-    # c.save_into_files(work_dir=args.dir)
-
-    print('Time elapsed:', time.time() - start, 's')
+    print('Time elapsed:', round(time.time() - start, 2), 's')
 
 
 if __name__ == "__main__":
