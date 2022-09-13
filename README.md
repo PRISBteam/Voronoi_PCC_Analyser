@@ -39,12 +39,19 @@ Format: face_id a b c
 seeds.txt
 
 Applications of DCCs:  
+
 [1] Kiprian Berbatov, Pieter D. Boom, Andrew L. Hazel, Andrey P. Jivkov, 2022. Diffusion in multi-dimensional solids using Forman’s combinatorial differential forms, Applied Mathematical Modelling, 110, 172-192. doi: 10.1016/j.apm.2022.05.043. 
+
 [2] Pieter D. Boom, Odysseas Kosmas, Lee Margetts, Andrey P. Jivkov, 2022. A geometric formulation of linear elasticity based on discrete exterior calculus. International Journal of Solids and Structures, 236–237, 111345. doi: 10.1016/j.ijsolstr.2021.111345. 
+
 [3] Borodin, A.P. Jivkov, A.G. Sheinerman, M.Yu. Gutkin, 2021. Optimisation of rGO-enriched nanoceramics by combinatorial analysis. Materials & Design 212, 110191. doi: 10.1016/j.matdes.2021.110191. 
+
 [4] S. Zhu, E.N. Borodin, A.P. Jivkov, 2021. Triple junctions network as the key structure for characterisation of SPD processed copper alloys. Materials & Design 198(24), 109352. doi: 10.1016/j.matdes.2020.109352. 
+
 [5] D. Šeruga, O. Kosmas, A.P. Jivkov, 2020. Geometric modelling of elastic and elastic- plastic solids by separation of deformation energy and Prandtl operators, Int. J. Solids Struct. 198, 136–148. doi: 10.1016/j.ijsolstr.2020.04.019. 
+
 [6] E. N. Borodin, A. P. Jivkov, 2019. Evolution of triple junctions’ network during severe plastic deformation of copper alloys – a discrete stochastic modelling. Philosophical Magazine 100(4), 467-485. doi: 10.1080/14786435.2019.1695071. 
+
 [7] I. Dassios, G. O’Keeffe, A.P. Jivkov, 2018. A mathematical model for elasticity using calculus on discrete manifolds, Math. Methods Appl. Sci. 41(18), 9057– 9070. doi: 10.1002/mma.4892
 
 Acknowledgements:
