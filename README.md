@@ -7,6 +7,10 @@ In algebraic topology, a discrete topological n-complex is a collection of cells
 The geometric properties of the DCC are encoded in the volumes of different cells: 1 for 0-cells, length for 1-cells, area for 2-cells, and volume for 3-cells. The topological properties of the DCC are encoded in the boundary operator B<sub>k</sub>, which maps all (_k_+1)-cells to the _k_-cells in their boundaries, taking into account cell orientations.
 The algebraic realisation of the operator for the [_k_,(_k_+1)] pair of cells is referred to as the k-th incidence matrix, B<sub>k</sub>, which has N<sub>k</sub> rows (where N<sub>k</sub> denote the number of _k_-cells in a complex) and N<sub>k+1</sub> columns and contains 0, 1, -1, indicating non-adjacency, adjacency with agreeing and with opposite orientations, respectively, between k-cells and (k+1)-cells. A standard way is to decide on a consistent orientation of all top-dimensional cells, e.g., to select the positive orientation to be from interior to exterior of the 3-cells and assign arbitrary orientations for all lower-dimensional cells. There are exactly three options for the relation between _k_-cell and (_k_+1)-cell in an oriented complex: they are not coincident - encoded by 0; the _k_-cell is on the boundary (_k_+1)-cell, and they have consistent orientations, encoded by 1; the _k_-cell is on the boundary (_k_+1)-cell and they have opposite orientations, encoded by -1. The transpose of the k-th incidence matrix is a matrix representing the _k_-th co-boundary operator, which maps all _k_-cells to the (_k_+1)-cells in their co-boundaries.
 
+The _k$_-th combinatorial _Laplacian_ (Laplace–de Rham operator) can be written as <br>
+<i> L<sub>k</sub> = b<sub>k-1</sub> B<sub>k-1</sub> + B<sub>k</sub> b<sub>k</sub>  </i> <br>
+and it maps all _k_-cells to themselves, collecting local connectivity information. One important application of the combinatorial Laplacians is in calculating combinatorial curvatures. Since the Laplacians are symmetric positive semi-definite matrices, their eigenvalues are real. The spectra of eigenvalues can be used to classify discrete topologies, with two topologies considered as equivalent when they have the same Laplacians' spectra.
+
 ## Terminal commands
 The code can be launched by the usual terminal app on MAC, Windows or Linux. The first two commands create needed environment specified in the file _requirements.txt_. 
 
@@ -81,3 +85,11 @@ face_id coincide with the numeration of faces in _a2_ and _b2_ matrices; _a_, _b
 
 ## Acknowledgements
 This code has been created as a part of the EPSRC-funded project EP/V022687/1 _“Patterns recognition inside shear bands: tailoring microstructure against localisation”_ (PRISB).
+
+## License
+Distributed under the GNU General Public License v3.0. See LICENSE.txt for more information.
+  
+## Contacts
+<a href = "mailto: prisb.team@gmail.com">Send Email</a>
+Dr Oleg Bushuev (technical support) 
+Dr Elijah Borodin (any other questions)
