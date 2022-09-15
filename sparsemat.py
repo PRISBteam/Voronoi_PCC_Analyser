@@ -130,7 +130,7 @@ def parse_tess_file(filename) -> Tuple:
                     v_ids = [v1_id, v2_id]
                     _vertices[v1_id].add_incident_cell(e_id)
                     _vertices[v1_id].add_neighbor(v2_id)
-                    _vertices[v2_id].add_incident_cell(e_id)
+                    _vertices[v2_id].add_incident_cell(- e_id)
                     _vertices[v2_id].add_neighbor(v1_id)
                     _edges[e_id] = base.Edge(e_id, v_ids)
                 # Add neighbors to edges from common vertices
@@ -153,9 +153,12 @@ def parse_tess_file(filename) -> Tuple:
                     row = file.readline().split()
                     e_ids = []
                     for k in range(1, int(row[0]) + 1):
-                        e_id = abs(int(row[k]))
-                        e_ids.append(e_id)
-                        _edges[e_id].add_incident_cell(f_id)
+                        e_id = int(row[k])
+                        e_ids.append(abs(e_id))
+                        if e_ids > 0:
+                            _edges[abs(e_id)].add_incident_cell(f_id)
+                        else:
+                            _edges[abs(e_id)].add_incident_cell(- f_id)
                     face.add_edges(e_ids)
                     
                     row = file.readline().split()
@@ -184,11 +187,14 @@ def parse_tess_file(filename) -> Tuple:
                     v_ids = []
                     e_ids = []
                     for k in range(2, int(row[1]) + 2):
-                        f_id = abs(int(row[k]))
-                        f_ids.append(f_id)
-                        v_ids += _faces[f_id].v_ids
-                        e_ids += _faces[f_id].e_ids
-                        _faces[f_id].add_incident_cell(p_id)
+                        f_id = int(row[k])
+                        f_ids.append(abs(f_id))
+                        v_ids += _faces[abs(f_id)].v_ids
+                        e_ids += _faces[abs(f_id)].e_ids
+                        if f_id > 0:
+                            _faces[abs(f_id)].add_incident_cell(p_id)
+                        else:
+                            _faces[abs(f_id)].add_incident_cell(- p_id)
                     f_ids = list(set(f_ids))
                     poly = base.Poly(p_id, f_ids)
                     poly.add_vertices(v_ids)
