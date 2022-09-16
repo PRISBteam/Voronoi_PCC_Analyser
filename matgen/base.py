@@ -44,7 +44,7 @@ class CellLowerDim(Cell):
     """
     def __init__(self, id: int):
         super().__init__(id)
-        self.incident_ids = []
+        self.signed_incident_ids = []
 
     def __str__(self):
         """
@@ -52,18 +52,26 @@ class CellLowerDim(Cell):
         cell_str = "CellLowerDim(id=%d)" % self.id
         
         return cell_str
+
+    @property
+    def incident_ids(self):
+        """
+        unsigned ids
+        """
+        return list(map(abs, self.signed_incident_ids))
     
-    def add_incident_cell(self, incident_id: int):
+    def add_incident_cell(self, signed_incident_id: int):
         """
         """
-        if incident_id not in self.incident_ids:
-            self.incident_ids.append(incident_id)
+        if abs(signed_incident_id) not in self.incident_ids:
+            self.signed_incident_ids.append(signed_incident_id)
     
-    def add_incident_cells(self, incident_ids: Iterable):
-        """
-        """
-        self.incident_ids += incident_ids
-        self.incident_ids = list(set(self.incident_ids))
+    # def add_incident_cells(self, incident_ids: Iterable):
+    #     """
+    #     FIXME: incident_ids may be signed?
+    #     """
+    #     self.incident_ids += incident_ids
+    #     self.incident_ids = list(set(self.incident_ids))
 
 
 class Vertex(CellLowerDim):
