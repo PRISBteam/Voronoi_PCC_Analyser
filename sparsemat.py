@@ -51,7 +51,7 @@ def extract_seeds(
                 return poly_seeds
 
 
-def _save_A(_cells: Dict, filename: str) -> None:
+def _save_A(_cells: Dict, filename_primal: str, filename_dual: str) -> None:
     """Save adjacency matrix into a file.
 
     Parameters
@@ -63,10 +63,11 @@ def _save_A(_cells: Dict, filename: str) -> None:
         Filename of a new file with the adjacency matrix in sparse format.    
     """
     I, J, V = matutils._get_IJV_from_neighbors(_cells)
-    np.savetxt(filename, [*zip(I, J, V)], fmt='%d')
+    np.savetxt(filename_primal, [*zip(I, J, V)], fmt='%d')
+    np.savetxt(filename_dual, [*zip(J, I, V)], fmt='%d')
 
 
-def _save_B(_cells: Dict, filename: str):
+def _save_B(_cells: Dict, filename_primal: str, filename_dual: str):
     """Save incidence matrix into a file.
 
     Parameters
@@ -78,7 +79,8 @@ def _save_B(_cells: Dict, filename: str):
         Filename of a new file with the incidence matrix in sparse format.
     """
     I, J, V = matutils._get_IJV_from_incidence(_cells)
-    np.savetxt(filename, [*zip(I, J, V)], fmt='%d')
+    np.savetxt(filename_primal, [*zip(I, J, V)], fmt='%d')
+    np.savetxt(filename_dual, [*zip(J, I, V)], fmt='%d')
 
 
 def parse_tess_file(filename) -> Tuple:
@@ -246,17 +248,27 @@ def save_matrices(filename, work_dir: str = '.') -> None:
     if dim == 2:
         A_filenames = ['A0.txt', 'A1.txt', 'A2.txt']
         B_filenames = ['B1.txt', 'B2.txt']
+        AC_filenames = ['AC2.txt', 'AC1.txt', 'AC0.txt']
+        BC_filenames = ['BC2.txt', 'BC1.txt']
     else:
         A_filenames = ['A0.txt', 'A1.txt', 'A2.txt', 'A3.txt']
         B_filenames = ['B1.txt', 'B2.txt', 'B3.txt']
+        AC_filenames = ['AC3.txt', 'AC2.txt', 'AC1.txt', 'AC0.txt']
+        BC_filenames = ['BC3.txt', 'BC2.txt', 'BC1.txt']
     
-    for A_filename, _cells in zip(A_filenames, cell_dicts):
-        filename = os.path.join(work_dir, A_filename)
-        _save_A(_cells, filename)
+    for A_filename, AC_filename, _cells in zip(
+        A_filenames, AC_filenames, cell_dicts
+    ):
+        filename_primal = os.path.join(work_dir, A_filename)
+        filename_dual = os.path.join(work_dir, AC_filename)
+        _save_A(_cells, filename_primal, filename_dual)
 
-    for B_filename, _cells in zip(B_filenames, cell_dicts[:-1]):
-        filename = os.path.join(work_dir, B_filename)
-        _save_B(_cells, filename)
+    for B_filename, BC_filename, _cells in zip(
+        B_filenames,BC_filenames, cell_dicts[:-1]
+    ):
+        filename_primal = os.path.join(work_dir, B_filename)
+        filename_dual = os.path.join(work_dir, BC_filename)
+        _save_B(_cells, filename_primal, filename_dual)
 
     nc_filename = os.path.join(work_dir, 'number_of_cells.txt')
     with open(nc_filename, 'w') as file:
