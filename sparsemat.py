@@ -248,13 +248,13 @@ def save_matrices(filename, work_dir: str = '.') -> None:
     if dim == 2:
         A_filenames = ['A0.txt', 'A1.txt', 'A2.txt']
         B_filenames = ['B1.txt', 'B2.txt']
-        a_filenames = ['a2.txt', 'a1.txt', 'a0.txt']
-        b_filenames = ['b2.txt', 'b1.txt']
+        AC_filenames = ['AC2.txt', 'AC1.txt', 'AC0.txt']
+        BC_filenames = ['BC2.txt', 'BC1.txt']
     else:
         A_filenames = ['A0.txt', 'A1.txt', 'A2.txt', 'A3.txt']
         B_filenames = ['B1.txt', 'B2.txt', 'B3.txt']
-        AC_filenames = ['a3.txt', 'a2.txt', 'a1.txt', 'a0.txt']
-        BC_filenames = ['b3.txt', 'b2.txt', 'b1.txt']
+        AC_filenames = ['AC3.txt', 'AC2.txt', 'AC1.txt', 'AC0.txt']
+        BC_filenames = ['BC3.txt', 'BC2.txt', 'BC1.txt']
     
     for A_filename, AC_filename, _cells in zip(
         A_filenames, AC_filenames, cell_dicts
@@ -271,15 +271,32 @@ def save_matrices(filename, work_dir: str = '.') -> None:
         _save_B(_cells, filename_primal, filename_dual)
 
     nc_filename = os.path.join(work_dir, 'number_of_cells.txt')
+    cellnbs = []
     with open(nc_filename, 'w') as file:
         for _cells in cell_dicts:
-            file.write(f'{len(_cells.keys())}\n')
+            cellnb = len(_cells.keys())
+            cellnbs.append(cellnb)
+            file.write(f'{cellnb}\n')
         
     normals_filename = os.path.join(work_dir, 'normals.txt')
     _faces = cell_dicts[2]
     with open(normals_filename, 'w') as file:
         for face in _faces.values():
             file.write(f'{face.id} {face.a} {face.b} {face.c}\n')
+
+    B_list = []
+    for B_filename, shape in zip(B_filenames, zip(cellnbs[:-1], cellnbs[1:])):
+        filename = os.path.join(work_dir, B_filename)
+        print(filename)
+        print(shape)
+        B_coo = matutils.load_matrix_coo(filename, matrix_shape=shape)
+        B_list.append(B_coo)
+
+    for i in range(len(B_list) - 1):
+        L = matutils.calculate_L(B_list[i], B_list[i + 1])
+        IJV_list = [(*k, v) for k, v in L.todok().items()]
+        filename = os.path.join(work_dir, f'L{i + 1}.txt')
+        np.savetxt(filename, IJV_list, fmt='%d')
 
 
 def main() -> None:
