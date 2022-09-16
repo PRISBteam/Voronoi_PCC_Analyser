@@ -9,6 +9,7 @@ simul2D/
 __pycache__/
 *.py[cod]
 *$py.class
+matr*/
 
 # C extensions
 *.so
