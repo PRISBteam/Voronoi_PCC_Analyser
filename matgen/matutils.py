@@ -1,7 +1,8 @@
 """
 """
 from typing import Dict, List, Tuple
-
+import numpy as np
+from scipy import sparse
 
 def _get_IJV_from_neighbors(_cells: Dict) -> Tuple[List]:
     """Get I, J, V lists of the adjacency matrix from a dictionary of cells.
@@ -71,3 +72,23 @@ def _get_IJV_from_incidence(_cells: Dict) -> Tuple[List]:
                 V.append(-1)
     
     return (I, J, V)
+
+
+def load_matrix_coo(filename, matrix_shape=None) -> sparse.coo_matrix:
+    """
+    
+    """
+    M_sparse = np.loadtxt(filename, dtype='int')
+    I = np.array([row[0] for row in M_sparse])
+    J = np.array([row[1] for row in M_sparse])
+    V = np.array([row[2] for row in M_sparse])
+
+    M_coo = sparse.coo_matrix((V,(I,J)), shape=matrix_shape)
+
+    return M_coo
+
+
+def calculate_L(B1: sparse.coo_matrix, B2: sparse.coo_matrix):
+    """
+    """
+    return B1.transpose() @ B1 + B2 @ B2.transpose()
