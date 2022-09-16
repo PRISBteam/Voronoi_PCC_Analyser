@@ -46,7 +46,7 @@ def _get_IJV_from_incidence(_cells: Dict) -> Tuple[List]:
     ----------
     _cells
         A dictionary of cells. Keys - cell ids, values - cell objects
-        which have `incident_ids` attribute.
+        which have `signed_incident_ids` attribute.
     
     Returns
     -------
@@ -62,9 +62,12 @@ def _get_IJV_from_incidence(_cells: Dict) -> Tuple[List]:
     J = []
     V = []
     for cell_id, cell in _cells.items():
-        for inc_id in cell.incident_ids:
+        for signed_inc_id in cell.signed_incident_ids:
             I.append(cell_id - 1)
-            J.append(inc_id - 1)
-            V.append(1)
+            J.append(abs(signed_inc_id) - 1)
+            if signed_inc_id > 0:
+                V.append(1)
+            else:
+                V.append(-1)
     
     return (I, J, V)
