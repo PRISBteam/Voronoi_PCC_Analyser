@@ -248,13 +248,13 @@ def save_matrices(filename, work_dir: str = '.') -> None:
     if dim == 2:
         A_filenames = ['A0.txt', 'A1.txt', 'A2.txt']
         B_filenames = ['B1.txt', 'B2.txt']
-        AC_filenames = ['AC2.txt', 'AC1.txt', 'AC0.txt']
-        BC_filenames = ['BC2.txt', 'BC1.txt']
+        a_filenames = ['a2.txt', 'a1.txt', 'a0.txt']
+        b_filenames = ['b2.txt', 'b1.txt']
     else:
         A_filenames = ['A0.txt', 'A1.txt', 'A2.txt', 'A3.txt']
         B_filenames = ['B1.txt', 'B2.txt', 'B3.txt']
-        AC_filenames = ['AC3.txt', 'AC2.txt', 'AC1.txt', 'AC0.txt']
-        BC_filenames = ['BC3.txt', 'BC2.txt', 'BC1.txt']
+        AC_filenames = ['a3.txt', 'a2.txt', 'a1.txt', 'a0.txt']
+        BC_filenames = ['b3.txt', 'b2.txt', 'b1.txt']
     
     for A_filename, AC_filename, _cells in zip(
         A_filenames, AC_filenames, cell_dicts
