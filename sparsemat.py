@@ -73,7 +73,7 @@ def _save_B(_cells: Dict, filename: str):
     ----------
     _cells
         A dictionary of cells. Keys - cell ids, values - cell objects
-        which have `incident_ids` attribute.
+        which have `signed_incident_ids` attribute.
     filename
         Filename of a new file with the incidence matrix in sparse format.
     """
@@ -130,8 +130,10 @@ def parse_tess_file(filename) -> Tuple:
                     v_ids = [v1_id, v2_id]
                     _vertices[v1_id].add_incident_cell(e_id)
                     _vertices[v1_id].add_neighbor(v2_id)
-                    _vertices[v2_id].add_incident_cell(- e_id)
+
+                    _vertices[v2_id].add_incident_cell(-e_id)
                     _vertices[v2_id].add_neighbor(v1_id)
+
                     _edges[e_id] = base.Edge(e_id, v_ids)
                 # Add neighbors to edges from common vertices
                 for v in _vertices.values():
@@ -155,10 +157,10 @@ def parse_tess_file(filename) -> Tuple:
                     for k in range(1, int(row[0]) + 1):
                         e_id = int(row[k])
                         e_ids.append(abs(e_id))
-                        if e_ids > 0:
+                        if e_id > 0:
                             _edges[abs(e_id)].add_incident_cell(f_id)
                         else:
-                            _edges[abs(e_id)].add_incident_cell(- f_id)
+                            _edges[abs(e_id)].add_incident_cell(-f_id)
                     face.add_edges(e_ids)
                     
                     row = file.readline().split()
@@ -194,7 +196,7 @@ def parse_tess_file(filename) -> Tuple:
                         if f_id > 0:
                             _faces[abs(f_id)].add_incident_cell(p_id)
                         else:
-                            _faces[abs(f_id)].add_incident_cell(- p_id)
+                            _faces[abs(f_id)].add_incident_cell(-p_id)
                     f_ids = list(set(f_ids))
                     poly = base.Poly(p_id, f_ids)
                     poly.add_vertices(v_ids)
