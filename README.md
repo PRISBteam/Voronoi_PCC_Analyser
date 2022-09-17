@@ -114,7 +114,7 @@ You must call Neper from the folder (cd <path to the directory containing “del
 <li> Pieter D. Boom, Odysseas Kosmas, Lee Margetts, Andrey P. Jivkov, 2022. A geometric formulation of linear elasticity based on discrete exterior calculus. International Journal of Solids and Structures, 236–237, 111345. [doi: 10.1016/j.ijsolstr.2021.111345.](https://doi.org/10.1016/j.ijsolstr.2021.111345) </li>
 
 <li> Borodin, A.P. Jivkov, A.G. Sheinerman, M.Yu. Gutkin, 2021. Optimisation of rGO-enriched nanoceramics by combinatorial analysis. Materials & Design 212, 110191. [doi: 10.1016/j.matdes.2021.110191.](https://doi.org/10.1016/j.matdes.2021.110191) </li>
-
+ 
 <li> S. Zhu, E.N. Borodin, A.P. Jivkov, 2021. Triple junctions network as the key structure for characterisation of SPD processed copper alloys. Materials & Design 198(24), 109352. [doi: 10.1016/j.matdes.2020.109352.](https://doi.org/10.1016/j.matdes.2020.109352) </li>
 
 <li> D. Šeruga, O. Kosmas, A.P. Jivkov, 2020. Geometric modelling of elastic and elastic- plastic solids by separation of deformation energy and Prandtl operators, Int. J. Solids Struct. 198, 136–148. [doi: 10.1016/j.ijsolstr.2020.04.019.](https://doi.org/10.1016/j.ijsolstr.2020.04.019) </li>
