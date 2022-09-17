@@ -1,3 +1,5 @@
+<header> Discrete Cell Complex (DCC) generator tool </header>
+
 <p> The code addressed the practical needs of creating discrete (combinatorial) cell complex (DCC) 
 based on the Laguerre-Voronoi tessellation of space provided by the <a href="https://neper.info" target=”_blank”> Neper </a> software. Such complexes arise from Voronoi tessellations of spatial domains around arbitrary sets of points, which ensure that each 1-cell is in the boundary of exactly three 2-cells and three 3-cells, and each 0-cell is in the boundary of exactly four 1-cells, six 2-cells and four 3-cells. This description is very close to real material microstructures and is widely used in molecular dynamics and other types of simulations. </p>
 
