@@ -90,10 +90,10 @@ face_id coincide with the numeration of faces in _a2_ and _b2_ matrices; _a_, _b
 ```
   neper -V n300-id1.tess -datacelltrs 0.5  -print img300;
 ```
-Please, see more <a href="https://neper.info/doc/neper_t.html#examples" target="_blank"> examples </a> here.
+Please, see more <a href="https://neper.info/doc/neper_t.html#examples" target="_blank"> examples </a> on the Neper webpage.
 </li>
 
-<li> If you need volumes and areas for the primal complex, it can be obtained the same way from Neper using the file `delone_seeds.txt` provided by the code. These coordinates serve as the seed points for the new Neper tessellation (Delaunay triangulation, if the initial complex was Voronoi). So the terminal command, providing volumes and areas of the primal complex, may looks like 
+<li> If you need volumes and areas for the primal complex, it can be obtained the same way by Neper using the `delone_seeds.txt` file provided by the code. These coordinates serve as the seed points for the new Neper tessellation (Delaunay triangulation, if the initial complex was Voronoi). So the terminal command, providing volumes and areas of the primal complex, may looks like 
 
 ```
 neper -T -n 300 -id 1 -statcell volume, area -domain "cube(1.0,1.0,1.0)" -morphooptiini "coo:file(delone_seeds.txt)";
