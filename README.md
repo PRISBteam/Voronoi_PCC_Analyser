@@ -81,26 +81,26 @@ face_id coincide with the numeration of faces in _a2_ and _b2_ matrices; _a_, _b
 
 ## 4. Tips and tricks
 <ul>
-<li> The metric information like the volumes of all 3-cells and areas of all 2-cells can be obtain directly from the Neper output using  <a href="https://neper.info/doc/neper_t.html#cmdoption-statcell" target="_blank"> statcell </a> option with the corresponding <a href="https://neper.info/doc/exprskeys.html#tessellation-keys" target="_blank"> keys </a> like "-statcell volume, area" or  providing the corresponding values for every _k_-cell in the complex. In this case, the terminal command may look like 
+<li> The metric information like the volumes of all 3-cells and areas of all 2-cells can be obtain directly from the Neper output using  <a href="https://neper.info/doc/neper_t.html#cmdoption-statcell" target="_blank"> statcell </a> option with the corresponding <a href="https://neper.info/doc/exprskeys.html#tessellation-keys" target="_blank"> keys </a> like "-statcell volume, area" or  providing the corresponding values for every k-cell in the complex. In this case the terminal commands may look like 
   
 ```
    neper -T -n 300 -id 1 -dim 3 -statcell volume, area;
 ```
   and for visualisation additionally
 ```
-  neper -V n300-id1.tess -datacelltrs 0.5  -print img300
+  neper -V n300-id1.tess -datacelltrs 0.5  -print img300;
 ```
-Please, see more <a> href="https://neper.info/doc/neper_t.html#examples" target="_blank" examples </a> here.
+Please, see more <a href="https://neper.info/doc/neper_t.html#examples" target="_blank"> examples </a> here.
 </li>
 
 <li> If you need volumes and areas for the primal complex, it can be obtained the same way from Neper using the file `delone_seeds.txt` provided by the code. These coordinates serve as the seed points for the new Neper tessellation (Delaunay triangulation, if the initial complex was Voronoi). So the terminal command, providing volumes and areas of the primal complex, may looks like 
 
 ```
-neper -T -n 300 id 1 -domain "cube(1.0,1.0,1.0)" -morphooptiini "coo:file(delone_seeds.txt)"   
+neper -T -n 300 -id 1 -statcell volume, area -domain "cube(1.0,1.0,1.0)" -morphooptiini "coo:file(delone_seeds.txt)";
 ```
   and for visualisation additionally
 ```
-  neper -V n300-id1.tess -datacelltrs 0.5  -print img1000
+  neper -V n300-id1.tess -datacelltrs 0.5  -print img1000;
 ```
 You must call Neper from the folder (cd <path to the directory containing “delone_seeds.txt”>) containing the “delone_seeds.txt” file, or write the whole path instead of the file name in the _coo:file()_ command.
 </li>
