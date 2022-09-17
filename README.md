@@ -81,6 +81,11 @@ face_id coincide with the numeration of faces in _a2_ and _b2_ matrices; _a_, _b
 
 `delone_seeds.txt` - coordinates of the seed points of 3-cells used for Delaunay tessellation of space.
 
+### For the whole complex:
+`L0.txt` - 0-Laplacian matrix with the dimension of 0-cells (vertices) <br>
+`L1.txt` - 1-Laplacian matrix with the dimension of 1-cells (edges) <br>
+`L2.txt` - 2-Laplacian matrix with the dimension of 2-cells (faces) <br>
+
 ## 4. Tips and tricks
 <ul>
 <li> The metric information like the volumes of all 3-cells and areas of all 2-cells can be obtain directly from the Neper output using  <a href="https://neper.info/doc/neper_t.html#cmdoption-statcell" target="_blank"> statcell </a> option with the corresponding <a href="https://neper.info/doc/exprskeys.html#tessellation-keys" target="_blank"> keys </a> like "-statcell volume, area" or  providing the corresponding values for every k-cell in the complex. In this case the terminal commands may look like 
