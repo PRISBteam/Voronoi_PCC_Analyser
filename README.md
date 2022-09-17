@@ -109,28 +109,28 @@ You must call Neper from the folder (cd <path to the directory containing “del
   
 ## Applications of DCCs
 <ol>
-<li> Kiprian Berbatov, Pieter D. Boom, Andrew L. Hazel, Andrey P. Jivkov, 2022. Diffusion in multi-dimensional solids using Forman’s combinatorial differential forms, Applied Mathematical Modelling, 110, 172-192. [doi: 10.1016/j.apm.2022.05.043.](https://doi.org/10.1016/j.apm.2022.05.043) </li>
+<li> K. Berbatov, P.D. Boom, A.L. Hazel, A.P. Jivkov, 2022. Diffusion in multi-dimensional solids using Forman’s combinatorial differential forms. Applied Mathematical Modelling 110, 172-192. [doi: 10.1016/j.apm.2022.05.043.](https://doi.org/10.1016/j.apm.2022.05.043) </li>
 
-<li> Pieter D. Boom, Odysseas Kosmas, Lee Margetts, Andrey P. Jivkov, 2022. A geometric formulation of linear elasticity based on discrete exterior calculus. International Journal of Solids and Structures, 236–237, 111345. [doi: 10.1016/j.ijsolstr.2021.111345.](https://doi.org/10.1016/j.ijsolstr.2021.111345) </li>
+<li> P.D. Boom, O. Kosmas, L. Margetts, A.P. Jivkov, 2022. A geometric formulation of linear elasticity based on discrete exterior calculus. International Journal of Solids and Structures 236–237, 111345. [doi: 10.1016/j.ijsolstr.2021.111345.](https://doi.org/10.1016/j.ijsolstr.2021.111345) </li>
 
-<li> Borodin, A.P. Jivkov, A.G. Sheinerman, M.Yu. Gutkin, 2021. Optimisation of rGO-enriched nanoceramics by combinatorial analysis. Materials & Design 212, 110191. [doi: 10.1016/j.matdes.2021.110191.](https://doi.org/10.1016/j.matdes.2021.110191) </li>
+<li> E.N. Borodin, A.P. Jivkov, A.G. Sheinerman, M.Yu. Gutkin, 2021. Optimisation of rGO-enriched nanoceramics by combinatorial analysis. Materials & Design 212, 110191. [doi: 10.1016/j.matdes.2021.110191.](https://doi.org/10.1016/j.matdes.2021.110191) </li>
  
 <li> S. Zhu, E.N. Borodin, A.P. Jivkov, 2021. Triple junctions network as the key structure for characterisation of SPD processed copper alloys. Materials & Design 198(24), 109352. [doi: 10.1016/j.matdes.2020.109352.](https://doi.org/10.1016/j.matdes.2020.109352) </li>
 
-<li> D. Šeruga, O. Kosmas, A.P. Jivkov, 2020. Geometric modelling of elastic and elastic- plastic solids by separation of deformation energy and Prandtl operators, Int. J. Solids Struct. 198, 136–148. [doi: 10.1016/j.ijsolstr.2020.04.019.](https://doi.org/10.1016/j.ijsolstr.2020.04.019) </li>
+<li> D. Šeruga, O. Kosmas, A.P. Jivkov, 2020. Geometric modelling of elastic and elastic-plastic solids by separation of deformation energy and Prandtl operators. International Journal of Solids and Structures 198, 136–148. [doi: 10.1016/j.ijsolstr.2020.04.019.](https://doi.org/10.1016/j.ijsolstr.2020.04.019) </li>
 
 <li> E. N. Borodin, A. P. Jivkov, 2019. Evolution of triple junctions’ network during severe plastic deformation of copper alloys – a discrete stochastic modelling. Philosophical Magazine 100(4), 467-485. </li> [doi: 10.1080/14786435.2019.1695071.](https://doi.org/10.1080/14786435.2019.1695071) 
 
-<li> I. Dassios, G. O’Keeffe, A.P. Jivkov, 2018. A mathematical model for elasticity using calculus on discrete manifolds, Math. Methods Appl. Sci. 41(18), 9057– 9070. </li> [doi: 10.1002/mma.4892](https://doi.org/10.1002/mma.4892) 
+<li> I. Dassios, G. O’Keeffe, A.P. Jivkov, 2018. A mathematical model for elasticity using calculus on discrete manifolds. Math. Methods Appl. Sci. 41(18), 9057– 9070. </li> [doi: 10.1002/mma.4892](https://doi.org/10.1002/mma.4892) 
 </ol>
 
 ## Acknowledgements
-This code has been created as a part of the EPSRC-funded projects EP/V022687/1 _“Patterns recognition inside shear bands: tailoring microstructure against localisation”_ (PRISB) and EP/N026136/1 _"Geometric Mechanics of Solids: new analysis of modern engineering materials"_ (GEMS).
+This code has been created as a part of the EPSRC funded projects EP/V022687/1 _“Patterns recognition inside shear bands: tailoring microstructure against localisation”_ (PRISB) and EP/N026136/1 _"Geometric Mechanics of Solids: new analysis of modern engineering materials"_ (GEMS).
 
 ## License
 Distributed under the GNU General Public License v3.0. See `LICENSE.txt` for more information.
   
 ## Contacts
-<a href="mailto: prisb.team@gmail.com">Send Email</a> <br>
+<a href="mailto: prisb.team@gmail.com"> Send e-mail</a> <br>
 Dr Oleg Bushuev (technical support) <br>
 Dr Elijah Borodin (any other questions) <br>
