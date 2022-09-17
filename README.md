@@ -2,23 +2,23 @@
 based on the Laguerre-Voronoi tessellation of space provided by the <a href = "https://neper.info" target=”_blank”> Neper </a> software. Such complexes arise from Voronoi tessellations of spatial domains around arbitrary sets of points, which ensure that each 1-cell is in the boundary of exactly three 2-cells and three 3-cells, and each 0-cell is in the boundary of exactly four 1-cells, six 2-cells and four 3-cells. This description is very close to real material microstructures and is widely used in molecular dynamics and other types of simulations. </p>
 
 ## DCC definition and algebraic representation
-An excellent simple introduction to the DCC with their various applications is given in the <a href = "https://link.springer.com/book/10.1007/978-1-84996-290-2" target=”_blank”> book </a> of Leo Grady and Jonathan Polimeni _"Discrete Calculus. Applied Analysis on Graphs for Computational Science. (2010)_ Below just a few notes necesssary for understanding the output of the code.
+An excellent simple introduction to the DCC with their various applications is given in the <a href = “https://link.springer.com/book/10.1007/978-1-84996-290-2” target=”_blank”> book </a> of Leo Grady and Jonathan Polimeni _“Discrete Calculus. Applied Analysis on Graphs for Computational Science. (2010)_ Below are just a few notes necessary for understanding the output of the code.
 
 <ul>
 <li> In algebraic topology, a discrete topological n-complex is a collection of cells of dimensions <i> k &leq; n </i>, where every _k_-cell for any <i> 0 < k &leq; n </i> has a boundary formed by (_k_-1)-cells belonging to the complex. The co-boundary of every k-cell for <i> 0 &leq; k < n </i> is the set of (_k_+1)-cells whose boundaries contain the _k_-cell. In this terminology, 1-complex is a multigraph. Polyhedral complexes are a special class of regular quasi-convex discrete topological complexes, in the geometric realisation of which, 0-cells are identified with points or vertices, 1-cells with line segments or edges, 2-cells with planar polygons or faces, 3-cells with polyhedra or simply cells, etc. We restrict our consideration to the polyhedral 3-complexes whose 3-cells are convex polyhedra, whose 0-cells are in the boundary of exactly three 1-cells. An assembly of polyhedrons is a geometric realisation of a combinatorial structure referred to as cell complex in algebraic topology. </li>
   
 <li> The geometric properties of the DCC are encoded in the volumes of different cells: 1 for 0-cells, length for 1-cells, area for 2-cells, and volume for 3-cells. The topological properties of the DCC are encoded in the boundary operator B<sub>k</sub>, which maps all (_k_+1)-cells to the _k_-cells in their boundaries, taking into account cell orientations. The algebraic realisation of the operator for the [_k_,(_k_+1)] pair of cells is referred to as the k-th incidence matrix, B<sub>k</sub>, which has N<sub>k</sub> rows (where N<sub>k</sub> denote the number of _k_-cells in a complex) and N<sub>k+1</sub> columns and contains 0, 1, -1, indicating non-adjacency, adjacency with agreeing and with opposite orientations, respectively, between k-cells and (k+1)-cells. The transpose of the _k_-th incidence matrix, b<sub>k</sub> =  B<sub>k</sub><sup>T</sup>, is a matrix representing the _k_-th co-boundary operator, which maps all _k_-cells to the (_k_+1)-cells in their co-boundaries. </li>
 
-<li> A standard way is to decide on a consistent orientation of all top-dimensional cells, e.g., to select the positive orientation to be from interior to exterior of the 3-cells and assign arbitrary orientations for all lower-dimensional cells. There are exactly three options for the relation between _k_-cell and (_k_+1)-cell in an oriented complex: they are not coincident - encoded by 0; the _k_-cell is on the boundary (_k_+1)-cell, and they have consistent orientations, encoded by 1; the _k_-cell is on the boundary (_k_+1)-cell and they have opposite orientations, encoded by -1. The transpose of the k-th incidence matrix is a matrix representing the _k_-th co-boundary operator, which maps all _k_-cells to the (_k_+1)-cells in their co-boundaries. </li>
+<li> A standard way is to decide on a consistent orientation of all top-dimensional cells, e.g., to select the positive orientation to be from interior to exterior of the 3-cells and assign arbitrary orientations for all lower-dimensional cells. There are exactly three options for the relation between _k_-cell and (_k_+1)-cell in an oriented complex: they are not coincident - encoded by 0; the _k_-cell is on the boundary (_k_+1)-cell, and they have consistent orientations, encoded by 1; the _k_-cell is on the boundary (_k_+1)-cell and they have opposite orientations, encoded by -1. The transpose of the _k_-th incidence matrix is a matrix representing the _k_-th co-boundary operator, which maps all _k_-cells to the (_k_+1)-cells in their co-boundaries. </li>
   
 <li> The _k$_-th combinatorial _Laplacian_ (Laplace–de Rham operator) can be written as <br>
 <i> L<sub>k</sub> = b<sub>k-1</sub> B<sub>k-1</sub> + B<sub>k</sub> b<sub>k</sub>  </i> <br>
-and it maps all _k_-cells to themselves, collecting local connectivity information. One important application of the combinatorial Laplacians is in calculating combinatorial curvatures. Since the Laplacians are symmetric positive semi-definite matrices, their eigenvalues are real. The spectra of eigenvalues can be used to classify discrete topologies, with two topologies considered as equivalent when they have the same Laplacians' spectra. </li>
+and it maps all _k_-cells to themselves, collecting local connectivity information. One important application of the combinatorial Laplacians is in calculating combinatorial curvatures. Since the Laplacians are symmetric positive semi-definite matrices, their eigenvalues are real. The spectra of eigenvalues can be used to classify discrete topologies, with two topologies considered equivalent when they have the same Laplacians’ spectra. </li>
 
 </ul>
 
 ## Terminal commands
-The code can be launched by the usual terminal app on MAC, Windows or Linux. The first two commands create needed environment specified in the file _requirements.txt_. 
+The usual terminal app can launch the code on MAC, Windows or Linux. The first two commands create the needed environment specified in the file _requirements.txt_. 
 
 ```
 conda create --name neper-env --file requirements.txt
@@ -27,15 +27,20 @@ python sparsemat.py --file <filename.tess> --dir <my_dir>
 ```
 Here <filename.tess> is the full path (including the file name) to the *.tess file generated by Neper software, and <my_dir> is the full path to the chosen output directory. Finally, all output files will be written to the <my_dir> output directory.
 
-The code has been tested for the Neper ouput *.tess files generated by the Neper version 4.3.1.
+The required Conda packages can be downloaded and installed directly from the Anaconda and Minicoda projects <a> href="https://conda.io/projects/conda/en/latest/user-guide/install/download.html" target="_blank" webpages</a>.
+  
+The code has been tested for the Neper output *.tess files generated by the Neper versions 4.3.1 and 4.5.0.
 
 ## Output files
-The code generates a sparse representation of matrices: for any matrix element _a_(_i_, _j_) = _c_, the files of the matrices contain the list of triplets in the form (_i_, _j_, _c_). Indices start from 0, and, for instance, the line (5, 7, 1) in an adjacency matrix A<sub>k</sub> means that _k_-cell #6 is the neighbour of _k_-cell #8. For any incidence matrices B<sub>k</sub>, a triplet (5, 7, 1) means that (_k_-1)-cell #6 is on the boundary of _k_-cell #8, and their orientations coincide (_c_ = -1 for the opposite orientations). 
+The code generates a sparse representation of matrices: for any matrix element _a_(_i_, _j_) = _c_, the files of the matrices contain the list of triplets in the form (_i_, _j_, _c_). Indices start from 0, and, for instance, the line (5, 7, 1) in the adjacency matrix A<sub>k</sub> means that the _k_-cell #6 is the neighbour of the _k_-cell #8. For any incidence matrices B<sub>k</sub>, a triplet (5, 7, 1) means that the (_k_-1)-cell #6 is on the boundary of the _k_-cell #8, and their orientations coincide (_c_ = -1 for the opposite orientations). 
+  
+The Voronoi tesselation provided by Neper supposed to be a dual comples (so all the other tessellations given by the <a> href="https://neper.info/doc/neper_t.html#morphology-options" target="_blank" morphology </a> option <i> -morpho <morphology> </i> like the <i> cube, square, tocta, lamellar, etc. </i>)
 
 ### For the dual (Voronoi) complex:
 All sparse matrices are stored in _*.txt_ files.
 
-`A0.txt` - adjacency matrix for 0-cells (vertices)'A1.txt_ - adjacency matrix for 1-cells (edges) <br>
+`A0.txt` - adjacency matrix for 0-cells (vertices) <br>
+`A1.txt` - adjacency matrix for 1-cells (edges) <br>
 `A2.txt` - adjacency matrix for 2-cells (faces) <br>
 `A3.txt` - adjacency matrix for 3-cells (polyhedra) <br>
 
@@ -74,7 +79,34 @@ face_id coincide with the numeration of faces in _a2_ and _b2_ matrices; _a_, _b
 
 `delone_seeds.txt` - coordinates of the seed points of 3-cells used for Delaunay tessellation of space.
 
+## Tips and tricks
+<ul>
+<li> The metric information like the volumes of all 3-cells and areas of all 2-cells can be obtain directly from the Neper output using  <a> href="https://neper.info/doc/neper_t.html#cmdoption-statcell" target="_blank" statcell </a> option with the corresponding <a> href="https://neper.info/doc/exprskeys.html#tessellation-keys" target="_blank" keys </a> like "-statcell volume, area" or  providing the corresponding values for every _k_-cell in the complex. In this case, the terminal command may look like 
+  
+```
+   neper -T -n 300 -id 1 -dim 3 -statcell volume, area;
+```
+  and for visualisation additionally
+```
+  neper -V n300-id1.tess -datacelltrs 0.5  -print img300
+```
+Please, see more <a> href="https://neper.info/doc/neper_t.html#examples" target="_blank" examples </a> here.
+</li>
 
+<li> If you need volumes and areas for the primal complex, it can be obtained the same way from Neper using the file `delone_seeds.txt` provided by the code. These coordinates serve as the seed points for the new Neper tessellation (Delaunay triangulation, if the initial complex was Voronoi). So the terminal command, providing volumes and areas of the primal complex, may looks like 
+
+```
+neper -T -n 300 id 1 -domain "cube(1.0,1.0,1.0)" -morphooptiini "coo:file(delone_seeds.txt)"   
+```
+  and for visualisation additionally
+```
+  neper -V n300-id1.tess -datacelltrs 0.5  -print img1000
+```
+You must call Neper from the folder (cd <path to the directory containing “delone_seeds.txt”>) containing the “delone_seeds.txt” file, or write the whole path instead of the file name in the _coo:file()_ command.
+</li>
+
+</ul>
+  
 ## Applications of DCCs
 <ol>
 <li> Kiprian Berbatov, Pieter D. Boom, Andrew L. Hazel, Andrey P. Jivkov, 2022. Diffusion in multi-dimensional solids using Forman’s combinatorial differential forms, Applied Mathematical Modelling, 110, 172-192. [doi: 10.1016/j.apm.2022.05.043.](https://doi.org/10.1016/j.apm.2022.05.043) </li>
