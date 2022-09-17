@@ -102,7 +102,7 @@ neper -T -n 300 -id 1 -statcell volume, area -domain "cube(1.0,1.0,1.0)" -morpho
 ```
   neper -V n300-id1.tess -datacelltrs 0.5  -print img300;
 ```
-You must call Neper from the folder (cd <path to the directory containing “delone_seeds.txt”>) containing the “delone_seeds.txt” file, or write the whole path instead of the file name in the _coo:file()_ command.
+You must call Neper from the folder (cd <path to the directory containing “delone_seeds.txt”>) containing the “delone_seeds.txt” file, or write the whole path instead of the file name in the _coo:file(<path to delone_seeds.txt>)_ command.
 </li>
 
 </ul>
