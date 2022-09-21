@@ -99,9 +99,9 @@ Please, see more <a href="https://neper.info/doc/neper_t.html#examples" target="
 <li> If you need volumes and areas for the primal complex, it can be obtained the same way by Neper using the `delone_seeds.txt` file provided by the code. These coordinates serve as the seed points for the new Neper tessellation (Delaunay triangulation, if the initial complex (dual) was Voronoi). So the terminal command, providing volumes and areas of the primal complex, may looks like 
 
 ```
-neper -T -n 300 -id 1 -statcell volume, area -domain "cube(1.0,1.0,1.0)" -morphooptiini "coo:file(delone_seeds.txt)";
+neper -T -n 300 -id 1 -statcell vol -statface area -domain "cube(1.0,1.0,1.0)" -morphooptiini "coo:file(delau_seeds.txt)";
 ```
-You must call Neper from the folder (cd <path to the directory containing “delone_seeds.txt”>) containing the “delone_seeds.txt” file, or write the whole path instead of the file name in the _coo:file(<path to delone_seeds.txt>)_ command.
+You must call Neper from the folder (cd <path to the directory containing “delau_seeds.txt”>) containing the “delau_seeds.txt” file, or write the whole path instead of the file name in the _coo:file(<path to delau_seeds.txt>)_ command.
 </li>
 
 </ul>
