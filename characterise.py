@@ -26,9 +26,11 @@ def main() -> None:
     )
 
     args = parser.parse_args()
+    filenames = glob.glob(args.dir + '/*')
 
-    print('Complexes: ', glob.glob(args.dir + '/*.tess'))
-    print('TXT: ', glob.glob(args.dir + '/*.txt'))
+    for filename in filenames:
+        pass
+
 
     print('Time elapsed:', round(time.time() - start, 2), 's')
 
