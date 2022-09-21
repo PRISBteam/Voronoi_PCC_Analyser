@@ -42,7 +42,7 @@ def extract_seeds(
             if '**cell' in line:
                 n = int(f.readline().rstrip('\n').lstrip())
             if '*seed' in line:
-                filename_s = os.path.join(work_dir, 'seeds.txt')
+                filename_s = os.path.join(work_dir, 'voro_seeds.txt')
                 with open(filename_s, 'w') as f_seeds:
                     for i in range(n):
                         row = f.readline().split()
@@ -51,7 +51,7 @@ def extract_seeds(
                 return poly_seeds
 
 
-def _save_A(_cells: Dict, filename_primal: str, filename_dual: str) -> None:
+def _save_A(_cells: Dict, filename_1: str, filename_2: str) -> None:
     """Save adjacency matrix into a file.
 
     Parameters
@@ -63,11 +63,11 @@ def _save_A(_cells: Dict, filename_primal: str, filename_dual: str) -> None:
         Filename of a new file with the adjacency matrix in sparse format.    
     """
     I, J, V = matutils._get_IJV_from_neighbors(_cells)
-    np.savetxt(filename_primal, [*zip(I, J, V)], fmt='%d')
-    np.savetxt(filename_dual, [*zip(J, I, V)], fmt='%d')
+    np.savetxt(filename_1, [*zip(I, J, V)], fmt='%d')
+    np.savetxt(filename_2, [*zip(J, I, V)], fmt='%d')
 
 
-def _save_B(_cells: Dict, filename_primal: str, filename_dual: str):
+def _save_B(_cells: Dict, filename_1: str, filename_2: str):
     """Save incidence matrix into a file.
 
     Parameters
@@ -79,8 +79,8 @@ def _save_B(_cells: Dict, filename_primal: str, filename_dual: str):
         Filename of a new file with the incidence matrix in sparse format.
     """
     I, J, V = matutils._get_IJV_from_incidence(_cells)
-    np.savetxt(filename_primal, [*zip(I, J, V)], fmt='%d')
-    np.savetxt(filename_dual, [*zip(J, I, V)], fmt='%d')
+    np.savetxt(filename_1, [*zip(I, J, V)], fmt='%d')
+    np.savetxt(filename_2, [*zip(J, I, V)], fmt='%d')
 
 
 def parse_tess_file(filename) -> Tuple:
@@ -259,26 +259,39 @@ def save_matrices(filename, work_dir: str = '.') -> None:
     for A_filename, AC_filename, _cells in zip(
         A_filenames, AC_filenames, cell_dicts
     ):
-        filename_primal = os.path.join(work_dir, A_filename)
-        filename_dual = os.path.join(work_dir, AC_filename)
-        _save_A(_cells, filename_primal, filename_dual)
+        filename_voro = os.path.join(work_dir, A_filename)
+        filename_delau = os.path.join(work_dir, AC_filename)
+        _save_A(_cells, filename_voro, filename_delau)
 
     for B_filename, BC_filename, _cells in zip(
         B_filenames,BC_filenames, cell_dicts[:-1]
     ):
-        filename_primal = os.path.join(work_dir, B_filename)
-        filename_dual = os.path.join(work_dir, BC_filename)
-        _save_B(_cells, filename_primal, filename_dual)
+        filename_voro= os.path.join(work_dir, B_filename)
+        filename_delau = os.path.join(work_dir, BC_filename)
+        _save_B(_cells, filename_voro, filename_delau)
 
-    nc_filename = os.path.join(work_dir, 'number_of_cells.txt')
+    nc_filename = os.path.join(work_dir, 'voro_Ncells.txt')
     cellnbs = []
     with open(nc_filename, 'w') as file:
         for _cells in cell_dicts:
             cellnb = len(_cells.keys())
             cellnbs.append(cellnb)
             file.write(f'{cellnb}\n')
+
+    nc_delau_filename = os.path.join(work_dir, 'delau_Ncells.txt')
+    with open(nc_delau_filename, 'w') as file:
+        for cellnb in cellnbs[::-1]:
+            file.write(f'{cellnb}\n')
+
+    seeds_delau_filename = os.path.join(work_dir, 'delau_seeds.txt')
+    _vertices = cell_dicts[0]
+    seeds_delau = []
+    for i in range(1, len(_vertices.keys()) + 1):
+        v = _vertices[i]
+        seeds_delau.append((v.x, v.y, v.z))
+    np.savetxt(seeds_delau_filename, seeds_delau, fmt='%.12f')
         
-    normals_filename = os.path.join(work_dir, 'normals.txt')
+    normals_filename = os.path.join(work_dir, 'voro_normals.txt')
     _faces = cell_dicts[2]
     with open(normals_filename, 'w') as file:
         for face in _faces.values():
@@ -287,8 +300,6 @@ def save_matrices(filename, work_dir: str = '.') -> None:
     B_list = []
     for B_filename, shape in zip(B_filenames, zip(cellnbs[:-1], cellnbs[1:])):
         filename = os.path.join(work_dir, B_filename)
-        print(filename)
-        print(shape)
         B_coo = matutils.load_matrix_coo(filename, matrix_shape=shape)
         B_list.append(B_coo)
 
