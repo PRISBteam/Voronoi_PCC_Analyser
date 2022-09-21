@@ -6,6 +6,7 @@ import os
 import time
 import glob
 import logging
+import pandas as pd
 
 from matgen import base
 
@@ -54,6 +55,24 @@ def main() -> None:
                 logging.exception(f'Wrong file: {filename}')
             except:
                 logging.exception('Some error')
+
+    ids = [*range(1, len(TJsets.keys()) + 1)]
+    df = pd.DataFrame(
+        {
+            'p' : [TJsets[i].p for i in ids],
+            'q' : [TJsets[i].q for i in ids],
+            'Sp' : [TJsets[i].p_entropy for i in ids],
+            'Sp_m' : [TJsets[i].p_entropy_m for i in ids],
+            'Sp_s' : [TJsets[i].p_entropy_s for i in ids],
+            'S' : [TJsets[i].S for i in ids],
+            'S_m' : [TJsets[i].S_m for i in ids],
+            'S_s' : [TJsets[i].S_s for i in ids],
+            'kappa' : [TJsets[i].kappa for i in ids],
+            'delta_S': [TJsets[i].delta_S for i in ids]
+        }
+    )
+    
+    df.to_csv('characteristics.txt', index=False, sep=' ')
 
     print('Time elapsed:', round(time.time() - start, 2), 's')
 
