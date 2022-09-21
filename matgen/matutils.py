@@ -1,5 +1,6 @@
 """
 """
+import math
 from typing import Dict, Iterable, List, Tuple
 import numpy as np
 from scipy import sparse
@@ -106,7 +107,7 @@ def entropy(*args):
         j_array = np.array(args)
 
     # check sum of input parameters
-    if len(j_array) > 1 and not isclose(j_array.sum(), 1):
+    if len(j_array) > 1 and not math.isclose(j_array.sum(), 1):
         logging.warning('Sum is not equal to 1')
 
     # calculate entropy
@@ -115,7 +116,7 @@ def entropy(*args):
         if p == 0 or p == 1:
             return 0
         elif p > 0 and p < 1:
-            return - (p*log2(p) + (1 - p)*log2(1 - p))
+            return - (p * math.log2(p) + (1 - p) * math.log2(1 - p))
     elif len(j_array) > 1:
         nonzeros = j_array[j_array > 0]
         return - np.sum(nonzeros * np.log2(nonzeros))
@@ -132,7 +133,7 @@ def entropy_m(*args):
         j_array = np.array(args)
 
     # check sum of input parameters
-    if len(j_array) > 1 and not isclose(j_array.sum(), 1):
+    if len(j_array) > 1 and not math.isclose(j_array.sum(), 1):
         logging.warning('Sum is not equal to 1')
 
     # check zero elements
@@ -146,7 +147,7 @@ def entropy_m(*args):
         if p == 1:
             return np.inf
         elif p > 0 and p < 1:
-            return - log2(p * (1 - p)) / 2
+            return - math.log2(p * (1 - p)) / 2
     elif len(j_array) > 1:
         return - np.log2(np.prod(j_array)) / len(j_array)
 
@@ -162,7 +163,7 @@ def entropy_s(*args):
         j_array = np.array(args)
 
     # check sum of input parameters
-    if len(j_array) > 1 and not isclose(j_array.sum(), 1):
+    if len(j_array) > 1 and not math.isclose(j_array.sum(), 1):
         logging.warning('Sum is not equal to 1')
 
     # check zero elements
@@ -177,13 +178,13 @@ def entropy_s(*args):
             return - np.inf
         elif p > 0 and p < 1:
             q = 1 - p
-            return - (p - q) / 2 * log2(p / q)
+            return - (p - q) / 2 * math.log2(p / q)
     elif len(j_array) > 1:
         Ss = 0
         for k in range(len(j_array)):
             jk = j_array[k]
             for l in range(k + 1, len(j_array)):
                 jl = j_array[l]
-                Ss += (jk - jl) * log2(jk / jl)
+                Ss += (jk - jl) * math.log2(jk / jl)
         Ss = Ss / len(j_array)
         return - Ss
