@@ -62,24 +62,24 @@ face_id coincide with the numeration of faces in _A2_ and _B2_ matrices; _a_, _b
 
 ### For a primal (Delaunay) complex:
 
-`a0.txt` - adjacency matrix for 0-cells (vertices) <br>
-`a1.txt` - adjacency matrix for 1-cells (edges) <br>
-`a2.txt` - adjacency matrix for 2-cells (faces) <br>
-`a3.txt` - adjacency matrix for 3-cells (polyhedra) <br>
+`AC0.txt` - adjacency matrix for 0-cells (vertices) <br>
+`AC1.txt` - adjacency matrix for 1-cells (edges) <br>
+`AC2.txt` - adjacency matrix for 2-cells (faces) <br>
+`AC3.txt` - adjacency matrix for 3-cells (polyhedra) <br>
 
-`b1.txt` - incidence matrix (0-cells are row indexes, 1-cells are columns) <br>
-`b2.txt` - incidence matrix (1-cells are row indexes, 2-cells are columns) <br>
-`b3.txt` - incidence matrix (2-cells are row indexes, 3-cells are columns) <br>
+`BC1.txt` - incidence matrix (0-cells are row indexes, 1-cells are columns) <br>
+`BC2.txt` - incidence matrix (1-cells are row indexes, 2-cells are columns) <br>
+`BC3.txt` - incidence matrix (2-cells are row indexes, 3-cells are columns) <br>
 
-In the 2D case, there are no _a3_ and _b3_ matrices.
+In the 2D case, there are no _AC3_ and _BC3_ matrices.
 
-`delone_Ncells.txt` - each row in the file corresponds to the numbers of different _k_-cells: the first row is the number of 0-cells,
+`delau_Ncells.txt` - each row in the file corresponds to the numbers of different _k_-cells: the first row is the number of 0-cells,
 second - is a number of 1-cells and so on.
 
 <!-- `delone_normals.txt` - components of a normal vector for each face written in the format: <i> (face_id a b c) </i>, where 
 face_id coincide with the numeration of faces in _a2_ and _b2_ matrices; _a_, _b_ and _c_ - are the components of the normal vector of a face in a 3D cartesian coordinate system. -->
 
-`delone_seeds.txt` - coordinates of the seed points of 3-cells used for Delaunay tessellation of space.
+`delau_seeds.txt` - coordinates of the seed points of 3-cells used for Delaunay tessellation of space.
 
 ### For the whole complex:
 `L0.txt` - 0-Laplacian matrix with the dimension of 0-cells (vertices) <br>
@@ -88,10 +88,10 @@ face_id coincide with the numeration of faces in _a2_ and _b2_ matrices; _a_, _b
 
 ## 4. Tips and tricks
 <ul>
-<li> The metric information like the volumes of all 3-cells and areas of all 2-cells can be obtain directly from the Neper output using  <a href="https://neper.info/doc/neper_t.html#cmdoption-statcell" target="_blank"> statcell </a> option with the corresponding <a href="https://neper.info/doc/exprskeys.html#tessellation-keys" target="_blank"> keys </a> like "-statcell volume, area" or  providing the corresponding values for every k-cell in the complex. In this case the terminal command may look like 
+<li> The metric information like the volumes of all 3-cells and areas of all 2-cells can be obtain directly from the Neper output using  <a href="https://neper.info/doc/neper_t.html#cmdoption-statcell" target="_blank"> statcell </a> and statface options with the corresponding <a href="https://neper.info/doc/exprskeys.html#tessellation-keys" target="_blank"> keys </a> like "-statcell vol -statface area" or  providing the corresponding values for every k-cell in the complex. In this case the terminal command may look like 
   
 ```
-   neper -T -n 300 -id 1 -dim 3 -statcell volume, area;
+   neper -T -n 300 -id 1 -dim 3 -statcell vol -statface area;
 ```
 Please, see more <a href="https://neper.info/doc/neper_t.html#examples" target="_blank"> examples </a> on the Neper webpage.
 </li>
