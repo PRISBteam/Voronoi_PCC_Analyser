@@ -105,7 +105,17 @@ You must call Neper from the folder (cd <path to the directory containing “del
 </li>
 
 </ul>
-  
+
+## 5. Examples
+The folder with several examples contains discrete cell complexes already created by Neper and processed with Voro_DCC_Analyser tool. The command below shows five terminal commands launching the creation of the whole DCC containing 5000 3-cells.
+
+```
+neper -T -n 5000 -dim 3 -id 1 -ori uniform -statcell vol -statface area; \
+neper -V n5000-id1.tess -datacelltrs 0.5  -print DCC_voronoi_5000; \
+python <path/to/the/directory>/Voronoi_DCC_Analyser/sparsemat.py --file <path/to/the/directory>/n5000-id1.tess --dir <path/to/right/directory>; \
+neper -T -n 5000 -id 2 -statcell vol -statface area -domain "cube(1.0,1.0,1.0)" -morphooptiini "coo:file(delau_seeds.txt)"; \
+neper -V n5000-id2.tess -datacelltrs 0.5  -print DCC_delau_5000
+```
 ## Applications of DCCs
 <ol>
 <li> K. Berbatov, P.D. Boom, A.L. Hazel, A.P. Jivkov, 2022. Diffusion in multi-dimensional solids using Forman’s combinatorial differential forms. Applied Mathematical Modelling 110, 172-192. [doi: 10.1016/j.apm.2022.05.043.](https://doi.org/10.1016/j.apm.2022.05.043) </li>
