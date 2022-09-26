@@ -52,7 +52,6 @@ class Cell():
         self.measure = measure
 
 
-
 class CellLowerDim(Cell):
     """
     """
@@ -110,8 +109,14 @@ class TripleJunction(CellLowerDim):
     def set_junction_type(self, junction_type: int):
         """
         junction_type equals number of special incident cells
+        check consistency: external has type None
         """
-        self.junction_type = junction_type
+        if not self.is_external:
+            self.junction_type = junction_type
+        elif self.is_external:
+            raise ValueError(
+                'External junction cannot have a type other than None'
+            )
 
 
 class GrainBoundary(CellLowerDim):
@@ -126,11 +131,64 @@ class GrainBoundary(CellLowerDim):
         """
         """
         cell_str = "GrainBoundary(id=%d)" % self.id
-        
         return cell_str
 
-    def set_special():
-        pass
+    def set_special(self, is_special: bool = True):
+        """
+        External cannot be set special
+        """
+        if is_special and not self.is_external:
+            self.is_special = is_special
+        elif not is_special:
+            self.is_special = is_special
+        elif self.is_external:
+            raise ValueError('External cannot be set special')
+    
+    def set_theta(
+            self,
+            theta: float,
+            lower_thrd: float = None,
+            upper_thrd: float = None):
+        """
+        disorientation angle (in degrees)
+        theta must be >= 0 ?
+        for external cells theta = -1
+        """
+        if theta < 0:
+            self.set_external(True)
+            return
+        elif self.is_external:
+            raise ValueError(f"External doesn't have theta (id={self.id})")
+        
+        self.theta = theta
+        
+        if lower_thrd and upper_thrd:
+            if  theta >= lower_thrd and theta <= upper_thrd:
+                self.set_special(True)
+            else:
+                self.set_special(False)
+        elif lower_thrd:
+            if  theta >= lower_thrd:
+                self.set_special(True)
+            else:
+                self.set_special(False)
+        elif upper_thrd:
+            if  theta <= upper_thrd:
+                self.set_special(True)
+            else:
+                self.set_special(False)
+
+    def set_external(self, is_external: bool = True):
+        """
+        When set external, it is set not special with theta = -1
+        Default for edge dim = 2
+        """
+        self.is_external = is_external
+        if is_external:
+            self.theta = -1
+            self.set_special(False)
+        elif self.theta == -1:
+            self.theta = None
 
     
 class Vertex(CellLowerDim):
@@ -211,6 +269,31 @@ class Edge(CellLowerDim):
         e_str = "Edge(id=%d)" % self.id
         return e_str
 
+    @classmethod
+    def from_tess_file(
+            cls,
+            file: io.TextIOBase,
+            _vertices: Dict = {}):
+        """
+        """
+        _edges = {}
+        for line in file:
+            if '**edge' in line:
+                n = int(file.readline().rstrip('\n'))
+                for _ in range(n):
+                    row = file.readline().split()
+                    e_id = int(row[0])
+                    v1_id = int(row[1])
+                    v2_id = int(row[2])
+                    v_ids = [v1_id, v2_id]
+                    if _vertices:
+                        _vertices[v1_id].add_incident_edge(e_id)
+                        _vertices[v1_id].add_neighbor(v2_id)
+                        _vertices[v2_id].add_incident_edge(-e_id)
+                        _vertices[v2_id].add_neighbor(v1_id)
+                    _edges[e_id] = cls(e_id, v_ids)
+                return _edges
+
     @property
     def len(self) -> float:
         """
@@ -232,7 +315,6 @@ class Edge3D(Edge, TripleJunction):
         """
         """
         e_str = "Edge3D(id=%d)" % self.id
-        
         return e_str
 
 
@@ -247,7 +329,6 @@ class Edge2D(Edge, GrainBoundary):
         """
         """
         e_str = "Edge2D(id=%d)" % self.id
-        
         return e_str
 
 
@@ -349,3 +430,40 @@ class TripleJunctionSet():
         self.S_s = matutils.entropy_s(*j_tuple)
         self.kappa = self.S_m / self.S_s if self.S_s != 0 else 0
         self.delta_S = self.p_entropy - self.S
+        self.d1, self.d2, self.d3 = matutils.get_d_tuple(j_tuple)
+
+    
+def _add_neighbors(_cells, _incident_cells):
+    """
+    Add neighbors to incident_cells from common cells
+    _vertices, _edges
+    _edges, _faces
+    _faces, _polyhedra
+    """ 
+    for cell in _cells.values():
+        for inc_cell_id in cell.incident_ids:
+            s = set(cell.incident_ids)
+            s.difference_update([inc_cell_id])
+            _incident_cells[inc_cell_id].add_neighbors(list(s))
+
+#TODO: measure and theta are loaded from files and then set to edges and etc 
+            # measure: bool = False,
+            # theta: bool = False,
+            # lower_thrd: float = None,
+            # upper_thrd: float = None
+        
+        # if measure:
+        #     filename_m = filename.rstrip('.tess') + '.stedge'
+        #     with open(filename_m, 'r', encoding="utf-8") as file:
+        #         for line in file:
+        #             row = line.split()
+        #             e_id = int(row[0])
+        #             e_length = float(row[1])
+        #             _edges[e_id].set_length(e_length)
+        #             if theta:
+        #                 e_theta = float(row[2])
+        #                 _edges[e_id].set_theta(
+        #                     e_theta, 
+        #                     lower_thrd=lower_thrd,
+        #                     upper_thrd=upper_thrd
+        #                 )        
