@@ -68,7 +68,10 @@ def main() -> None:
             'S_m' : [TJsets[i].S_m for i in ids],
             'S_s' : [TJsets[i].S_s for i in ids],
             'kappa' : [TJsets[i].kappa for i in ids],
-            'delta_S': [TJsets[i].delta_S for i in ids]
+            'delta_S': [TJsets[i].delta_S for i in ids],
+            'd1': [TJsets[i].d1 for i in ids],
+            'd2': [TJsets[i].d2 for i in ids],
+            'd3': [TJsets[i].d3 for i in ids]
         }
     )
     

@@ -188,3 +188,16 @@ def entropy_s(*args):
                 Ss += (jk - jl) * math.log2(jk / jl)
         Ss = Ss / len(j_array)
         return - Ss
+
+
+def get_d_tuple(j_tuple: Tuple) -> Tuple:
+    """
+    """
+    if j_tuple[0] == 1:
+        return 0, 0, 0
+    else:
+        denom = 1 - j_tuple[0]
+        d1 = j_tuple[1] / denom
+        d2 = j_tuple[2] / denom
+        d3 = j_tuple[3] / denom
+        return d1, d2, d3
