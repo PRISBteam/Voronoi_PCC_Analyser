@@ -6,7 +6,7 @@ from matgen import matutils
 # import numpy as np
 
 
-class Cell():
+class Cell:
     """
     """
     def __init__(self, id: int):
@@ -147,10 +147,11 @@ class GrainBoundary(CellLowerDim):
             raise ValueError('External cannot be set special')
     
     def set_theta(
-            self,
-            theta: float,
-            lower_thrd: float = None,
-            upper_thrd: float = None):
+        self,
+        theta: float,
+        lower_thrd: float = None,
+        upper_thrd: float = None
+    ):
         """
         disorientation angle (in degrees)
         theta must be >= 0 ?
@@ -183,7 +184,6 @@ class GrainBoundary(CellLowerDim):
     def set_external(self, is_external: bool = True):
         """
         When set external, it is set not special with theta = -1
-        Default for edge dim = 2
         """
         self.is_external = is_external
         if is_external:
@@ -271,9 +271,10 @@ class Edge(CellLowerDim):
 
     @classmethod
     def from_tess_file(
-            cls,
-            file: io.TextIOBase,
-            _vertices: Dict = {}):
+        cls,
+        file: io.TextIOBase,
+        _vertices: Dict = {}
+    ):
         """
         """
         _edges = {}
@@ -327,6 +328,50 @@ class Face(Cell):
         super().__init__(id)
         self.v_ids = v_ids
         self.e_ids = []
+
+    @classmethod
+    def from_tess_file(
+        cls,
+        file: io.TextIOBase,
+        _edges: Dict = {}
+    ):
+        """
+        """
+        _faces = {}
+        for line in file:
+            if '**face' in line:
+                n = int(file.readline().rstrip('\n'))
+                for i in range(n):
+                    row = file.readline().split()
+                    f_id = int(row[0])
+                    v_ids = []
+                    for k in range(2, int(row[1]) + 2):
+                        v_ids.append(int(row[k]))
+                    face = cls(f_id, v_ids)
+                    
+                    row = file.readline().split()
+                    e_ids = []
+                    for k in range(1, int(row[0]) + 1):
+                        e_id = int(row[k])
+                        e_ids.append(abs(e_id))
+                        if _edges:
+                            if e_id > 0:
+                                _edges[abs(e_id)].add_incident_cell(f_id)
+                            else:
+                                _edges[abs(e_id)].add_incident_cell(-f_id)
+                    face.add_edges(e_ids)
+                    
+                    row = file.readline().split()
+                    face.add_equation(
+                        float(row[0]),
+                        float(row[1]),
+                        float(row[2]),
+                        float(row[3])
+                    )
+                    _ = file.readline()
+                    
+                    _faces[f_id] = face
+                return _faces
 
     def add_edge(self, e_id: int):
         """
@@ -447,6 +492,7 @@ def _add_neighbors(_cells, _incident_cells):
             s.difference_update([inc_cell_id])
             _incident_cells[inc_cell_id].add_neighbors(list(s))
 
+
 #TODO: measure and theta are loaded from files and then set to edges and etc 
             # measure: bool = False,
             # theta: bool = False,
@@ -468,3 +514,18 @@ def _add_neighbors(_cells, _incident_cells):
         #                     lower_thrd=lower_thrd,
         #                     upper_thrd=upper_thrd
         #                 )        
+#         if measure:
+#             filename_m = filename.rstrip('.tess') + '.stface'
+#             with open(filename_m, 'r', encoding="utf-8") as file:
+#                 for line in file:
+#                     row = line.split()
+#                     f_id = int(row[0])
+#                     f_area = float(row[1])
+#                     _faces[f_id].set_area(f_area)
+#                     if theta:
+#                         f_theta = float(row[2])
+#                         _faces[f_id].set_theta(
+#                             f_theta,
+#                             lower_thrd=lower_thrd,
+#                             upper_thrd=upper_thrd
+#                         )
