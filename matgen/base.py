@@ -422,7 +422,7 @@ class Face3D(Face, GrainBoundary):
         self.is_special = False
 
 
-class Poly(Cell):
+class Poly(Grain):
     """
     """
     def __init__(self, id: int, f_ids: Iterable):
