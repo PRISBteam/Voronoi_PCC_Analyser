@@ -20,7 +20,7 @@ class Cell():
     def __str__(self):
         """
         """
-        cell_str = "Cell(id=%d)" % self.id
+        cell_str = self.__class__.__name__ + "(id=%d)" % self.id
         
         return cell_str
     
@@ -59,12 +59,12 @@ class CellLowerDim(Cell):
         super().__init__(id)
         self.signed_incident_ids = []
 
-    def __str__(self):
-        """
-        """
-        cell_str = "CellLowerDim(id=%d)" % self.id
+    # def __str__(self):
+    #     """
+    #     """
+    #     cell_str = "CellLowerDim(id=%d)" % self.id
         
-        return cell_str
+    #     return cell_str
 
     @property
     def incident_ids(self):
@@ -99,12 +99,12 @@ class TripleJunction(CellLowerDim):
         super().__init__(id)
         self.junction_type = None
 
-    def __str__(self):
-        """
-        """
-        cell_str = "TripleJunction(id=%d)" % self.id
+    # def __str__(self):
+    #     """
+    #     """
+    #     cell_str = "TripleJunction(id=%d)" % self.id
         
-        return cell_str
+    #     return cell_str
 
     def set_junction_type(self, junction_type: int):
         """
@@ -127,11 +127,11 @@ class GrainBoundary(CellLowerDim):
         self.is_special = False
         self.theta = None
 
-    def __str__(self):
-        """
-        """
-        cell_str = "GrainBoundary(id=%d)" % self.id
-        return cell_str
+    # def __str__(self):
+    #     """
+    #     """
+    #     cell_str = "GrainBoundary(id=%d)" % self.id
+    #     return cell_str
 
     def set_special(self, is_special: bool = True):
         """
@@ -222,7 +222,7 @@ class Vertex(CellLowerDim):
     def __str__(self) -> str:
         """
         """
-        v_str = "Vertex(id=%d, x=%.3f, y=%.3f, z=%.3f)" % (
+        v_str = self.__name__ + "(id=%d, x=%.3f, y=%.3f, z=%.3f)" % (
             self.id, self.x, self.y, self.z
         )
         return v_str
@@ -244,7 +244,7 @@ class Vertex2D(Vertex, TripleJunction):
     def __str__(self) -> str:
         """
         """
-        v_str = "Vertex2D(id=%d, x=%.3f, y=%.3f)" % (
+        v_str = self.__name__ + "(id=%d, x=%.3f, y=%.3f)" % (
             self.id, self.x, self.y
         )
         return v_str
@@ -263,11 +263,11 @@ class Edge(CellLowerDim):
         super().__init__(id)
         self.v_ids = v_ids
 
-    def __str__(self):
-        """
-        """
-        e_str = "Edge(id=%d)" % self.id
-        return e_str
+    # def __str__(self):
+    #     """
+    #     """
+    #     e_str = "Edge(id=%d)" % self.id
+    #     return e_str
 
     @classmethod
     def from_tess_file(
@@ -311,11 +311,11 @@ class Edge3D(Edge, TripleJunction):
         super().__init__(id, v_ids)
         self.junction_type = None
 
-    def __str__(self):
-        """
-        """
-        e_str = "Edge3D(id=%d)" % self.id
-        return e_str
+    # def __str__(self):
+    #     """
+    #     """
+    #     e_str = "Edge3D(id=%d)" % self.id
+    #     return e_str
 
 
 class Edge2D(Edge, GrainBoundary):
@@ -325,11 +325,11 @@ class Edge2D(Edge, GrainBoundary):
         super().__init__(id, v_ids)
         self.is_special = False
 
-    def __str__(self):
-        """
-        """
-        e_str = "Edge2D(id=%d)" % self.id
-        return e_str
+    # def __str__(self):
+    #     """
+    #     """
+    #     e_str = "Edge2D(id=%d)" % self.id
+    #     return e_str
 
 
 class Face(CellLowerDim):
@@ -340,12 +340,12 @@ class Face(CellLowerDim):
         self.v_ids = v_ids
         self.e_ids = []
 
-    def __str__(self):
-        """
-        """
-        f_str = "Face(id=%d)" % self.id
+    # def __str__(self):
+    #     """
+    #     """
+    #     f_str = "Face(id=%d)" % self.id
         
-        return f_str
+    #     return f_str
 
     def add_edge(self, e_id: int):
         """
@@ -368,6 +368,29 @@ class Face(CellLowerDim):
         self.c = c
         self.normal = (a, b, c)
 
+    @property
+    def area(self) -> float:
+        """
+        """
+        try:
+            return self.measure
+        except AttributeError:
+            return None 
+
+
+class Face3D(Face, GrainBoundary):
+    """
+    """
+    def __init__(self, id: int, v_ids: Iterable):
+        super().__init__(id, v_ids)
+        self.is_special = False
+
+    # def __str__(self):
+    #     """
+    #     """
+    #     f_str = "Face3D(id=%d)" % self.id
+    #     return f_str
+
 
 class Poly(Cell):
     """
@@ -378,12 +401,12 @@ class Poly(Cell):
         self.e_ids = []
         self.f_ids = f_ids
 
-    def __str__(self):
-        """
-        """
-        p_str = "Poly(id=%d)" % self.id
+    # def __str__(self):
+    #     """
+    #     """
+    #     p_str = "Poly(id=%d)" % self.id
         
-        return p_str
+    #     return p_str
 
     def add_vertex(self, v_id: int):
         """
