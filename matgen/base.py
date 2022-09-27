@@ -296,7 +296,7 @@ class Edge(CellLowerDim):
                 return _edges
 
     @property
-    def len(self) -> float:
+    def length(self) -> float:
         """
         """
         try:
@@ -413,6 +413,66 @@ class Face2D(Face, Grain):
         self.ori = None
         self.ori_descriptor = None
 
+    @classmethod
+    def from_tess_file(
+        cls,
+        file: io.TextIOBase,
+        _edges: Dict = {}
+    ):
+        """
+        """
+        seeds = {}
+        ori = {}
+        _faces = {}
+        file.seek(0) # to ensure that the pointer is set to the beginning
+        for line in file:
+            if '**cell' in line:
+                N = int(file.readline().rstrip('\n'))
+            if '*seed' in line:
+                for i in range(N):
+                    row = file.readline().split()
+                    seeds[int(row[0])] = tuple([*map(float, row[1:4])])
+            if '*ori' in line:
+                ori_descriptor = file.readline().strip() #.rstrip('\n')
+                for i in range(N):
+                    row = file.readline().split()
+                    ori[i + 1] = tuple([*map(float, row)])
+            if '**face' in line:
+                n = int(file.readline().rstrip('\n'))
+                for i in range(n):
+                    row = file.readline().split()
+                    f_id = int(row[0])
+                    v_ids = []
+                    for k in range(2, int(row[1]) + 2):
+                        v_ids.append(int(row[k]))
+                    face = cls(f_id, v_ids)
+                    
+                    row = file.readline().split()
+                    e_ids = []
+                    for k in range(1, int(row[0]) + 1):
+                        e_id = int(row[k])
+                        e_ids.append(abs(e_id))
+                        if _edges:
+                            if e_id > 0:
+                                _edges[abs(e_id)].add_incident_cell(f_id)
+                            else:
+                                _edges[abs(e_id)].add_incident_cell(-f_id)
+                    face.add_edges(e_ids)
+                    
+                    row = file.readline().split()
+                    face.add_equation(
+                        float(row[0]),
+                        float(row[1]),
+                        float(row[2]),
+                        float(row[3])
+                    )
+                    _ = file.readline()
+                    
+                    face.set_crystal_ori(ori_descriptor, ori[f_id])
+                    face.set_seed(seeds[f_id])
+                    _faces[f_id] = face
+                return _faces
+
 
 class Face3D(Face, GrainBoundary):
     """
@@ -430,6 +490,56 @@ class Poly(Grain):
         self.v_ids = []
         self.e_ids = []
         self.f_ids = f_ids
+
+    @classmethod
+    def from_tess_file(
+        cls,
+        file: io.TextIOBase,
+        _faces: Dict
+    ):
+        """
+        """
+        seeds = {}
+        ori = {}
+        _polyhedra = {}
+        file.seek(0) # to ensure that the pointer is set to the beginning
+        for line in file:
+            if '**cell' in line:
+                N = int(file.readline().rstrip('\n'))
+            if '*seed' in line:
+                for i in range(N):
+                    row = file.readline().split()
+                    seeds[int(row[0])] = tuple([*map(float, row[1:4])])
+            if '*ori' in line:
+                ori_descriptor = file.readline().strip() #.rstrip('\n')
+                for i in range(N):
+                    row = file.readline().split()
+                    ori[i + 1] = tuple([*map(float, row)])
+            if '**polyhedron' in line:
+                n = int(file.readline().rstrip('\n'))
+                for i in range(n):
+                    row = file.readline().split()
+                    p_id = int(row[0])
+                    f_ids = []
+                    v_ids = []
+                    e_ids = []
+                    for k in range(2, int(row[1]) + 2):
+                        f_id = int(row[k])
+                        f_ids.append(abs(f_id))
+                        v_ids += _faces[abs(f_id)].v_ids
+                        e_ids += _faces[abs(f_id)].e_ids
+                        if f_id > 0:
+                            _faces[abs(f_id)].add_incident_cell(p_id)
+                        else:
+                            _faces[abs(f_id)].add_incident_cell(-p_id)
+                    f_ids = list(set(f_ids))
+                    poly = cls(p_id, f_ids)
+                    poly.add_vertices(v_ids)
+                    poly.add_edges(e_ids)
+                    poly.set_crystal_ori(ori_descriptor, ori[p_id])
+                    poly.set_seed(seeds[p_id])
+                    _polyhedra[p_id] = poly
+                return _polyhedra
 
     def add_vertex(self, v_id: int):
         """
@@ -454,6 +564,15 @@ class Poly(Grain):
         """
         self.e_ids += e_ids
         self.e_ids = list(set(self.e_ids))
+
+    @property
+    def vol(self) -> float:
+        """
+        """
+        try:
+            return self.measure
+        except AttributeError:
+            return None 
 
 
 class TripleJunctionSet():
@@ -529,3 +648,11 @@ def _add_neighbors(_cells, _incident_cells):
 #                             lower_thrd=lower_thrd,
 #                             upper_thrd=upper_thrd
 #                         )
+#         if measure:
+#             filename_m = filename.rstrip('.tess') + '.stpoly'
+#             with open(filename_m, 'r', encoding="utf-8") as file:
+#                 for line in file:
+#                     row = line.split()
+#                     p_id = int(row[0])
+#                     p_vol = float(row[1])
+#                     _polyhedra[p_id].set_volume(p_vol)
