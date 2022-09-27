@@ -52,6 +52,28 @@ class Cell():
         self.measure = measure
 
 
+class Grain(Cell):
+    """
+    https://neper.info/doc/exprskeys.html#rotation-and-orientation-descriptors
+    """
+    def __init__(self, id: int):
+        super().__init__(id)
+        self.seed = None
+        self.ori = None
+        self.ori_descriptor = None
+
+    def set_crystal_ori(self, ori_descriptor: str, ori_components: Tuple):
+        """
+        """
+        self.ori_descriptor = ori_descriptor
+        self.ori = ori_components
+
+    def set_seed(self, seed_coord: Tuple):
+        """
+        """
+        self.seed = seed_coord
+
+
 class CellLowerDim(Cell):
     """
     """
@@ -298,7 +320,7 @@ class Edge3D(Edge, TripleJunction):
         self.junction_type = None
 
 
-class Face(CellLowerDim):
+class Face(Cell):
     """
     """
     def __init__(self, id: int, v_ids: Iterable):
@@ -335,6 +357,16 @@ class Face(CellLowerDim):
             return self.measure
         except AttributeError:
             return None 
+
+
+class Face2D(Face, Grain):
+    """
+    """
+    def __init__(self, id: int, v_ids: Iterable):
+        super().__init__(id, v_ids)
+        self.seed = None
+        self.ori = None
+        self.ori_descriptor = None
 
 
 class Face3D(Face, GrainBoundary):

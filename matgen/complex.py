@@ -327,21 +327,7 @@ class CellComplex
 #         self.c = c
 #         self.normal = (a, b, c)
     
-#     def get_degree(self):
-#         """
-#         internal / external
-#         """
-#         return len(self.p_ids)
     
-#     def set_seed(self, seed_coord: Tuple):
-#         """
-#         """
-#         self.seed = seed_coord
-
-#     def set_area(self, area: float):
-#         """
-#         """
-#         self.area = area
 
 #     def set_theta(
 #             self,
@@ -408,12 +394,6 @@ class CellComplex
 #             elif self.theta == -1:
 #                 self.theta = None
 
-    
-#     def set_crystal_ori(self, ori_format: str, ori_components: Tuple):
-#         """
-#         """
-#         self.ori_format = ori_format
-#         self.ori = ori_components
 
 
 # class Poly():
