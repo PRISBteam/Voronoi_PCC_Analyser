@@ -74,7 +74,7 @@ def main() -> None:
             'd3': [TJsets[i].d3 for i in ids]
         }
     )
-    
+    df = df.sort_values(by='p')
     df.to_csv('characteristics.txt', index=False, sep=' ')
 
     print('Time elapsed:', round(time.time() - start, 2), 's')
