@@ -1,6 +1,7 @@
 """Base classes for complex analysis.
 """
 import io
+import time
 from typing import Dict, Iterable, List, Tuple
 from matgen import matutils
 # import numpy as np
@@ -575,7 +576,7 @@ class Poly(Grain):
             return None 
 
 
-class TripleJunctionSet():
+class TripleJunctionSet:
     """
     """
 
@@ -610,6 +611,134 @@ def _add_neighbors(_cells, _incident_cells):
             s = set(cell.incident_ids)
             s.difference_update([inc_cell_id])
             _incident_cells[inc_cell_id].add_neighbors(list(s))
+
+
+class CellComplex:
+    """
+    """
+    def __init__(
+        self,
+        dim: int,
+        _vertices: Dict,
+        _edges: Dict,
+        _faces: Dict,
+        _polyhedra: Dict = {} 
+    ):
+        """
+        """
+        self.dim = dim
+        self._vertices = _vertices
+        self._edges = _edges
+        self._faces = _faces
+        if _polyhedra:
+            self._polyhedra = _polyhedra
+
+    @classmethod
+    def from_tess_file(cls, file: io.TextIOBase):
+        """
+        """
+        start = time.time()
+
+        for line in file:
+            if '**general' in line:
+                dim = int(file.readline().split()[0])
+                if dim not in [2, 3]:
+                    raise ValueError(
+                        f'Dimension must be 2 or 3, not {dim}'
+                    )
+        if dim == 2:
+            _vertices = Vertex2D.from_tess_file(file)
+        elif dim == 3:
+            _vertices = Vertex3D.from_tess_file(file)
+
+        # print(len(self._vertices.keys()), 'vertices loaded:',
+        #     time.time() - start, 's')
+        # A dictionary
+        if dim == 2:
+            _edges = Edge2D.from_tess_file(file, _vertices)
+        elif dim == 3:
+            _edges = Edge3D.from_tess_file(file, _vertices)
+        
+        # print(len(self._edges.keys()),'edges loaded:',
+        #     time.time() - start, 's')
+        _add_neighbors(_vertices, _edges)
+
+        # print('neighbor edges found',
+        #     time.time() - start, 's')
+        if dim == 2:
+            _faces = Face2D.from_tess_file(file, _edges)
+        elif dim == 3:
+            _faces = Face3D.from_tess_file(file, _edges)
+        
+        # print(len(self._faces.keys()), 'faces loaded:',
+        #     time.time() - start, 's')
+        _add_neighbors(_edges, _faces)
+        
+        # print('neighbor faces found',
+        #     time.time() - start, 's') 
+
+        if dim == 3:
+            _polyhedra = Poly.from_tess_file(file, _faces)
+
+        _add_neighbors(_faces, _polyhedra)
+        # print('neighbor polyhedra found',
+        #     time.time() - start, 's')
+        
+        # Set external
+        if dim == 2:
+            for e in _edges.values():
+                if e.get_degree() == 1:
+                    e.set_external(True)
+                    for v_id in e.v_ids:
+                        _vertices[v_id].set_external(True)
+                    for f_id in e.incident_ids:
+                        _faces[f_id].set_external(True)
+        elif dim == 3:
+            for f in _faces.values():
+                if f.get_degree() == 1:
+                    f.set_external(True)
+                    for v_id in f.v_ids:
+                        _vertices[v_id].set_external(True)
+                    for e_id in f.e_ids:
+                        _edges[e_id].set_external(True)
+                    for p_id in f.incident_ids:
+                        _polyhedra[p_id].set_external(True)
+        
+        return cls(dim, _vertices, _edges, _faces, _polyhedra)    
+
+
+#         # Set junction types from theta (if known from a file)
+#         # If lower or upper threshold are known or both
+#         if lower_thrd or upper_thrd:
+#             self.set_junction_types()
+
+#         self.load_time = round(time.time() - start, 1)
+#         print('Complex loaded:', self.load_time, 's')
+
+    @property
+    def vertices(self):
+        """
+        """
+        return [v for v in self._vertices.values()]
+
+    @property
+    def edges(self):
+        """
+        """
+        return [e for e in self._edges.values()]
+
+    @property
+    def faces(self):
+        """
+        """
+        return [f for f in self._faces.values()]
+
+    @property
+    def polyhedra(self):
+        """
+        """
+        return [p for p in self._polyhedra.values()]
+
 
 
 #TODO: measure and theta are loaded from files and then set to edges and etc 
