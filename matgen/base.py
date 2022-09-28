@@ -3,8 +3,10 @@
 import io
 import time
 from typing import Dict, Iterable, List, Tuple
+import logging
+import numpy as np
+
 from matgen import matutils
-# import numpy as np
 
 
 class Cell:
@@ -625,7 +627,7 @@ class TripleJunctionSet:
         self.d1, self.d2, self.d3 = matutils.get_d_tuple(j_tuple)
 
     
-def _add_neighbors(_cells, _incident_cells):
+def _add_neighbors(_cells: Dict, _incident_cells: Dict):
     """
     Add neighbors to incident_cells from common cells
     _vertices, _edges
@@ -639,6 +641,51 @@ def _add_neighbors(_cells, _incident_cells):
             _incident_cells[inc_cell_id].add_neighbors(list(s))
 
 
+def _add_measures(_cells: Dict, measures: List):
+    """
+    """
+    n = len(_cells.keys())
+    if n != len(measures):
+        raise ValueError(
+            'Number of cells must be equal to number of measures'
+        )
+    
+    for i in range(n):
+        _cells[i + 1].set_measure(measures[i])
+
+def _add_theta(_cells: Dict, thetas: List):
+    pass
+
+def _parse_stfile(file: io.TextIOBase | str):
+    """
+    Return columns of the stfile
+    """
+    data = np.loadtxt(file)
+    columns = []
+    for i in range(data.shape[1]):
+        columns.append(data[:, i])
+    return tuple(columns)
+
+
+    for line in file:
+        row = line.split()
+
+        e_id = int(row[0])
+        # if measure:
+        #     filename_m = filename.rstrip('.tess') + '.stedge'
+        #     with open(filename_m, 'r', encoding="utf-8") as file:
+        #         for line in file:
+        #             row = line.split()
+        #             e_id = int(row[0])
+        #             e_length = float(row[1])
+        #             _edges[e_id].set_length(e_length)
+        #             if theta:
+        #                 e_theta = float(row[2])
+        #                 _edges[e_id].set_theta(
+        #                     e_theta, 
+        #                     lower_thrd=lower_thrd,
+        #                     upper_thrd=upper_thrd
+        #                 )  
 class CellComplex:
     """
     """
@@ -660,13 +707,20 @@ class CellComplex:
             self._polyhedra = _polyhedra
 
     @classmethod
-    def from_tess_file(cls, file: io.TextIOBase | str):
+    def from_tess_file(
+        cls,
+        file: io.TextIOBase | str,
+        with_measures: bool = True,
+        with_theta: bool = True
+    ):
         """
         """
         start = time.time()
+        filename = None
 
         if isinstance(file, str):
-            file = open(file, 'r', encoding='utf-8')
+            filename = file
+            file = open(filename, 'r', encoding='utf-8')
         elif not isinstance(file, io.TextIOBase):
             raise ValueError('Check file name or format!') 
 
@@ -683,31 +737,20 @@ class CellComplex:
         elif dim == 3:
             _vertices = Vertex3D.from_tess_file(file)
 
-        # print(len(self._vertices.keys()), 'vertices loaded:',
-        #     time.time() - start, 's')
-        # A dictionary
+
         if dim == 2:
             _edges = Edge2D.from_tess_file(file, _vertices)
         elif dim == 3:
             _edges = Edge3D.from_tess_file(file, _vertices)
-        
-        # print(len(self._edges.keys()),'edges loaded:',
-        #     time.time() - start, 's')
+                    
         _add_neighbors(_vertices, _edges)
 
-        # print('neighbor edges found',
-        #     time.time() - start, 's')
         if dim == 2:
             _faces = Face2D.from_tess_file(file, _edges)
         elif dim == 3:
             _faces = Face3D.from_tess_file(file, _edges)
         
-        # print(len(self._faces.keys()), 'faces loaded:',
-        #     time.time() - start, 's')
         _add_neighbors(_edges, _faces)
-        
-        # print('neighbor faces found',
-        #     time.time() - start, 's') 
 
         if dim == 3:
             _polyhedra = Poly.from_tess_file(file, _faces)
@@ -724,8 +767,8 @@ class CellComplex:
                         _vertices[v_id].set_external(True)
                     for f_id in e.incident_ids:
                         _faces[f_id].set_external(True)
-            print('Elapsed time:', round(time.time() - start, 3), 's')
-            return cls(dim, _vertices, _edges, _faces)  
+            file.close()
+
         elif dim == 3:
             for f in _faces.values():
                 if f.get_degree() == 1:
@@ -736,17 +779,71 @@ class CellComplex:
                         _edges[e_id].set_external(True)
                     for p_id in f.incident_ids:
                         _polyhedra[p_id].set_external(True)
-            print('Elapsed time:', round(time.time() - start, 3), 's')
-            return cls(dim, _vertices, _edges, _faces, _polyhedra)    
+            file.close()
+ 
+        if with_measures and filename:
+            filename_m = filename.rstrip('.tess') + '.stedge'
+            try:
+                columns = _parse_stfile(filename_m)
+                _add_measures(_edges, columns[0])
+            except:
+                logging.error(f'Error reading file {filename_m}')
+            if with_theta and dim == 2:
+                try:
+                    _add_theta(_edges, columns[1])
+                except:
+                    logging.error(f'Error reading theta from file {filename_m}')
 
+            filename_m = filename.rstrip('.tess') + '.stface'
+            try:
+                columns = _parse_stfile(filename_m)
+                _add_measures(_faces, columns[0])
+            except:
+                logging.error(f'Error reading file {filename_m}')
+            if with_theta and dim == 3:
+                try:
+                    _add_theta(_faces, columns[1])
+                except:
+                    logging.error(f'Error reading theta from file {filename_m}')
+
+            if dim == 3:
+                filename_m = filename.rstrip('.tess') + '.stpoly'
+                try:
+                    columns = _parse_stfile(filename_m)
+                    _add_measures(_polyhedra, columns[0])
+                except:
+                    logging.error(f'Error reading file {filename_m}')
+        
+        elif with_theta and filename:
+            if dim == 2:
+                filename_m = filename.rstrip('.tess') + '.stedge'
+                try:
+                    columns = _parse_stfile(filename_m)
+                    _add_theta(_edges, columns[0])
+                except:
+                    logging.error(f'Error reading theta from file {filename_m}')
+            elif dim == 3:
+                filename_m = filename.rstrip('.tess') + '.stface'
+                try:
+                    columns = _parse_stfile(filename_m)
+                    _add_theta(_faces, columns[0])
+                except:
+                    logging.error(f'Error reading theta from file {filename_m}')  
+
+        load_time = round(time.time() - start, 1)
+        print('Complex loaded:', load_time, 's')
+
+        if dim ==2:
+            return cls(dim, _vertices, _edges, _faces)
+        elif dim ==3:
+            return cls(dim, _vertices, _edges, _faces, _polyhedra)
 
 #         # Set junction types from theta (if known from a file)
 #         # If lower or upper threshold are known or both
 #         if lower_thrd or upper_thrd:
 #             self.set_junction_types()
 
-#         self.load_time = round(time.time() - start, 1)
-#         print('Complex loaded:', self.load_time, 's')
+
 
     @property
     def vertices(self):
