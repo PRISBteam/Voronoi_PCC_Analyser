@@ -102,7 +102,8 @@ class CellLowerDim(Cell):
     #     self.incident_ids += incident_ids
     #     self.incident_ids = list(set(self.incident_ids))
 
-    def get_degree(self) -> int:
+    @property
+    def degree(self) -> int:
         """
         """
         return len(self.signed_incident_ids)
@@ -225,7 +226,7 @@ class Vertex(CellLowerDim):
     def __str__(self) -> str:
         """
         """
-        v_str = self.__name__ + "(id=%d, x=%.3f, y=%.3f, z=%.3f)" % (
+        v_str = self.__class____name__ + "(id=%d, x=%.3f, y=%.3f, z=%.3f)" % (
             self.id, self.x, self.y, self.z
         )
         return v_str
@@ -247,7 +248,7 @@ class Vertex2D(Vertex, TripleJunction):
     def __str__(self) -> str:
         """
         """
-        v_str = self.__name__ + "(id=%d, x=%.3f, y=%.3f)" % (
+        v_str = self.__class__.__name__ + "(id=%d, x=%.3f, y=%.3f)" % (
             self.id, self.x, self.y
         )
         return v_str
@@ -289,9 +290,9 @@ class Edge(CellLowerDim):
                     v2_id = int(row[2])
                     v_ids = [v1_id, v2_id]
                     if _vertices:
-                        _vertices[v1_id].add_incident_edge(e_id)
+                        _vertices[v1_id].add_incident_cell(e_id)
                         _vertices[v1_id].add_neighbor(v2_id)
-                        _vertices[v2_id].add_incident_edge(-e_id)
+                        _vertices[v2_id].add_incident_cell(-e_id)
                         _vertices[v2_id].add_neighbor(v1_id)
                     _edges[e_id] = cls(e_id, v_ids)
                 return _edges
@@ -622,7 +623,7 @@ class CellComplex:
         _vertices: Dict,
         _edges: Dict,
         _faces: Dict,
-        _polyhedra: Dict = {} 
+        _polyhedra: Dict = None
     ):
         """
         """
@@ -646,6 +647,7 @@ class CellComplex:
                     raise ValueError(
                         f'Dimension must be 2 or 3, not {dim}'
                     )
+                break
         if dim == 2:
             _vertices = Vertex2D.from_tess_file(file)
         elif dim == 3:
@@ -679,10 +681,9 @@ class CellComplex:
 
         if dim == 3:
             _polyhedra = Poly.from_tess_file(file, _faces)
-
-        _add_neighbors(_faces, _polyhedra)
-        # print('neighbor polyhedra found',
-        #     time.time() - start, 's')
+            _add_neighbors(_faces, _polyhedra)
+            # print('neighbor polyhedra found',
+            #     time.time() - start, 's')
         
         # Set external
         if dim == 2:
@@ -693,6 +694,8 @@ class CellComplex:
                         _vertices[v_id].set_external(True)
                     for f_id in e.incident_ids:
                         _faces[f_id].set_external(True)
+            print('Elapsed time:', round(time.time() - start, 3), 's')
+            return cls(dim, _vertices, _edges, _faces)  
         elif dim == 3:
             for f in _faces.values():
                 if f.get_degree() == 1:
@@ -703,8 +706,8 @@ class CellComplex:
                         _edges[e_id].set_external(True)
                     for p_id in f.incident_ids:
                         _polyhedra[p_id].set_external(True)
-        
-        return cls(dim, _vertices, _edges, _faces, _polyhedra)    
+            print('Elapsed time:', round(time.time() - start, 3), 's')
+            return cls(dim, _vertices, _edges, _faces, _polyhedra)    
 
 
 #         # Set junction types from theta (if known from a file)
