@@ -205,11 +205,16 @@ class Vertex(CellLowerDim):
         self.z = z
 
     @classmethod
-    def from_tess_file(cls, file: io.TextIOBase) -> Dict:
+    def from_tess_file(cls, file: io.TextIOBase | str) -> Dict:
         """
         Note that file must be oper prior to calling this method
         Be careful with reading the same file with different methods
         """      
+        if isinstance(file, str):
+            file = open(file, 'r', encoding='utf-8')
+        elif not isinstance(file, io.TextIOBase):
+            raise ValueError('Check file name or format!') 
+        
         _vertices = {}
         for line in file:
             if '**vertex' in line:
@@ -226,7 +231,7 @@ class Vertex(CellLowerDim):
     def __str__(self) -> str:
         """
         """
-        v_str = self.__class____name__ + "(id=%d, x=%.3f, y=%.3f, z=%.3f)" % (
+        v_str = self.__class__.__name__ + "(id=%d, x=%.3f, y=%.3f, z=%.3f)" % (
             self.id, self.x, self.y, self.z
         )
         return v_str
@@ -274,11 +279,16 @@ class Edge(CellLowerDim):
     @classmethod
     def from_tess_file(
         cls,
-        file: io.TextIOBase,
+        file: io.TextIOBase | str,
         _vertices: Dict = {}
     ):
         """
         """
+        if isinstance(file, str):
+            file = open(file, 'r', encoding='utf-8')
+        elif not isinstance(file, io.TextIOBase):
+            raise ValueError('Check file name or format!') 
+
         _edges = {}
         for line in file:
             if '**edge' in line:
@@ -334,11 +344,16 @@ class Face(Cell):
     @classmethod
     def from_tess_file(
         cls,
-        file: io.TextIOBase,
+        file: io.TextIOBase | str,
         _edges: Dict = {}
     ):
         """
         """
+        if isinstance(file, str):
+            file = open(file, 'r', encoding='utf-8')
+        elif not isinstance(file, io.TextIOBase):
+            raise ValueError('Check file name or format!') 
+
         _faces = {}
         for line in file:
             if '**face' in line:
@@ -418,11 +433,16 @@ class Face2D(Face, Grain):
     @classmethod
     def from_tess_file(
         cls,
-        file: io.TextIOBase,
+        file: io.TextIOBase | str,
         _edges: Dict = {}
     ):
         """
         """
+        if isinstance(file, str):
+            file = open(file, 'r', encoding='utf-8')
+        elif not isinstance(file, io.TextIOBase):
+            raise ValueError('Check file name or format!') 
+
         seeds = {}
         ori = {}
         _faces = {}
@@ -496,11 +516,16 @@ class Poly(Grain):
     @classmethod
     def from_tess_file(
         cls,
-        file: io.TextIOBase,
+        file: io.TextIOBase | str,
         _faces: Dict
     ):
         """
         """
+        if isinstance(file, str):
+            file = open(file, 'r', encoding='utf-8')
+        elif not isinstance(file, io.TextIOBase):
+            raise ValueError('Check file name or format!')
+
         seeds = {}
         ori = {}
         _polyhedra = {}
@@ -635,10 +660,15 @@ class CellComplex:
             self._polyhedra = _polyhedra
 
     @classmethod
-    def from_tess_file(cls, file: io.TextIOBase):
+    def from_tess_file(cls, file: io.TextIOBase | str):
         """
         """
         start = time.time()
+
+        if isinstance(file, str):
+            file = open(file, 'r', encoding='utf-8')
+        elif not isinstance(file, io.TextIOBase):
+            raise ValueError('Check file name or format!') 
 
         for line in file:
             if '**general' in line:
