@@ -150,6 +150,32 @@ class GrainBoundary(CellLowerDim):
         elif self.is_external:
             raise ValueError('External cannot be set special')
     
+    def _reset_theta_thrds(
+        self,
+        lower_thrd: float = None,
+        upper_thrd: float = None
+    ):
+        """
+        """
+        if not self.is_external and self.theta:
+            if lower_thrd and upper_thrd:
+                if  self.theta >= lower_thrd and self.theta <= upper_thrd:
+                    self.set_special(True)
+                else:
+                    self.set_special(False)
+            elif lower_thrd:
+                if  self.theta >= lower_thrd:
+                    self.set_special(True)
+                else:
+                    self.set_special(False)
+            elif upper_thrd:
+                if  self.theta <= upper_thrd:
+                    self.set_special(True)
+                else:
+                    self.set_special(False)
+            else:
+                self.set_special(False)
+    
     def set_theta(
         self,
         theta: float,
@@ -160,6 +186,7 @@ class GrainBoundary(CellLowerDim):
         disorientation angle (in degrees)
         theta must be >= 0 ?
         for external cells theta = -1
+        TODO: check if theta is changed
         """
         if theta < 0:
             self.set_external(True)
@@ -168,6 +195,7 @@ class GrainBoundary(CellLowerDim):
             raise ValueError(f"External doesn't have theta (id={self.id})")
         
         self.theta = theta
+        self._reset_theta_thrds(lower_thrd, upper_thrd)
         
         if lower_thrd and upper_thrd:
             if  theta >= lower_thrd and theta <= upper_thrd:
@@ -653,14 +681,37 @@ def _add_measures(_cells: Dict, measures: List):
     for i in range(n):
         _cells[i + 1].set_measure(measures[i])
 
-def _add_theta(_cells: Dict, thetas: List):
-    pass
+
+def _add_theta(
+    _cells: Dict,
+    thetas: List,
+    lower_thrd: float = None,
+    upper_thrd: float = None
+):
+    """
+    """
+    n = len(_cells.keys())
+    if n != len(thetas):
+        raise ValueError(
+            'Number of cells must be equal to number of theta'
+        )
+    
+    for i in range(n):
+        _cells[i + 1].set_theta(
+            thetas[i],
+            lower_thrd=lower_thrd,
+            upper_thrd=upper_thrd
+        )
+
 
 def _parse_stfile(file: io.TextIOBase | str):
     """
     Return columns of the stfile
     """
     data = np.loadtxt(file)
+    if len(data.shape) == 1:
+        return (data,)
+    
     columns = []
     for i in range(data.shape[1]):
         columns.append(data[:, i])
@@ -671,21 +722,8 @@ def _parse_stfile(file: io.TextIOBase | str):
         row = line.split()
 
         e_id = int(row[0])
-        # if measure:
-        #     filename_m = filename.rstrip('.tess') + '.stedge'
-        #     with open(filename_m, 'r', encoding="utf-8") as file:
-        #         for line in file:
-        #             row = line.split()
-        #             e_id = int(row[0])
-        #             e_length = float(row[1])
-        #             _edges[e_id].set_length(e_length)
-        #             if theta:
-        #                 e_theta = float(row[2])
-        #                 _edges[e_id].set_theta(
-        #                     e_theta, 
-        #                     lower_thrd=lower_thrd,
-        #                     upper_thrd=upper_thrd
-        #                 )  
+
+
 class CellComplex:
     """
     """
@@ -711,7 +749,9 @@ class CellComplex:
         cls,
         file: io.TextIOBase | str,
         with_measures: bool = True,
-        with_theta: bool = True
+        with_theta: bool = True,
+        lower_thrd: float = None,
+        upper_thrd: float = None
     ):
         """
         """
@@ -761,7 +801,7 @@ class CellComplex:
         # Set external
         if dim == 2:
             for e in _edges.values():
-                if e.get_degree() == 1:
+                if e.degree == 1:
                     e.set_external(True)
                     for v_id in e.v_ids:
                         _vertices[v_id].set_external(True)
@@ -771,7 +811,7 @@ class CellComplex:
 
         elif dim == 3:
             for f in _faces.values():
-                if f.get_degree() == 1:
+                if f.degree == 1:
                     f.set_external(True)
                     for v_id in f.v_ids:
                         _vertices[v_id].set_external(True)
@@ -790,7 +830,7 @@ class CellComplex:
                 logging.error(f'Error reading file {filename_m}')
             if with_theta and dim == 2:
                 try:
-                    _add_theta(_edges, columns[1])
+                    _add_theta(_edges, columns[1], lower_thrd, upper_thrd)
                 except:
                     logging.error(f'Error reading theta from file {filename_m}')
 
@@ -802,7 +842,7 @@ class CellComplex:
                 logging.error(f'Error reading file {filename_m}')
             if with_theta and dim == 3:
                 try:
-                    _add_theta(_faces, columns[1])
+                    _add_theta(_faces, columns[1], lower_thrd, upper_thrd)
                 except:
                     logging.error(f'Error reading theta from file {filename_m}')
 
@@ -819,16 +859,21 @@ class CellComplex:
                 filename_m = filename.rstrip('.tess') + '.stedge'
                 try:
                     columns = _parse_stfile(filename_m)
-                    _add_theta(_edges, columns[0])
+                    _add_theta(_edges, columns[0], lower_thrd, upper_thrd)
                 except:
                     logging.error(f'Error reading theta from file {filename_m}')
             elif dim == 3:
                 filename_m = filename.rstrip('.tess') + '.stface'
                 try:
                     columns = _parse_stfile(filename_m)
-                    _add_theta(_faces, columns[0])
+                    _add_theta(_faces, columns[0], lower_thrd, upper_thrd)
                 except:
                     logging.error(f'Error reading theta from file {filename_m}')  
+
+#         # Set junction types from theta (if known from a file)
+#         # If lower or upper threshold are known or both
+#         if lower_thrd or upper_thrd:
+#             self.set_junction_types()
 
         load_time = round(time.time() - start, 1)
         print('Complex loaded:', load_time, 's')
@@ -838,12 +883,21 @@ class CellComplex:
         elif dim ==3:
             return cls(dim, _vertices, _edges, _faces, _polyhedra)
 
-#         # Set junction types from theta (if known from a file)
-#         # If lower or upper threshold are known or both
-#         if lower_thrd or upper_thrd:
-#             self.set_junction_types()
+    def __str__(self):
+        """
+        """
+        cc_str = f"<class {self.__class__.__name__}> {self.dim}D" +\
+        f"\n{self.vernb} vertices" + f"\n{self.edgenb} edges" +\
+        f"\n{self.facenb} faces" 
+        
+        if self.dim == 3:
+            cc_str += f"\n{self.polynb} polyhedra"
+        return cc_str
 
-
+    def __repr__(self) -> str:
+        """
+        """
+        return self.__str__()
 
     @property
     def vertices(self):
@@ -869,49 +923,219 @@ class CellComplex:
         """
         return [p for p in self._polyhedra.values()]
 
+    @property
+    def vernb(self):
+        """
+        """
+        return len(self._vertices)
 
+    @property
+    def edgenb(self):
+        """
+        """
+        return len(self._edges)
 
-#TODO: measure and theta are loaded from files and then set to edges and etc 
-            # measure: bool = False,
-            # theta: bool = False,
-            # lower_thrd: float = None,
-            # upper_thrd: float = None
+    @property
+    def facenb(self):
+        """
+        """
+        return len(self._faces)
+
+    @property
+    def polynb(self):
+        """
+        """
+        return len(self._polyhedra)
+
+    def _choose_cell_type(self, cell_type: str | int):
+        """
+        """
+        if cell_type in ['v', 'vertex', 0, '0']:
+            _cells = self._vertices
+        elif cell_type in ['e', 'edge', 1, '1']:
+            _cells = self._edges
+        elif cell_type in ['f', 'face', 2, '2']:
+            _cells = self._faces
+        elif cell_type in ['p', 'poly', 3, '3']:
+            _cells = self._polyhedra
+        else:
+            raise TypeError('Unknown cell type')
+        return _cells
+
+    def get_one(self, cell_type: str | int, cell_id: int):
+        """
+        """
+        _cells = self._choose_cell_type(cell_type)
+        return _cells[cell_id]
+    
+    def get_many(self, cell_type: str | int, cell_ids: Iterable):
+        """
+        """
+        _cells = self._choose_cell_type(cell_type)
+        return [_cells[cell_id] for cell_id in cell_ids]
+
+    def get_external_ids(self, cell_type: str | int):
+        """
+        """
+        _cells = self._choose_cell_type(cell_type)
+        return [cell.id for cell in _cells.values() if cell.is_external]
+
+    def get_internal_ids(self, cell_type: str | int):
+        """
+        """
+        _cells = self._choose_cell_type(cell_type)
+        return [cell.id for cell in _cells.values() if not cell.is_external]
+
+    def get_special_ids(self):
+        """
+        2D - edges can be special
+        3D - faces can be special
+        """
+        if self.dim == 2:
+            _cells = self._choose_cell_type('edge')
+        elif self.dim == 3:
+            _cells = self._choose_cell_type('face')
+        return [cell.id for cell in _cells.values() if cell.is_special]
+
+    def get_junction_ids_of_type(self, junction_type: int) -> List:
+        """
+        2D - vertices are junctions
+        3D - edges are junctions
+        """
         
-        # if measure:
-        #     filename_m = filename.rstrip('.tess') + '.stedge'
-        #     with open(filename_m, 'r', encoding="utf-8") as file:
-        #         for line in file:
-        #             row = line.split()
-        #             e_id = int(row[0])
-        #             e_length = float(row[1])
-        #             _edges[e_id].set_length(e_length)
-        #             if theta:
-        #                 e_theta = float(row[2])
-        #                 _edges[e_id].set_theta(
-        #                     e_theta, 
-        #                     lower_thrd=lower_thrd,
-        #                     upper_thrd=upper_thrd
-        #                 )        
-#         if measure:
-#             filename_m = filename.rstrip('.tess') + '.stface'
-#             with open(filename_m, 'r', encoding="utf-8") as file:
-#                 for line in file:
-#                     row = line.split()
-#                     f_id = int(row[0])
-#                     f_area = float(row[1])
-#                     _faces[f_id].set_area(f_area)
-#                     if theta:
-#                         f_theta = float(row[2])
-#                         _faces[f_id].set_theta(
-#                             f_theta,
-#                             lower_thrd=lower_thrd,
-#                             upper_thrd=upper_thrd
-#                         )
-#         if measure:
-#             filename_m = filename.rstrip('.tess') + '.stpoly'
-#             with open(filename_m, 'r', encoding="utf-8") as file:
-#                 for line in file:
-#                     row = line.split()
-#                     p_id = int(row[0])
-#                     p_vol = float(row[1])
-#                     _polyhedra[p_id].set_volume(p_vol)
+        if self.dim == 2:
+            _cells = self._choose_cell_type('vertex')
+        elif self.dim == 3:
+            _cells = self._choose_cell_type('edge')
+        junction_ids = []
+        for cell in _cells.values():
+            if cell.junction_type == junction_type:
+                junction_ids.append(cell.id)
+        return junction_ids
+
+    def get_spec_fraction(self):
+        """
+        number_of_special / number_of_internal
+        """
+        n_spec = len(self.get_special_ids())
+        if self.dim == 2:
+            n_int = len(self.get_internal_ids('e'))
+        elif self.dim == 3:
+            n_int = len(self.get_internal_ids('f'))
+        if n_int == 0:
+            return 0
+        else:
+            p = n_spec / n_int
+            return p
+
+    def get_ext_fraction(self, cell_type: str | int):
+        """
+        number_of_external / number_of_cells
+        """
+        n_ext = len(self.get_external_ids(cell_type))
+        n_cells = len(self._choose_cell_type(cell_type))
+        frac = n_ext / n_cells
+        return frac
+
+    def get_j_fraction(self, junction_type: int):
+        """
+        number_of_junction_of_type / number_of_internal
+        """
+        n_junc = len(self.get_junction_ids_of_type(junction_type))
+        if self.dim == 2:
+            n_int = len(self.get_internal_ids('v'))
+        elif self.dim == 3:
+            n_int = len(self.get_internal_ids('e'))
+        if n_int == 0:
+            return 0
+        else:
+            frac = n_junc / n_int
+            return frac
+
+    @property
+    def p(self):
+        return self.get_spec_fraction()
+
+    @property
+    def j_tuple(self):
+        j0 = self.get_j_fraction(0)
+        j1 = self.get_j_fraction(1)
+        j2 = self.get_j_fraction(2)
+        j3 = self.get_j_fraction(3)
+        return (j0, j1, j2, j3)
+
+    def to_TJset(self):
+        """
+        """
+        return TripleJunctionSet(self.p, self.j_tuple)
+
+    def set_junction_types(self) -> None:
+        """
+        external has None junction type
+        """
+        # junction_types = {
+        #     0: 'J0',
+        #     1: 'J1',
+        #     2: 'J2',
+        #     3: 'J3',
+        #     4: 'U'
+        # }
+
+        if self.dim == 2:
+            for v in self._vertices.values():
+                v.n_spec_edges = 0
+                if not v.is_external:
+                    for e_id in v.incident_ids:
+                        if self._edges[e_id].is_special:
+                            v.n_spec_edges += 1
+                    if v.n_spec_edges > 3:
+                        logging.warning(
+                            f'{v} is incident to ' +
+                            f'{v.n_spec_edges} special edges'
+                        )
+                    v.set_junction_type(v.n_spec_edges)
+        elif self.dim == 3:
+            for e in self._edges.values():
+                e.n_spec_faces = 0
+                if not e.is_external:
+                    for f_id in e.incident_ids:
+                        if self._faces[f_id].is_special:
+                            e.n_spec_faces += 1
+                    if e.n_spec_faces > 3:
+                        logging.warning(
+                            f'{e} is incident to ' +
+                            f'{e.n_spec_faces} special faces'
+                        )
+                    e.set_junction_type(e.n_spec_faces)
+
+    def reset_special(
+            self,
+            lower_thrd: float = None,
+            upper_thrd: float = None):
+        """
+        """
+        if self.dim == 2:
+            _cells = self._choose_cell_type('edge')
+        elif self.dim == 3:
+            _cells = self._choose_cell_type('face')
+
+        for cell in _cells.values():
+            if not cell.is_external:
+                if lower_thrd and upper_thrd:
+                    if  cell.theta >= lower_thrd and cell.theta <= upper_thrd:
+                        cell.set_special(True)
+                    else:
+                        cell.set_special(False)
+                elif lower_thrd:
+                    if  cell.theta >= lower_thrd:
+                        cell.set_special(True)
+                    else:
+                        cell.set_special(False)
+                elif upper_thrd:
+                    if  cell.theta <= upper_thrd:
+                        cell.set_special(True)
+                    else:
+                        cell.set_special(False)
+                else:
+                    cell.set_special(False)
+        self.set_junction_types()
