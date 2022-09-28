@@ -196,22 +196,6 @@ class GrainBoundary(CellLowerDim):
         
         self.theta = theta
         self._reset_theta_thrds(lower_thrd, upper_thrd)
-        
-        if lower_thrd and upper_thrd:
-            if  theta >= lower_thrd and theta <= upper_thrd:
-                self.set_special(True)
-            else:
-                self.set_special(False)
-        elif lower_thrd:
-            if  theta >= lower_thrd:
-                self.set_special(True)
-            else:
-                self.set_special(False)
-        elif upper_thrd:
-            if  theta <= upper_thrd:
-                self.set_special(True)
-            else:
-                self.set_special(False)
 
     def set_external(self, is_external: bool = True):
         """
@@ -640,21 +624,123 @@ class TripleJunctionSet:
         """
         """
         self.p = p
-        self.q = 1 - p
-        self.p_entropy = matutils.entropy(p)
-        self.p_entropy_m = matutils.entropy_m(p)
-        self.p_entropy_s = matutils.entropy_s(p)
         self.j0, self.j1, self.j2, self.j3 = j_tuple
-        self.p_expected = (self.j1 + 2*self.j2 + 3*self.j3) / 3
-        self.delta_p = abs(self.p_expected - self.p)
-        self.S = matutils.entropy(*j_tuple)
-        self.S_m = matutils.entropy_m(*j_tuple)
-        self.S_s = matutils.entropy_s(*j_tuple)
-        self.kappa = self.S_m / self.S_s if self.S_s != 0 else 0
-        self.delta_S = self.p_entropy - self.S
-        self.d1, self.d2, self.d3 = matutils.get_d_tuple(j_tuple)
 
-    
+    @property
+    def q(self):
+        """
+        """
+        return 1 - self.p
+
+    @property
+    def j_tuple(self):
+        """
+        """
+        return (self.j0, self.j1, self.j2, self.j3)
+
+    @property
+    def p_entropy(self):
+        """
+        """
+        if self.p == 0 or self.p == 1:
+            return 0
+        else:
+            return matutils.entropy(self.p)
+
+    @property
+    def p_entropy_m(self):
+        """
+        """
+        if self.p == 0:
+            return np.inf
+        else:
+            return matutils.entropy_m(self.p)
+
+    @property
+    def p_entropy_s(self):
+        """
+        """
+        if self.p == 0:
+            return - np.inf
+        else:
+            return matutils.entropy_s(self.p)
+
+    @property
+    def p_expected(self):
+        """
+        """
+        return (self.j1 + 2*self.j2 + 3*self.j3) / 3
+        
+    @property
+    def delta_p(self):
+        """
+        """
+        return abs(self.p_expected - self.p)
+
+    @property
+    def S(self):
+        """
+        """
+        return matutils.entropy(*self.j_tuple)
+
+    @property
+    def S_m(self):
+        """
+        """
+        if np.any(np.array(self.j_tuple) == 0):
+            return np.inf
+        else:
+            return matutils.entropy_m(*self.j_tuple)
+
+    @property
+    def S_s(self):
+        """
+        """
+        if np.any(np.array(self.j_tuple) == 0):
+            return - np.inf
+        else:
+            return matutils.entropy_s(*self.j_tuple)
+
+    @property
+    def kappa(self):
+        """
+        """
+        if self.S_s == 0:
+            return 0
+        else:
+            return self.S_m / self.S_s
+
+    @property
+    def delta_S(self):
+        """
+        """
+        return self.p_entropy - self.S
+
+    @property
+    def d_tuple(self):
+        """
+        """
+        return matutils.get_d_tuple(self.j_tuple)
+
+    @property
+    def d1(self):
+        """
+        """
+        return self.d_tuple[0]
+
+    @property
+    def d2(self):
+        """
+        """
+        return self.d_tuple[1]
+
+    @property
+    def d3(self):
+        """
+        """
+        return self.d_tuple[2]
+
+
 def _add_neighbors(_cells: Dict, _incident_cells: Dict):
     """
     Add neighbors to incident_cells from common cells
@@ -868,20 +954,22 @@ class CellComplex:
                     columns = _parse_stfile(filename_m)
                     _add_theta(_faces, columns[0], lower_thrd, upper_thrd)
                 except:
-                    logging.error(f'Error reading theta from file {filename_m}')  
-
-#         # Set junction types from theta (if known from a file)
-#         # If lower or upper threshold are known or both
-#         if lower_thrd or upper_thrd:
-#             self.set_junction_types()
-
-        load_time = round(time.time() - start, 1)
-        print('Complex loaded:', load_time, 's')
+                    logging.error(f'Error reading theta from file {filename_m}')
 
         if dim ==2:
-            return cls(dim, _vertices, _edges, _faces)
+            cellcomplex = cls(dim, _vertices, _edges, _faces)
         elif dim ==3:
-            return cls(dim, _vertices, _edges, _faces, _polyhedra)
+            cellcomplex = cls(dim, _vertices, _edges, _faces, _polyhedra)
+
+
+        # Set junction types from theta (if known from a file)
+        # If lower or upper threshold are known or both
+        if lower_thrd or upper_thrd:
+            cellcomplex.set_junction_types()
+
+        cellcomplex.load_time = round(time.time() - start, 1)
+        print('Complex loaded:', cellcomplex.load_time, 's')
+        return cellcomplex
 
     def __str__(self):
         """
@@ -1073,14 +1161,6 @@ class CellComplex:
         """
         external has None junction type
         """
-        # junction_types = {
-        #     0: 'J0',
-        #     1: 'J1',
-        #     2: 'J2',
-        #     3: 'J3',
-        #     4: 'U'
-        # }
-
         if self.dim == 2:
             for v in self._vertices.values():
                 v.n_spec_edges = 0
@@ -1120,22 +1200,5 @@ class CellComplex:
             _cells = self._choose_cell_type('face')
 
         for cell in _cells.values():
-            if not cell.is_external:
-                if lower_thrd and upper_thrd:
-                    if  cell.theta >= lower_thrd and cell.theta <= upper_thrd:
-                        cell.set_special(True)
-                    else:
-                        cell.set_special(False)
-                elif lower_thrd:
-                    if  cell.theta >= lower_thrd:
-                        cell.set_special(True)
-                    else:
-                        cell.set_special(False)
-                elif upper_thrd:
-                    if  cell.theta <= upper_thrd:
-                        cell.set_special(True)
-                    else:
-                        cell.set_special(False)
-                else:
-                    cell.set_special(False)
+            cell._reset_theta_thrds(lower_thrd, upper_thrd)
         self.set_junction_types()
