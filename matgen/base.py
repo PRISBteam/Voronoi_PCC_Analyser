@@ -5,6 +5,7 @@ import time
 from typing import Dict, Iterable, List, Tuple
 import logging
 import numpy as np
+# import pandas as pd
 
 from matgen import matutils
 
@@ -639,7 +640,7 @@ class TripleJunctionSet:
         return (self.j0, self.j1, self.j2, self.j3)
 
     @property
-    def p_entropy(self):
+    def Sp(self):
         """
         """
         if self.p == 0 or self.p == 1:
@@ -648,7 +649,7 @@ class TripleJunctionSet:
             return matutils.entropy(self.p)
 
     @property
-    def p_entropy_m(self):
+    def Sp_m(self):
         """
         """
         if self.p == 0:
@@ -657,7 +658,7 @@ class TripleJunctionSet:
             return matutils.entropy_m(self.p)
 
     @property
-    def p_entropy_s(self):
+    def Sp_s(self):
         """
         """
         if self.p == 0:
@@ -714,7 +715,7 @@ class TripleJunctionSet:
     def delta_S(self):
         """
         """
-        return self.p_entropy - self.S
+        return self.Sp - self.S
 
     @property
     def d_tuple(self):
@@ -739,6 +740,39 @@ class TripleJunctionSet:
         """
         """
         return self.d_tuple[2]
+
+    def get_property(self, attr):
+        """
+        """
+        return getattr(self, attr)
+    
+    def get_properties(self, attr_list: List = []) -> Dict:
+        """
+        """
+        if not attr_list:
+            attr_list = [
+                'p',
+                'q',
+                'Sp',
+                'Sp_m',
+                'Sp_s',
+                'S',
+                'S_m',
+                'S_s',
+                'kappa',
+                'delta_S',
+                'd1',
+                'd2',
+                'd3'
+            ]
+
+        try:
+            return {attr_name: getattr(self, attr_name) for attr_name in attr_list}
+        except:
+            logging.exception('Check properties!')
+
+        # values = [getattr(self, attr_name) for attr_name in attr_list]
+        # return pd.DataFrame([values], columns = attr_list)
 
 
 def _add_neighbors(_cells: Dict, _incident_cells: Dict):
@@ -1202,3 +1236,10 @@ class CellComplex:
         for cell in _cells.values():
             cell._reset_theta_thrds(lower_thrd, upper_thrd)
         self.set_junction_types()
+
+    def describe(self):
+        """
+        """
+        state = self.to_TJset()
+
+
