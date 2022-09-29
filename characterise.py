@@ -25,12 +25,15 @@ def main() -> None:
 
     parser.add_argument(
         "--dir",
-        default='.',
+        default=None,
         help="Path to folder which contain complexes to characterise"
     )
 
     args = parser.parse_args()
-    filenames = glob.glob(args.dir + '/*')
+    if args.dir:
+        filenames = glob.glob(args.dir + '/*')
+    else:
+        filenames = []
 
     TJsets = {}
     complex_id = 0
