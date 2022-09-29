@@ -202,6 +202,188 @@ def get_d_tuple(j_tuple: Tuple) -> Tuple:
         d3 = j_tuple[3] / denom
         return d1, d2, d3
 
+
+def ori_mat(ori: Tuple, oridesc: str ='euler-bunge:active') -> np.ndarray:
+    """
+    returns orientation matrix
+    """
+    
+    if oridesc == 'euler-bunge:active':
+        f1 = math.radians(ori[0])
+        F = math.radians(ori[1])
+        f2 = math.radians(ori[2])
+    elif oridesc == 'euler-roe:active':
+        f1 = math.radians(ori[0] + 90)
+        F = math.radians(ori[1])
+        f2 = math.radians(ori[2] - 90)
+
+    cos = math.cos
+    sin = math.sin
+
+    R11 = cos(f1)*cos(f2) - sin(f1)*sin(f2)*cos(F)
+    R12 = sin(f1)*cos(f2) + cos(f1)*sin(f2)*cos(F)
+    R13 = sin(f2)*sin(F)
+
+    R21 = - cos(f1)*sin(f2) - sin(f1)*cos(f2)*cos(F)
+    R22 = - sin(f1)*sin(f2) + cos(f1)*cos(f2)*cos(F)
+    R23 = cos(f2)*sin(F)
+
+    R31 = sin(f1)*sin(F)
+    R32 = - cos(f1)*sin(F)
+    R33 = cos(F)
+
+    R = np.array([
+        [R11, R12, R13],
+        [R21, R22, R23],
+        [R31, R32, R33]
+    ])
+    return R
+
+
+def calculate_theta(R1, R2, crysym: str = 'cubic'):
+    """
+    симметрия кристалла имеет значение - какие еще бывают варианты?
+    """
+        
+    _g = R1 @ np.linalg.inv(R2)
+    theta_min = math.acos((_g[0, 0] + _g[1, 1] + _g[2, 2] - 1) / 2)
+    
+    if crysym == 'cubic':
+        for Os1 in Osym:
+            for Os2 in Osym:
+                g = Os1 @ _g @ Os2
+                theta = math.acos((g[0, 0] + g[1, 1] + g[2, 2] - 1) / 2)
+                if theta < theta_min:
+                    theta_min = theta
+    
+    return math.degrees(theta_min)
+
+
+# Cubic symmetry axes
+Osym = np.array([
+    [
+        [ 1, 0, 0],
+        [ 0, 1, 0],
+        [ 0, 0, 1]
+    ],
+    [
+        [ 1, 0, 0],
+        [ 0, 0, -1],
+        [ 0, 1, 0]
+    ],
+    [
+        [ 1, 0, 0],
+        [ 0, -1, 0],
+        [ 0, 0, -1]
+    ],
+    [
+        [ 1, 0, 0],
+        [ 0, 0, 1],
+        [ 0, -1, 0]
+    ],
+    [
+        [ 0, -1, 0],
+        [ 1, 0, 0],
+        [ 0, 0, 1]
+    ],
+    [
+        [ 0, 0, 1],
+        [ 1, 0, 0],
+        [ 0, 1, 0]
+    ],
+    [
+        [ 0, 1, 0],
+        [ 1, 0, 0],
+        [ 0, 0, -1]
+    ],
+    [
+        [ 0, 0, -1],
+        [ 1, 0, 0],
+        [ 0, -1, 0]
+    ],
+    [
+        [ -1, 0, 0],
+        [ 0, -1, 0],
+        [ 0, 0, 1]
+    ],
+    [
+        [ -1, 0, 0],
+        [ 0, 0, -1],
+        [ 0, -1, 0]
+    ],
+    [
+        [ -1, 0, 0],
+        [ 0, 1, 0],
+        [ 0, 0, -1]
+    ],
+    [
+        [ -1, 0, 0],
+        [ 0, 0, 1],
+        [ 0, 1, 0]
+    ],
+    [
+        [ 0, 1, 0],
+        [ -1, 0, 0],
+        [ 0, 0, 1]
+    ],
+    [
+        [ 0, 0, 1],
+        [ -1, 0, 0],
+        [ 0, -1, 0]
+    ],
+    [
+        [ 0, -1, 0],
+        [ -1, 0, 0],
+        [ 0, 0, -1]
+    ],
+    [
+        [ 0, 0, -1],
+        [ -1, 0, 0],
+        [ 0, 1, 0]
+    ],
+    [
+        [ 0, 0, -1],
+        [ 0, 1, 0],
+        [ 1, 0, 0]
+    ],
+    [
+        [ 0, 1, 0],
+        [ 0, 0, 1],
+        [ 1, 0, 0]
+    ],
+    [
+        [ 0, 0, 1],
+        [ 0, -1, 0],
+        [ 1, 0, 0]
+    ],
+    [
+        [ 0, -1, 0],
+        [ 0, 0, -1],
+        [ 1, 0, 0]
+    ],
+    [
+        [ 0, 0, -1],
+        [ 0, -1, 0],
+        [ -1, 0, 0]
+    ],
+    [
+        [ 0, -1, 0],
+        [ 0, 0, 1],
+        [ -1, 0, 0]
+    ],
+    [
+        [ 0, 0, 1],
+        [ 0, 1, 0],
+        [ -1, 0, 0]
+    ],
+    [
+        [ 0, 1, 0],
+        [ 0, 0, -1],
+        [ -1, 0, 0]
+    ]
+])
+
+
 # """
 # https://networkx.org/documentation/stable/tutorial.html
 
@@ -224,21 +406,6 @@ def get_d_tuple(j_tuple: Tuple) -> Tuple:
 # from scipy.spatial import Delaunay
 # import logging
 
-
-# def load_matrix_coo(f: open, matrix_shape=None) -> sparse.coo_matrix:
-#     """
-#     TODO: change behavior ? (delete "- 1")?
-#     """
-#     A_sparse = np.loadtxt(f, dtype='int')
-#     I = np.array([row[0] for row in A_sparse]) - 1
-#     J = np.array([row[1] for row in A_sparse]) - 1
-#     V = np.array([row[2] for row in A_sparse])
-
-#     A_coo = sparse.coo_matrix((V,(I,J)), shape=matrix_shape)
-
-#     return A_coo
-
-
 # def get_graph_from_A_file(f: open) -> nx.Graph:
 #     """
 #     A - adjacency matrix
@@ -260,38 +427,6 @@ def get_d_tuple(j_tuple: Tuple) -> Tuple:
 #     G.add_edges_from(IJ)
 
 #     return G
-
-# def _get_IJV_from_neighbors(_cells: Dict) -> Tuple[List]:
-#     """
-#     index of an element is element_id - 1
-#     """
-
-#     I = []
-#     J = []
-#     V = []
-#     for cell_id, cell in _cells.items():
-#         for n_id in cell.n_ids:
-#             I.append(cell_id - 1)
-#             J.append(n_id - 1)
-#             V.append(1)
-    
-#     return (I, J, V)
-
-# def _get_IJV_from_incidence(_cells: Dict) -> Tuple[List]:
-#     """
-#     index of an element is element_id - 1
-#     """
-
-#     I = []
-#     J = []
-#     V = []
-#     for cell_id, cell in _cells.items():
-#         for inc_id in cell.incident_cells:
-#             I.append(cell_id - 1)
-#             J.append(inc_id - 1)
-#             V.append(1)
-    
-#     return (I, J, V)
 
 
 # def get_G_from_cells(_cells: Dict):
@@ -418,289 +553,6 @@ def get_d_tuple(j_tuple: Tuple) -> Tuple:
 #     return sqrt(l2)
 
 
-
-# def _ori_mat(ori, oridesc: str ='euler-bunge:active'):
-#     """
-#     """
-    
-#     if oridesc == 'euler-bunge:active':
-#         f1 = radians(ori[0])
-#         F = radians(ori[1])
-#         f2 = radians(ori[2])
-#     elif oridesc == 'euler-roe:active':
-#         f1 = radians(ori[0] + 90)
-#         F = radians(ori[1])
-#         f2 = radians(ori[2] - 90)
-
-#     #print(f1, F, f2)
-
-#     g11 = cos(f1)*cos(f2) - sin(f1)*sin(f2)*cos(F)
-#     #print(g11)
-#     g12 = sin(f1)*cos(f2) + cos(f1)*sin(f2)*cos(F)
-#     g13 = sin(f2)*sin(F)
-
-#     g21 = - cos(f1)*sin(f2) - sin(f1)*cos(f2)*cos(F)
-#     g22 = - sin(f1)*sin(f2) + cos(f1)*cos(f2)*cos(F)
-#     g23 = cos(f2)*sin(F)
-
-#     g31 = sin(f1)*sin(F)
-#     g32 = - cos(f1)*sin(F)
-#     g33 = cos(F)
-
-#     g = np.array([
-#         [g11, g12, g13],
-#         [g21, g22, g23],
-#         [g31, g32, g33]
-#     ])
-
-#     return g
-
-
-# def calculate_theta_2D(c, e_id, crysym: str = 'cubic'):
-#     """
-#     симметрия кристалла имеет значение - какие еще бывают варианты?
-#     """
-#     f_ids = c.get_one('e', e_id).f_ids
-#     if len(f_ids) == 1:
-#         return -1.0
-#     elif len(f_ids) == 2:
-#         f1, f2 = c.get_many('f', f_ids)
-#         g1 = _ori_mat(f1.ori, oridesc=f1.ori_format)
-#         g2 = _ori_mat(f2.ori, oridesc=f2.ori_format)
-        
-#         _g = g1 @ np.linalg.inv(g2)
-#         theta_min = acos((_g[0, 0] + _g[1, 1] + _g[2, 2] - 1) / 2)
-        
-#         if crysym == 'cubic': # TODO: добавить крисим в хар-ки комплекса
-#             for Os1 in Osym:
-#                 for Os2 in Osym:
-#                     g = Os1 @ _g @ Os2
-#                     theta = acos((g[0, 0] + g[1, 1] + g[2, 2] - 1) / 2)
-#                     if theta < theta_min:
-#                         theta_min = theta
-       
-#     return degrees(theta_min)
-
-
-
-# Osym = np.array([
-#     [
-#         [ 1, 0, 0],
-#         [ 0, 1, 0],
-#         [ 0, 0, 1]
-#     ],
-#     [
-#         [ 1, 0, 0],
-#         [ 0, 0, -1],
-#         [ 0, 1, 0]
-#     ],
-#     [
-#         [ 1, 0, 0],
-#         [ 0, -1, 0],
-#         [ 0, 0, -1]
-#     ],
-#     [
-#         [ 1, 0, 0],
-#         [ 0, 0, 1],
-#         [ 0, -1, 0]
-#     ],
-#     [
-#         [ 0, -1, 0],
-#         [ 1, 0, 0],
-#         [ 0, 0, 1]
-#     ],
-#     [
-#         [ 0, 0, 1],
-#         [ 1, 0, 0],
-#         [ 0, 1, 0]
-#     ],
-#     [
-#         [ 0, 1, 0],
-#         [ 1, 0, 0],
-#         [ 0, 0, -1]
-#     ],
-#     [
-#         [ 0, 0, -1],
-#         [ 1, 0, 0],
-#         [ 0, -1, 0]
-#     ],
-#     [
-#         [ -1, 0, 0],
-#         [ 0, -1, 0],
-#         [ 0, 0, 1]
-#     ],
-#     [
-#         [ -1, 0, 0],
-#         [ 0, 0, -1],
-#         [ 0, -1, 0]
-#     ],
-#     [
-#         [ -1, 0, 0],
-#         [ 0, 1, 0],
-#         [ 0, 0, -1]
-#     ],
-#     [
-#         [ -1, 0, 0],
-#         [ 0, 0, 1],
-#         [ 0, 1, 0]
-#     ],
-#     [
-#         [ 0, 1, 0],
-#         [ -1, 0, 0],
-#         [ 0, 0, 1]
-#     ],
-#     [
-#         [ 0, 0, 1],
-#         [ -1, 0, 0],
-#         [ 0, -1, 0]
-#     ],
-#     [
-#         [ 0, -1, 0],
-#         [ -1, 0, 0],
-#         [ 0, 0, -1]
-#     ],
-#     [
-#         [ 0, 0, -1],
-#         [ -1, 0, 0],
-#         [ 0, 1, 0]
-#     ],
-#     [
-#         [ 0, 0, -1],
-#         [ 0, 1, 0],
-#         [ 1, 0, 0]
-#     ],
-#     [
-#         [ 0, 1, 0],
-#         [ 0, 0, 1],
-#         [ 1, 0, 0]
-#     ],
-#     [
-#         [ 0, 0, 1],
-#         [ 0, -1, 0],
-#         [ 1, 0, 0]
-#     ],
-#     [
-#         [ 0, -1, 0],
-#         [ 0, 0, -1],
-#         [ 1, 0, 0]
-#     ],
-#     [
-#         [ 0, 0, -1],
-#         [ 0, -1, 0],
-#         [ -1, 0, 0]
-#     ],
-#     [
-#         [ 0, -1, 0],
-#         [ 0, 0, 1],
-#         [ -1, 0, 0]
-#     ],
-#     [
-#         [ 0, 0, 1],
-#         [ 0, 1, 0],
-#         [ -1, 0, 0]
-#     ],
-#     [
-#         [ 0, 1, 0],
-#         [ 0, 0, -1],
-#         [ -1, 0, 0]
-#     ]
-# ])
-
-
-# def entropy(*args):
-#     """
-#     S
-#     """
-#     # input arguments may be a scalar, a tuple or several scalars
-#     if len(args) == 1 and isinstance(args[0], Iterable):
-#         j_array = np.array(args[0])
-#     else:
-#         j_array = np.array(args)
-
-#     # check sum of input parameters
-#     if len(j_array) > 1 and not isclose(j_array.sum(), 1):
-#         logging.warning('Sum is not equal to 1')
-
-#     # calculate entropy
-#     if len(j_array) == 1:
-#         p = j_array[0]
-#         if p == 0 or p == 1:
-#             return 0
-#         elif p > 0 and p < 1:
-#             return - (p*log2(p) + (1 - p)*log2(1 - p))
-#     elif len(j_array) > 1:
-#         nonzeros = j_array[j_array > 0]
-#         return - np.sum(nonzeros * np.log2(nonzeros))
-
-
-# def entropy_m(*args):
-#     """
-#     mean part of S
-#     """
-#     # input arguments may be a scalar, a tuple or several scalars
-#     if len(args) == 1 and isinstance(args[0], Iterable):
-#         j_array = np.array(args[0])
-#     else:
-#         j_array = np.array(args)
-
-#     # check sum of input parameters
-#     if len(j_array) > 1 and not isclose(j_array.sum(), 1):
-#         logging.warning('Sum is not equal to 1')
-
-#     # check zero elements
-#     if np.any(j_array == 0):
-#         logging.warning('One or more j is equal to 0')
-#         return np.inf
-
-#     # calculate mean entropy
-#     if len(j_array) == 1:
-#         p = j_array[0]
-#         if p == 1:
-#             return np.inf
-#         elif p > 0 and p < 1:
-#             return - log2(p * (1 - p)) / 2
-#     elif len(j_array) > 1:
-#         return - np.log2(np.prod(j_array)) / len(j_array)
-
-
-# def entropy_s(*args):
-#     """
-#     deviatoric part of S
-#     """
-#     # input arguments may be a scalar, a tuple or several scalars
-#     if len(args) == 1 and isinstance(args[0], Iterable):
-#         j_array = np.array(args[0])
-#     else:
-#         j_array = np.array(args)
-
-#     # check sum of input parameters
-#     if len(j_array) > 1 and not isclose(j_array.sum(), 1):
-#         logging.warning('Sum is not equal to 1')
-
-#     # check zero elements
-#     if np.any(j_array == 0):
-#         logging.warning('One or more j is equal to 0')
-#         return - np.inf
-    
-#     # calculate deviatoric entropy
-#     if len(j_array) == 1:
-#         p = j_array[0]
-#         if p == 1:
-#             return - np.inf
-#         elif p > 0 and p < 1:
-#             q = 1 - p
-#             return - (p - q) / 2 * log2(p / q)
-#     elif len(j_array) > 1:
-#         Ss = 0
-#         for k in range(len(j_array)):
-#             jk = j_array[k]
-#             for l in range(k + 1, len(j_array)):
-#                 jl = j_array[l]
-#                 Ss += (jk - jl) * log2(jk / jl)
-#         Ss = Ss / len(j_array)
-#         return - Ss
-
-
 # def metastability(S, Smax, Smin, Srand):
 #     """
 #     """    
@@ -720,46 +572,6 @@ def get_d_tuple(j_tuple: Tuple) -> Tuple:
 
 #     return entropy(jr0, jr1, jr2, jr3)
 
-
-# def get_entropy(c):
-#     """
-#     добавить проверку != 0
-#     """
-#     S = 0
-#     for jtype in range(4):
-#         j = c.get_j_fraction(jtype)
-#         if j != 0:
-#             S -= j * log2(j)
-#     return S
-
-# def get_m_entropy(c):
-#     """
-#     добавить проверку != 0
-#     """
-#     Sm = 1
-#     for jtype in range(4):
-#         j = c.get_j_fraction(jtype)
-#         if j != 0:
-#             Sm *= j
-#     Sm = log2(Sm) / 4
-
-#     return Sm
-
-# def get_s_entropy(c):
-#     """
-#     добавить проверку != 0
-#     """
-#     Ss = 0
-#     for k in range(4):
-#         jk = c.get_j_fraction(k)
-#         if jk != 0:
-#             for l in range(k, 4):
-#                 jl = c.get_j_fraction(l)
-#                 if jl != 0:
-#                     Ss += (jk - jl) * log2(jk / jl)
-#     Ss = Ss / 4
-
-#     return Ss
 
 # def get_vor_entropy(vor):
 #     """
