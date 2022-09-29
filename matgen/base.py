@@ -64,12 +64,12 @@ class Grain(Cell):
         super().__init__(id)
         self.seed = None
         self.ori = None
-        self.ori_descriptor = None
+        self.oridesc = None
 
-    def set_crystal_ori(self, ori_descriptor: str, ori_components: Tuple):
+    def set_crystal_ori(self, oridesc: str, ori_components: Tuple):
         """
         """
-        self.ori_descriptor = ori_descriptor
+        self.oridesc = oridesc
         self.ori = ori_components
 
     def set_seed(self, seed_coord: Tuple):
@@ -443,7 +443,7 @@ class Face2D(Face, Grain):
         super().__init__(id, v_ids)
         self.seed = None
         self.ori = None
-        self.ori_descriptor = None
+        self.oridesc = None
 
     @classmethod
     def from_tess_file(
@@ -470,7 +470,7 @@ class Face2D(Face, Grain):
                     row = file.readline().split()
                     seeds[int(row[0])] = tuple([*map(float, row[1:4])])
             if '*ori' in line:
-                ori_descriptor = file.readline().strip() #.rstrip('\n')
+                oridesc = file.readline().strip() #.rstrip('\n')
                 for i in range(N):
                     row = file.readline().split()
                     ori[i + 1] = tuple([*map(float, row)])
@@ -505,7 +505,7 @@ class Face2D(Face, Grain):
                     )
                     _ = file.readline()
                     
-                    face.set_crystal_ori(ori_descriptor, ori[f_id])
+                    face.set_crystal_ori(oridesc, ori[f_id])
                     face.set_seed(seeds[f_id])
                     _faces[f_id] = face
                 return _faces
@@ -553,7 +553,7 @@ class Poly(Grain):
                     row = file.readline().split()
                     seeds[int(row[0])] = tuple([*map(float, row[1:4])])
             if '*ori' in line:
-                ori_descriptor = file.readline().strip() #.rstrip('\n')
+                oridesc = file.readline().strip() #.rstrip('\n')
                 for i in range(N):
                     row = file.readline().split()
                     ori[i + 1] = tuple([*map(float, row)])
@@ -578,7 +578,7 @@ class Poly(Grain):
                     poly = cls(p_id, f_ids)
                     poly.add_vertices(v_ids)
                     poly.add_edges(e_ids)
-                    poly.set_crystal_ori(ori_descriptor, ori[p_id])
+                    poly.set_crystal_ori(oridesc, ori[p_id])
                     poly.set_seed(seeds[p_id])
                     _polyhedra[p_id] = poly
                 return _polyhedra
