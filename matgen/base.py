@@ -65,10 +65,17 @@ class Grain(Cell):
         self.seed = None
         self.ori = None
         self.oridesc = None
+        self.crysym = None
 
-    def set_crystal_ori(self, oridesc: str, ori_components: Tuple):
+    def set_crystal_ori(
+        self,
+        crysym: str,
+        oridesc: str,
+        ori_components: Tuple
+    ):
         """
         """
+        self.crysym = crysym
         self.oridesc = oridesc
         self.ori = ori_components
 
@@ -465,6 +472,8 @@ class Face2D(Face, Grain):
         for line in file:
             if '**cell' in line:
                 N = int(file.readline().rstrip('\n'))
+            if '*crysym' in line:
+                crysym = file.readline().strip() #.rstrip('\n')
             if '*seed' in line:
                 for i in range(N):
                     row = file.readline().split()
@@ -505,7 +514,7 @@ class Face2D(Face, Grain):
                     )
                     _ = file.readline()
                     
-                    face.set_crystal_ori(oridesc, ori[f_id])
+                    face.set_crystal_ori(crysym, oridesc, ori[f_id])
                     face.set_seed(seeds[f_id])
                     _faces[f_id] = face
                 return _faces
@@ -548,6 +557,8 @@ class Poly(Grain):
         for line in file:
             if '**cell' in line:
                 N = int(file.readline().rstrip('\n'))
+            if '*crysym' in line:
+                crysym = file.readline().strip() #.rstrip('\n')
             if '*seed' in line:
                 for i in range(N):
                     row = file.readline().split()
@@ -578,7 +589,7 @@ class Poly(Grain):
                     poly = cls(p_id, f_ids)
                     poly.add_vertices(v_ids)
                     poly.add_edges(e_ids)
-                    poly.set_crystal_ori(oridesc, ori[p_id])
+                    poly.set_crystal_ori(crysym, oridesc, ori[p_id])
                     poly.set_seed(seeds[p_id])
                     _polyhedra[p_id] = poly
                 return _polyhedra
