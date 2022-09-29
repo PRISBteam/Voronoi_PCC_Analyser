@@ -1095,6 +1095,26 @@ class CellComplex:
             raise TypeError('Unknown cell type')
         return _cells
 
+    @property
+    def _GBs(self):
+        """
+        """
+        if self.dim == 2:
+            _cells = self._choose_cell_type('edge')
+        elif self.dim == 3:
+            _cells = self._choose_cell_type('face')
+        return _cells
+
+    @property
+    def _TJs(self):
+        """
+        """
+        if self.dim == 2:
+            _cells = self._choose_cell_type('vertex')
+        elif self.dim == 3:
+            _cells = self._choose_cell_type('edge')
+        return _cells
+
     def get_one(self, cell_type: str | int, cell_id: int):
         """
         """
@@ -1124,24 +1144,15 @@ class CellComplex:
         2D - edges can be special
         3D - faces can be special
         """
-        if self.dim == 2:
-            _cells = self._choose_cell_type('edge')
-        elif self.dim == 3:
-            _cells = self._choose_cell_type('face')
-        return [cell.id for cell in _cells.values() if cell.is_special]
+        return [cell.id for cell in self._GBs.values() if cell.is_special]
 
     def get_junction_ids_of_type(self, junction_type: int) -> List:
         """
         2D - vertices are junctions
         3D - edges are junctions
         """
-        
-        if self.dim == 2:
-            _cells = self._choose_cell_type('vertex')
-        elif self.dim == 3:
-            _cells = self._choose_cell_type('edge')
         junction_ids = []
-        for cell in _cells.values():
+        for cell in self._TJs.values():
             if cell.junction_type == junction_type:
                 junction_ids.append(cell.id)
         return junction_ids
@@ -1239,18 +1250,31 @@ class CellComplex:
             upper_thrd: float = None):
         """
         """
-        if self.dim == 2:
-            _cells = self._choose_cell_type('edge')
-        elif self.dim == 3:
-            _cells = self._choose_cell_type('face')
-
-        for cell in _cells.values():
+        for cell in self._GBs.values():
             cell._reset_theta_thrds(lower_thrd, upper_thrd)
         self.set_junction_types()
 
     def describe(self):
         """
+        TODO: add return
+        check with Elijah
         """
         state = self.to_TJset()
+        return state.get_properties()
+
+    def set_theta_from_ori(self):
+        """
+        """
+        if dim == 2:
+            _cells = _choose_cell_
+        #     f_ids = c.get_one('e', e_id).f_ids
+#     if len(f_ids) == 1:
+#         return -1.0
+#     elif len(f_ids) == 2:
+#         f1, f2 = c.get_many('f', f_ids)
+#         g1 = _ori_mat(f1.ori, oridesc=f1.ori_format)
+#         g2 = _ori_mat(f2.ori, oridesc=f2.ori_format)
+# calculate_theta(c, e_id, crysym: str = 'cubic')
+
 
 
