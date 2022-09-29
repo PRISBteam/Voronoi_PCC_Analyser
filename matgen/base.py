@@ -1003,8 +1003,10 @@ class CellComplex:
 
         if dim ==2:
             cellcomplex = cls(dim, _vertices, _edges, _faces)
+            cellcomplex.crysym = _faces[1].crysym
         elif dim ==3:
             cellcomplex = cls(dim, _vertices, _edges, _faces, _polyhedra)
+            cellcomplex.crysym = _polyhedra[1].crysym
 
 
         # Set junction types from theta (if known from a file)
@@ -1113,6 +1115,16 @@ class CellComplex:
             _cells = self._choose_cell_type('vertex')
         elif self.dim == 3:
             _cells = self._choose_cell_type('edge')
+        return _cells
+
+    @property
+    def _grains(self):
+        """
+        """
+        if self.dim == 2:
+            _cells = self._choose_cell_type('face')
+        elif self.dim == 3:
+            _cells = self._choose_cell_type('poly')
         return _cells
 
     def get_one(self, cell_type: str | int, cell_id: int):
@@ -1262,19 +1274,23 @@ class CellComplex:
         state = self.to_TJset()
         return state.get_properties()
 
-    def set_theta_from_ori(self):
+    def set_theta_from_ori(
+        self,
+        lower_thrd: float = None,
+        upper_thrd: float = None
+    ):
         """
         """
-        if dim == 2:
-            _cells = _choose_cell_
-        #     f_ids = c.get_one('e', e_id).f_ids
-#     if len(f_ids) == 1:
-#         return -1.0
-#     elif len(f_ids) == 2:
-#         f1, f2 = c.get_many('f', f_ids)
-#         g1 = _ori_mat(f1.ori, oridesc=f1.ori_format)
-#         g2 = _ori_mat(f2.ori, oridesc=f2.ori_format)
-# calculate_theta(c, e_id, crysym: str = 'cubic')
+        for cell in self._GBs.values():
+            if not cell.is_external:
+                g_ids = cell.incident_ids
+                if len(g_ids) != 2:
+                    raise ValueError('GB has more than 2 incident grains')
+                g1, g2 = self._grains[g_ids[0]], self._grains[g_ids[1]]
+                R1 = matutils.ori_mat(g1.ori, g1.oridesc)
+                R2 = matutils.ori_mat(g2.ori, g2.oridesc)
+                theta = matutils.calculate_theta(R1, R2, self.crysym)
+                cell.set_theta(theta, lower_thrd, upper_thrd)
 
 
 
