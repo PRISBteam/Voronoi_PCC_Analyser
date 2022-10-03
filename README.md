@@ -103,7 +103,7 @@ neper -T -n 300 -id 1 -statcell vol -statface area -domain "cube(1.0,1.0,1.0)" -
 You must call Neper from the folder (cd <path to the directory containing “delau_seeds.txt”>) containing the “delau_seeds.txt” file, or write the whole path instead of the file name in the _coo:file(<path to delau_seeds.txt>)_ command.
 </li>
 
-<li> More flexibility in the tesselation provide the <a href="[https://neper.info/doc/neper_t.html#examples" target="_blank](https://neper.info/doc/neper_t.html#cmdoption-transform)"> transformation options </a> of the Neper. In particular, to create 2D complex as a plane cut of the 3D one, the <i> slice(<d>,<a>,<b>,<c>)</i> function can be used as it is shown below
+<li> More flexibility in the tesselation provide the <a href="[https://neper.info/doc/neper_t.html#examples" target="_blank](https://neper.info/doc/neper_t.html#cmdoption-transform)"> transformation options </a> of the Neper. In particular, to create 2D complex as a plane cut of the 3D one, the <i> slice(d,a,b,c)</i> function can be used as it is shown below
 ```
 neper -T -n 300 -id 1 -transform slice() -statcell vol -statface area -domain "cube(1.0,1.0,1.0)" -morphooptiini "coo:file(delau_seeds.txt)";
 ```
