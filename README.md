@@ -108,7 +108,7 @@ You must call Neper from the folder (cd <path to the directory containing “del
 ```
 neper -T -n 300 -id 1 -transform slice() -statcell vol -statface area -domain "cube(1.0,1.0,1.0)" -morphooptiini "coo:file(delau_seeds.txt)"
 ```
-Here <d>,<a>,<b>,<c> are parameters in the corresponding equation of a plane $a*x+b*y+c*z=d$ and it is worth to be remined here that the normal vector of this plane is <i>n=(a,b,c)</i>.
+Here d,a,b, and c are parameters in the corresponding equation of a plane $$a*x+b*y+c*z=d$$ and it is worth to be remined here that the normal vector of this plane is <i>n=(a,b,c)</i>.
 </li>
   
 </ul>
