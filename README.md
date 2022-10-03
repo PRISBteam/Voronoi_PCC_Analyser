@@ -114,7 +114,7 @@ Here <i> d, a, b </i>, and <i>c</i> are parameters in the corresponding equation
 </ul>
 
 ## 5. Examples
-The folder with several examples contains discrete cell complexes already created by Neper and processed with Voro_DCC_Analyser tool. The command below shows five terminal commands launching the creation of the Vorinoi and Delaunay DCCs containing 5000 3-cells:
+The folder with several examples contains discrete cell complexes already created by Neper and processed with Voro_DCC_Analyser tool. The command below shows five terminal commands launching the creation of the Vorinoi DCC containing 5000 3-cells with its primal Delaunay DCC:
 
 ```
 neper -T -n 5000 -dim 3 -id 1 -ori uniform -statcell vol -statface area; \
