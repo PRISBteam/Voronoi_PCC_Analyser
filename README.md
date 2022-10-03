@@ -103,10 +103,18 @@ neper -T -n 300 -id 1 -statcell vol -statface area -domain "cube(1.0,1.0,1.0)" -
 You must call Neper from the folder (cd <path to the directory containing “delau_seeds.txt”>) containing the “delau_seeds.txt” file, or write the whole path instead of the file name in the _coo:file(<path to delau_seeds.txt>)_ command.
 </li>
 
+<li> More flexibility in the tesselation provides the 
+  <a href="[https://neper.info/doc/neper_t.html#examples" target="_blank](https://neper.info/doc/neper_t.html#cmdoption-transform)"> transformation options </a> of the Neper software. In particular, to create 2D complex as a plane cut of the 3D one, the <i> slice(<d>,<a>,<b>,<c>)</i> function can be used as it is shown below
+```
+neper -T -n 300 -id 1 -transform slice() -statcell vol -statface area -domain "cube(1.0,1.0,1.0)" -morphooptiini "coo:file(delau_seeds.txt)";
+```
+Here <d>,<a>,<b>,<c> are parameters in the corresponding equation of a plane $a*x+b*y+c*z=d$ and it is worth to be remined here that the normal vector of this plane is <i>n=(a,b,c)</i>.
+</li>
+  
 </ul>
 
 ## 5. Examples
-The folder with several examples contains discrete cell complexes already created by Neper and processed with Voro_DCC_Analyser tool. The command below shows five terminal commands launching the creation of the whole DCC containing 5000 3-cells.
+The folder with several examples contains discrete cell complexes already created by Neper and processed with Voro_DCC_Analyser tool. The command below shows five terminal commands launching the creation of the Vorinoi and Delaunay DCCs containing 5000 3-cells:
 
 ```
 neper -T -n 5000 -dim 3 -id 1 -ori uniform -statcell vol -statface area; \
