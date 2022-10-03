@@ -108,7 +108,7 @@ You must call Neper from the folder (cd <path to the directory containing “del
 ```
 neper -T -n 300 -id 1 -transform slice(0,0,0,0.5) -dim 3 -statcell vol -statface area
 ```
-Here <i> d, a, b </i>, and <i>c</i> are parameters in the corresponding equation of a plane <i> a*x + b*y + c*z = d</i> and it is worth to be mentioned here that the normal vector of this plane is <i>n=(a,b,c)</i>.
+Here <i> d, a, b </i>, and <i>c</i> are parameters in the corresponding equation of a plane <i> ax + by + cz = d</i> and it is worth to be mentioned here that the normal vector of this plane is <i>n=(a,b,c)</i>.
 </li>
   
 </ul>
