@@ -814,7 +814,7 @@ def _add_measures(_cells: Dict, measures: List):
         _cells[i + 1].set_measure(measures[i])
 
 
-def _add_theta(
+def _add_thetas(
     _cells: Dict,
     thetas: List,
     lower_thrd: float = None,
@@ -956,7 +956,7 @@ class CellComplex:
                 logging.error(f'Error reading file {filename_m}')
             if with_theta and dim == 2:
                 try:
-                    _add_theta(_edges, columns[1], lower_thrd, upper_thrd)
+                    _add_thetas(_edges, columns[1], lower_thrd, upper_thrd)
                 except:
                     logging.error(f'Error reading theta from file {filename_m}')
 
@@ -968,7 +968,7 @@ class CellComplex:
                 logging.error(f'Error reading file {filename_m}')
             if with_theta and dim == 3:
                 try:
-                    _add_theta(_faces, columns[1], lower_thrd, upper_thrd)
+                    _add_thetas(_faces, columns[1], lower_thrd, upper_thrd)
                 except:
                     logging.error(f'Error reading theta from file {filename_m}')
 
@@ -985,14 +985,14 @@ class CellComplex:
                 filename_m = filename.rstrip('.tess') + '.stedge'
                 try:
                     columns = _parse_stfile(filename_m)
-                    _add_theta(_edges, columns[0], lower_thrd, upper_thrd)
+                    _add_thetas(_edges, columns[0], lower_thrd, upper_thrd)
                 except:
                     logging.error(f'Error reading theta from file {filename_m}')
             elif dim == 3:
                 filename_m = filename.rstrip('.tess') + '.stface'
                 try:
                     columns = _parse_stfile(filename_m)
-                    _add_theta(_faces, columns[0], lower_thrd, upper_thrd)
+                    _add_thetas(_faces, columns[0], lower_thrd, upper_thrd)
                 except:
                     logging.error(f'Error reading theta from file {filename_m}')
 
@@ -1293,7 +1293,7 @@ class CellComplex:
     ):
         """
         """
-        _add_theta(self._GBs, thetas, lower_thrd, upper_thrd)
+        _add_thetas(self._GBs, thetas, lower_thrd, upper_thrd)
 
     def set_theta_from_file(
         self,
@@ -1302,4 +1302,4 @@ class CellComplex:
         upper_thrd: float = None
     ):
         columns = _parse_stfile(file)
-        _add_theta(self._GBs, columns[0], lower_thrd, upper_thrd)
+        _add_thetas(self._GBs, columns[0], lower_thrd, upper_thrd)
