@@ -200,7 +200,8 @@ class GrainBoundary(CellLowerDim):
             self.set_external(True)
             return
         elif self.is_external:
-            raise ValueError(f"External doesn't have theta (id={self.id})")
+            raise ValueError(
+                f"External (id={self.id}) doesn't have theta other than -1")
         
         self.theta = theta
         self._reset_theta_thrds(lower_thrd, upper_thrd)
@@ -849,12 +850,6 @@ def _parse_stfile(file: io.TextIOBase | str):
     return tuple(columns)
 
 
-    for line in file:
-        row = line.split()
-
-        e_id = int(row[0])
-
-
 class CellComplex:
     """
     """
@@ -1290,5 +1285,21 @@ class CellComplex:
                 theta = matutils.calculate_theta(R1, R2, self.crysym)
                 cell.set_theta(theta, lower_thrd, upper_thrd)
 
+    def set_thetas(
+        self,
+        thetas: Iterable,
+        lower_thrd: float = None,
+        upper_thrd: float = None
+    ):
+        """
+        """
+        _add_theta(self._GBs, thetas, lower_thrd, upper_thrd)
 
-
+    def set_theta_from_file(
+        self,
+        file: io.TextIOBase | str,
+        lower_thrd: float = None,
+        upper_thrd: float = None
+    ):
+        columns = _parse_stfile(file)
+        _add_theta(self._GBs, columns[0], lower_thrd, upper_thrd)
