@@ -1266,13 +1266,11 @@ class CellComplex:
             cell._reset_theta_thrds(lower_thrd, upper_thrd)
         self.set_junction_types()
 
-    def describe(self):
+    def describe(self, attr_list: List = []):
         """
-        TODO: add return
-        check with Elijah
         """
         state = self.to_TJset()
-        return state.get_properties()
+        return state.get_properties(attr_list)
 
     def set_theta_from_ori(
         self,
