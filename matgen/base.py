@@ -1,9 +1,9 @@
 """Base classes for complex analysis.
 """
+from __future__ import annotations # to avoid NameError in type hinting
 import io
 import time
 from typing import Dict, Iterable, List, Tuple
-from __future__ import annotations # to avoid NameError in type hinting
 import logging
 import numpy as np
 # import pandas as pd
@@ -1008,7 +1008,7 @@ class CellComplex:
                 except:
                     logging.error(f'Error reading file {filename_m}')
         
-        elif with_theta and filename or with_theta and theta_file:
+        elif with_theta and filename or theta_file:
             if theta_file:
                 filename_m = theta_file
             if dim == 2:
