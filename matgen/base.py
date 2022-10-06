@@ -3,6 +3,7 @@
 import io
 import time
 from typing import Dict, Iterable, List, Tuple
+from __future__ import annotations # to avoid NameError in type hinting
 import logging
 import numpy as np
 # import pandas as pd
@@ -94,6 +95,11 @@ class Grain(Cell):
         """
         """
         self.seed = seed_coord
+
+    def dis_angle(self, other: Grain) -> float:
+        """
+        """
+        return matutils.dis_angle(self, other)
 
 
 class CellLowerDim(Cell):
@@ -893,8 +899,9 @@ class CellComplex:
     def from_tess_file(
         cls,
         file: io.TextIOBase | str,
-        with_measures: bool = True,
-        with_theta: bool = True,
+        with_measures: bool = False,
+        with_theta: bool = False,
+        theta_file: str = None,
         lower_thrd: float = None,
         upper_thrd: float = None
     ):
@@ -1001,16 +1008,20 @@ class CellComplex:
                 except:
                     logging.error(f'Error reading file {filename_m}')
         
-        elif with_theta and filename:
+        elif with_theta and filename or with_theta and theta_file:
+            if theta_file:
+                filename_m = theta_file
             if dim == 2:
-                filename_m = filename.rstrip('.tess') + '.stedge'
+                if not theta_file:
+                    filename_m = filename.rstrip('.tess') + '.stedge'
                 try:
                     columns = _parse_stfile(filename_m)
                     _add_thetas(_edges, columns[0], lower_thrd, upper_thrd)
                 except:
                     logging.error(f'Error reading theta from file {filename_m}')
             elif dim == 3:
-                filename_m = filename.rstrip('.tess') + '.stface'
+                if not theta_file:
+                    filename_m = filename.rstrip('.tess') + '.stface'
                 try:
                     columns = _parse_stfile(filename_m)
                     _add_thetas(_faces, columns[0], lower_thrd, upper_thrd)
@@ -1301,9 +1312,7 @@ class CellComplex:
                 if len(g_ids) != 2:
                     raise ValueError('GB has more than 2 incident grains')
                 g1, g2 = self._grains[g_ids[0]], self._grains[g_ids[1]]
-                R1 = matutils.ori_mat(g1.ori, g1.oridesc)
-                R2 = matutils.ori_mat(g2.ori, g2.oridesc)
-                theta = matutils.calculate_theta(R1, R2, self.crysym)
+                theta = matutils.dis_angle(g1, g2)
                 cell.set_theta(theta, lower_thrd, upper_thrd)
 
     def set_thetas(

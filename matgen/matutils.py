@@ -6,6 +6,8 @@ import numpy as np
 from scipy import sparse
 import logging
 
+from matgen.base import Grain
+
 def _get_IJV_from_neighbors(_cells: Dict) -> Tuple[List]:
     """Get I, J, V lists of the adjacency matrix from a dictionary of cells.
 
@@ -203,7 +205,7 @@ def get_d_tuple(j_tuple: Tuple) -> Tuple:
         return d1, d2, d3
 
 
-def ori_mat(ori: Tuple, oridesc: str ='euler-bunge:active') -> np.ndarray:
+def _ori_mat(ori: Tuple, oridesc: str ='euler-bunge:active') -> np.ndarray:
     """
     returns orientation matrix
     """
@@ -240,7 +242,7 @@ def ori_mat(ori: Tuple, oridesc: str ='euler-bunge:active') -> np.ndarray:
     return R
 
 
-def calculate_theta(R1, R2, crysym: str = 'cubic'):
+def _calculate_disorient(R1, R2, crysym: str = 'cubic'):
     """
     симметрия кристалла имеет значение - какие еще бывают варианты?
     """
@@ -257,6 +259,16 @@ def calculate_theta(R1, R2, crysym: str = 'cubic'):
                     theta_min = theta
     
     return math.degrees(theta_min)
+
+
+def dis_angle(g1: Grain, g2: Grain) -> float:
+    """
+    """
+    if g1.crysym != g2.crysym:
+        raise ValueError("Crysym of g1 and g2 don't match")
+    R1 = _ori_mat(g1.ori, g1.oridesc)
+    R2 = _ori_mat(g2.ori, g2.oridesc)
+    return _calculate_disorient(R1, R2, g1.crysym)
 
 
 # Cubic symmetry axes
