@@ -54,7 +54,7 @@ class Cell:
         """
         self.nn_ids += nn_ids
         s = set(self.nn_ids) # eliminate duplicates
-        s.difference_update([self.id]) # eliminate self.id
+        s.difference_update([self.id] + self.n_ids) # eliminate id and n_ids
         self.nn_ids = list(s)
 
     def set_external(self, is_external: bool = True):
@@ -1333,3 +1333,41 @@ class CellComplex:
     ):
         columns = _parse_stfile(file)
         _add_thetas(self._GBs, columns[0], lower_thrd, upper_thrd)
+
+    def find_neighbors_of_order(self, max_order: int):
+        """
+        0 order - grain id
+        1 order - grain neighbor ids
+        2 order - grain neighbor of neighbor ids
+        etc.
+
+        access to neighbors  nX_ids attributes of grains
+        """
+        # n0_ids is [self.id]
+        for g in self._grains.values():
+            setattr(g, f'n0_ids', [g.id])
+        # n0_ids is [self.id]
+        for k in range(1, max_order + 1):
+            for g in self._grains.values():
+                nn_ids = []
+                for n_id in getattr(g, f'n{k - 1}_ids'):
+                    nn_ids += self._faces[n_id].n_ids
+                s = set(nn_ids)
+                for j in range(k):
+                    s.difference_update(getattr(g, f'n{j}_ids'))
+                setattr(g, f'n{k}_ids', list(s))
+        self.n_max_order = max_order
+
+    def get_neighbor_dis_angles(self, order: int):
+        """
+        0 order - grain id
+        1 order - grain neighbor ids
+        2 order - grain neighbor of neighbor ids
+        etc.
+        """
+        angles = []
+        for g1 in self._grains.values():
+            for n_id in getattr(g1, f'n{order}_ids'):
+                if g1.id < n_id:
+                    angles.append(g1.dis_angle(self._grains[n_id]))
+        return angles
