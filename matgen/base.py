@@ -19,6 +19,7 @@ class Cell:
 
         self.id = id
         self.n_ids = [] # neighbour ids
+        self.nn_ids = [] # neighbour of neighbor ids
         self.is_external = False
 
     def __str__(self):
@@ -36,14 +37,24 @@ class Cell:
     def add_neighbor(self, n_id: int):
         """
         """
-        if n_id not in self.n_ids:
+        if n_id not in self.n_ids and n_id != self.id:
             self.n_ids.append(n_id)
     
     def add_neighbors(self, n_ids: Iterable):
         """
         """
         self.n_ids += n_ids
-        self.n_ids = list(set(self.n_ids))
+        s = set(self.n_ids) # eliminate duplicates
+        s.difference_update([self.id]) # eliminate self.id
+        self.n_ids = list(s)
+
+    def add_neighbors_neighbors(self, nn_ids: Iterable):
+        """
+        """
+        self.nn_ids += nn_ids
+        s = set(self.nn_ids) # eliminate duplicates
+        s.difference_update([self.id]) # eliminate self.id
+        self.nn_ids = list(s)
 
     def set_external(self, is_external: bool = True):
         """
@@ -796,9 +807,17 @@ def _add_neighbors(_cells: Dict, _incident_cells: Dict):
     """ 
     for cell in _cells.values():
         for inc_cell_id in cell.incident_ids:
-            s = set(cell.incident_ids)
-            s.difference_update([inc_cell_id])
-            _incident_cells[inc_cell_id].add_neighbors(list(s))
+            _incident_cells[inc_cell_id].add_neighbors(cell.incident_ids)
+
+
+def _add_neighbors_neighbors(_cells: Dict):
+    """
+    """
+    for cell in _cells.values():
+        nn_ids = []
+        for n_id in cell.n_ids:
+            nn_ids += _cells[n_id].n_ids
+        cell.add_neighbors_neighbors(nn_ids)
 
 
 def _add_measures(_cells: Dict, measures: List):
@@ -910,6 +929,8 @@ class CellComplex:
             _edges = Edge3D.from_tess_file(file, _vertices)
                     
         _add_neighbors(_vertices, _edges)
+        _add_neighbors_neighbors(_vertices)
+        _add_neighbors_neighbors(_edges)
 
         if dim == 2:
             _faces = Face2D.from_tess_file(file, _edges)
@@ -917,12 +938,12 @@ class CellComplex:
             _faces = Face3D.from_tess_file(file, _edges)
         
         _add_neighbors(_edges, _faces)
+        _add_neighbors_neighbors(_faces)
 
         if dim == 3:
             _polyhedra = Poly.from_tess_file(file, _faces)
             _add_neighbors(_faces, _polyhedra)
-            # print('neighbor polyhedra found',
-            #     time.time() - start, 's')
+            _add_neighbors_neighbors(_polyhedra)
         
         # Set external
         if dim == 2:
