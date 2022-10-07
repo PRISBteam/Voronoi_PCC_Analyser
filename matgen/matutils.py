@@ -263,15 +263,15 @@ def _R_from_Rodrigues(t: float, u: Tuple) -> np.ndarray:
     sin = math.sin
 
     R11 = cos(t) + ux*ux*(1 - cos(t))
-    R12 = uy*ux*(1 - cos(t)) + uz*sin(t)
-    R13 = uz*ux*(1 - cos(t)) - uy*sin(t)
+    R21 = uy*ux*(1 - cos(t)) + uz*sin(t)
+    R31 = uz*ux*(1 - cos(t)) - uy*sin(t)
 
-    R21 = ux*uy*(1 - cos(t)) - uz*sin(t)
+    R12 = ux*uy*(1 - cos(t)) - uz*sin(t)
     R22 = cos(t) + uy*uy*(1 - cos(t))
-    R23 = uz*uy*(1 - cos(t)) + ux*sin(t)
+    R32 = uz*uy*(1 - cos(t)) + ux*sin(t)
 
-    R31 = ux*uz*(1 - cos(t)) + uy*sin(t)
-    R32 = uy*uz*(1 - cos(t)) - ux*sin(t)
+    R13 = ux*uz*(1 - cos(t)) + uy*sin(t)
+    R23 = uy*uz*(1 - cos(t)) - ux*sin(t)
     R33 = cos(t) + uz*uz*(1 - cos(t))
 
     R = np.array([
