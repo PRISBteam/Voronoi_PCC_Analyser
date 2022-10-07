@@ -214,11 +214,23 @@ def _ori_mat(ori: Tuple, oridesc: str ='euler-bunge:active') -> np.ndarray:
         f1 = math.radians(ori[0])
         F = math.radians(ori[1])
         f2 = math.radians(ori[2])
+        return _R_from_Euler(f1, F, f2)
     elif oridesc == 'euler-roe:active':
         f1 = math.radians(ori[0] + 90)
         F = math.radians(ori[1])
         f2 = math.radians(ori[2] - 90)
+        return _R_from_Euler(f1, F, f2)
+    elif oridesc == 'rodrigues:active':
+        t = math.sqrt(ori[0] * ori[0] + ori[1] * ori[1] + ori[2] * ori[2])
+        ux = ori[0] / t
+        uy = ori[1] / t
+        uz = ori[2] / t
+        return _R_from_Rodrigues(t, (ux, uy, uz))
 
+
+def _R_from_Euler(f1: float, F: float, f2: float):
+    """
+    """
     cos = math.cos
     sin = math.sin
 
@@ -233,6 +245,34 @@ def _ori_mat(ori: Tuple, oridesc: str ='euler-bunge:active') -> np.ndarray:
     R31 = sin(f1)*sin(F)
     R32 = - cos(f1)*sin(F)
     R33 = cos(F)
+
+    R = np.array([
+        [R11, R12, R13],
+        [R21, R22, R23],
+        [R31, R32, R33]
+    ])
+    return R
+
+
+def _R_from_Rodrigues(t: float, u: Tuple) -> np.ndarray:
+    """
+    """
+    ux, uy, uz = u
+
+    cos = math.cos
+    sin = math.sin
+
+    R11 = cos(t) + ux*ux*(1 - cos(t))
+    R12 = uy*ux*(1 - cos(t)) + uz*sin(t)
+    R13 = uz*ux*(1 - cos(t)) - uy*sin(t)
+
+    R21 = ux*uy*(1 - cos(t)) - uz*sin(t)
+    R22 = cos(t) + uy*uy*(1 - cos(t))
+    R23 = uz*uy*(1 - cos(t)) + ux*sin(t)
+
+    R31 = ux*uz*(1 - cos(t)) + uy*sin(t)
+    R32 = uy*uz*(1 - cos(t)) - ux*sin(t)
+    R33 = cos(t) + uz*uz*(1 - cos(t))
 
     R = np.array([
         [R11, R12, R13],
