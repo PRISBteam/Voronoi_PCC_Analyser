@@ -6,7 +6,7 @@ import numpy as np
 from scipy import sparse
 import logging
 
-from matgen.base import Grain
+# from matgen.base import Grain
 
 def _get_IJV_from_neighbors(_cells: Dict) -> Tuple[List]:
     """Get I, J, V lists of the adjacency matrix from a dictionary of cells.
@@ -261,7 +261,7 @@ def _calculate_disorient(R1, R2, crysym: str = 'cubic'):
     return math.degrees(theta_min)
 
 
-def dis_angle(g1: Grain, g2: Grain) -> float:
+def dis_angle(g1: 'Grain', g2: 'Grain') -> float:
     """
     """
     if g1.crysym != g2.crysym:
