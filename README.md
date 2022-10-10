@@ -103,10 +103,11 @@ neper -T -n <number of delau_seeds> -id 1 -statcell vol -statface area -domain "
 You must call Neper from the folder (cd <path to the directory containing “delau_seeds.txt”>) containing the “delau_seeds.txt” file, or write the whole path instead of the file name in the _coo:file(<path to delau_seeds.txt>)_ command.
 </li>
 
-<li> More flexibility in the tesselation provide the <a href="[https://neper.info/doc/neper_t.html#examples" target="_blank](https://neper.info/doc/neper_t.html#cmdoption-transform)"> transformation options </a> of the Neper. In particular, for the creation of a 2D complex as a plane cut of the 3D one, the <i> slice(d,a,b,c)</i> function can be used as it is shown below for the half-cut of the Voronoi complex containing 300 grains:
+<li> More flexibility in the tesselation provide the <a href="[https://neper.info/doc/neper_t.html#examples" target="_blank](https://neper.info/doc/neper_t.html#cmdoption-transform)"> transformation options </a> of the Neper. In particular, for the creation of a 2D complex as a plane cut of the 3D one, the <i> slice(d,a,b,c)</i> function can be used as it is shown below for the half-cut of the Voronoi complex containing 1000 grains:
 
 ```
-neper -T -n 300 -id 1 -transform slice(0,0,0,0.5) -dim 3 -statcell vol -statface area
+neper -T -n 1000 -id 1 -domain "cube(1.0,1.0,1.0)" -transform "slice(0.5,0,0,1)" -dim 3 -statcell area; \
+neper -V n1000-id1.tess -datacelltrs 0.5  -print DCC_slice
 ```
 Here <i> d, a, b </i>, and <i>c</i> are parameters in the corresponding equation of a plane <i> ax + by + cz = d</i> and it is worth to be mentioned here that the normal vector of this plane is <i>n=(a,b,c)</i>.
 </li>
