@@ -98,7 +98,7 @@ Please, see more <a href="https://neper.info/doc/neper_t.html#examples" target="
 <li> If you need volumes and areas for the primal complex, it can be obtained the same way by Neper using the `delone_seeds.txt` file provided by the code. These coordinates serve as the seed points for the new Neper tessellation (Delaunay triangulation, if the initial complex (dual) was Voronoi). So the terminal command, providing volumes and areas of the primal complex, may looks like 
 
 ```
-neper -T -n 300 -id 1 -statcell vol -statface area -domain "cube(1.0,1.0,1.0)" -morphooptiini "coo:file(delau_seeds.txt)"
+neper -T -n <number of delau_seeds> -id 1 -statcell vol -statface area -domain "cube(1.0,1.0,1.0)" -morphooptiini "coo:file(delau_seeds.txt)"
 ```
 You must call Neper from the folder (cd <path to the directory containing “delau_seeds.txt”>) containing the “delau_seeds.txt” file, or write the whole path instead of the file name in the _coo:file(<path to delau_seeds.txt>)_ command.
 </li>
@@ -114,15 +114,17 @@ Here <i> d, a, b </i>, and <i>c</i> are parameters in the corresponding equation
 </ul>
 
 ## 5. Examples
-The folder with several examples contains discrete cell complexes already created by Neper and processed with Voro_DCC_Analyser tool. The command below shows five terminal commands launching the creation of the Vorinoi DCC containing 5000 3-cells with its primal Delaunay DCC:
+The folder with several examples contains discrete cell complexes already created by Neper and processed with Voro_DCC_Analyser tool. The command below shows five terminal commands launching the creation of the Vorinoi DCC containing 5000 3-cells and 32126 0-cells with its primal Delaunay DCC:
 
 ```
 neper -T -n 5000 -dim 3 -id 1 -ori uniform -statcell vol -statface area; \
 neper -V n5000-id1.tess -datacelltrs 0.5  -print DCC_voronoi_5000; \
 python <path/to/the/directory>/Voronoi_DCC_Analyser/sparsemat.py --file <path/to/the/directory>/n5000-id1.tess --dir <path/to/right/directory>; \
-neper -T -n 5000 -id 2 -statcell vol -statface area -domain "cube(1.0,1.0,1.0)" -morphooptiini "coo:file(delau_seeds.txt)"; \
-neper -V n5000-id2.tess -datacelltrs 0.5  -print DCC_delau_5000
+neper -T -n 32126 -id 2 -statcell vol -statface area -domain "cube(1.0,1.0,1.0)" -morphooptiini "coo:file(delau_seeds.txt)"; \
+neper -V n32126-id2.tess -datacelltrs 0.5  -print DCC_delau_32126
 ```
+All the amounts of k-cwlls in the complex can be taken directly from 'voro_Ncells.txt' file.
+
 ## Applications of DCCs
 <ol>
 <li> K. Berbatov, P.D. Boom, A.L. Hazel, A.P. Jivkov, 2022. Diffusion in multi-dimensional solids using Forman’s combinatorial differential forms. Applied Mathematical Modelling 110, 172-192. [doi: 10.1016/j.apm.2022.05.043.](https://doi.org/10.1016/j.apm.2022.05.043) </li>
