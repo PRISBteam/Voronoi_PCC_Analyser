@@ -123,7 +123,7 @@ python <path/to/the/directory>/Voronoi_DCC_Analyser/sparsemat.py --file <path/to
 neper -T -n 32126 -id 2 -statcell vol -statface area -domain "cube(1.0,1.0,1.0)" -morphooptiini "coo:file(delau_seeds.txt)"; \
 neper -V n32126-id2.tess -datacelltrs 0.5  -print DCC_delau_32126
 ```
-All the amounts of k-cwlls in the complex can be taken directly from 'voro_Ncells.txt' file.
+All the amounts of k-cells in the complex can be taken directly from the `voro_Ncells.txt` or `delau_Ncells.txt` files.
 
 ## Applications of DCCs
 <ol>
