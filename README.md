@@ -103,7 +103,7 @@ neper -T -n <number of delau_seeds> -id 1 -statcell vol -statface area -domain "
 You must call Neper from the folder (cd <path to the directory containing "delau_seeds.txt">) containing the ``delau_seeds.txt`` file, or write the whole path instead of the file name in the <i>coo:file(<path to delau_seeds.txt>)</i> command.
 </li>
 
-<li> More flexibility in the tesselation provide the <a href="https://neper.info/doc/neper_t.html#examples" target="_blank"> transformation options </a> of the Neper. In particular, for the creation of a 2D complex as a plane cut of the 3D one, the <i> slice(d,a,b,c)</i> function can be used as it is shown below for the half-cut of the Voronoi complex containing 1000 grains:
+<li> More flexibility in the tesselation provide the <a href="https://neper.info/doc/neper_t.html#examples" target="_blank"> transformation </a> options of the Neper. In particular, for the creation of a 2D complex as a plane cut of the 3D one, the <i> slice(d,a,b,c)</i> function can be used as it is shown below for the half-cut of the Voronoi complex containing 1000 grains:
 
 ```
 neper -T -n 1000 -id 1 -domain "cube(1.0,1.0,1.0)" -transform "slice(0.5,0,0,1)" -dim 3 -statcell area; \
@@ -144,7 +144,7 @@ All the amounts of k-cells in the complex can be taken directly from the `voro_N
 </ol>
 
 ## Acknowledgements
-This code has been created as a part of the EPSRC funded projects EP/V022687/1 _“Patterns recognition inside shear bands: tailoring microstructure against localisation”_ (PRISB) and EP/N026136/1 _"Geometric Mechanics of Solids: new analysis of modern engineering materials"_ (GEMS).
+This code has been created as a part of the EPSRC funded projects <a href="https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/V022687/1" target="_blank"> EP/V022687/1 </a> <i>“Patterns recognition inside shear bands: tailoring microstructure against localisation”</i> (PRISB) and <a href="https://gow.epsrc.ukri.org/NGBOViewGrant.aspx?GrantRef=EP/N026136/1" target="_blank"> EP/N026136/1 </a> <i>"Geometric Mechanics of Solids: new analysis of modern engineering materials"</i> (GEMS).
 
 ## License
 Distributed under the GNU General Public License v3.0. See `LICENSE.txt` for more information.
