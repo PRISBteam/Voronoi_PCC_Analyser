@@ -1,7 +1,7 @@
 # Discrete Cell Complex (DCC) generator tool
 
 <p> The code addressed the practical needs of creating discrete (combinatorial) cell complex (DCC) 
-based on the Laguerre-Voronoi tessellation of space provided by the <a href="https://neper.info" target=”_blank”> Neper </a> software. Such complexes arise from Voronoi tessellations of spatial domains around arbitrary sets of points, which ensure that each 1-cell is in the boundary of exactly three 2-cells and three 3-cells, and each 0-cell is in the boundary of exactly four 1-cells, six 2-cells and four 3-cells. This description is very close to real material microstructures and is widely used in molecular dynamics and other types of simulations. </p>
+based on the both regular (cubic, octohedrons) and  Laguerre-Voronoi tessellation of space provided by the <a href="https://neper.info" target=”_blank”> Neper </a> software. Such complexes arise from Voronoi tessellations of spatial domains around arbitrary sets of points, which ensure that each 1-cell is in the boundary of exactly three 2-cells and three 3-cells, and each 0-cell is in the boundary of exactly four 1-cells, six 2-cells and four 3-cells. This description is very close to real material microstructures and is widely used in molecular dynamics and other types of simulations. </p>
 
 ## 1. DCC definition and algebraic representation
 An excellent simple introduction to the DCC with their various applications is given in the <a href="https://link.springer.com/book/10.1007/978-1-84996-290-2" target="_blank"> book </a> of Leo Grady and Jonathan Polimeni _“Discrete Calculus. Applied Analysis on Graphs for Computational Science. (2010)_ Below are just a few notes necessary for understanding the output of the code.
