@@ -13,9 +13,9 @@ An excellent simple introduction to the area of DCCs with their various applicat
 
 <li> A standard way is to decide on a consistent orientation of all top-dimensional cells, e.g., to select the positive orientation to be from interior to exterior of the 3-cells and assign arbitrary orientations for all lower-dimensional cells. There are exactly three options for the relation between k-cell and (k+1)-cell in an oriented complex: they are not coincident - encoded by 0; the k-cell is on the boundary (k+1)-cell, and they have consistent orientations, encoded by 1; the k-cell is on the boundary (k+1)-cell and they have opposite orientations, encoded by -1. The transpose of the k-th incidence matrix is a matrix representing the k-th co-boundary operator, which maps all k-cells to the (k+1)-cells in their co-boundaries. </li>
 
-<li> The k-th combinatorial _Laplacian_ (Laplace–de Rham operator) can be written as <br>
+<li> The k-th combinatorial <i>Laplacian</i> (Laplace–de Rham operator) can be written as <br>
 <i> L<sub>k</sub> = b<sub>k-1</sub> B<sub>k-1</sub> + B<sub>k</sub> b<sub>k</sub>  </i> <br>
-and it maps all k-cells to themselves, collecting local connectivity information. One important application of the combinatorial Laplacians is in calculating combinatorial curvatures. Since the Laplacians are symmetric positive semi-definite matrices, their eigenvalues are real. The spectra of eigenvalues can be used to classify discrete topologies, with two topologies considered equivalent when they have the same Laplacians’ spectra. </li>
+and it maps all k-cells to themselves, collecting local connectivity information. One important application of the combinatorial Laplacians is in calculating <a href="https://link.springer.com/article/10.1007/s00454-002-0743-x" target=”_blank”> combinatorial curvatures </a>. Since the Laplacians are symmetric positive semi-definite matrices, their eigenvalues are real. The spectra of eigenvalues can be used to classify discrete topologies, with two topologies considered equivalent when they have the same Laplacians’ spectra. </li>
 </ul>
 
 ## 2. Terminal commands
