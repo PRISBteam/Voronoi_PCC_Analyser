@@ -19,7 +19,7 @@ and it maps all k-cells to themselves, collecting local connectivity information
 </ul>
 
 ## 2. Terminal commands
-The usual terminal app can launch the code on MAC, Windows or Linux. The first two commands create the needed environment specified in the file _requirements.txt_. 
+The usual terminal app can launch the code on MAC, Windows or Linux. The first two commands create the needed environment specified in the file `requirements.txt`.
 
 ```
 conda create --name neper-env --file requirements.txt
