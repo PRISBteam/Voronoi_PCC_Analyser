@@ -40,22 +40,22 @@ The Voronoi tesselation provided by Neper supposed to be a <i>dual</i> complex i
 ### For the dual (voronoi, cube, tocta, etc.) complex:
 All sparse matrices are stored in <i>*.txt</i> files.
 
-`A0.txt` - adjacency matrix for 0-cells (vertices) <br>
-`A1.txt` - adjacency matrix for 1-cells (edges) <br>
-`A2.txt` - adjacency matrix for 2-cells (faces) <br>
-`A3.txt` - adjacency matrix for 3-cells (polyhedra) <br>
+`A0.txt` - 0-adjacency matrix for 0-cells (vertices) <br>
+`A1.txt` - 1-adjacency matrix for 1-cells (edges) <br>
+`A2.txt` - 2-adjacency matrix for 2-cells (faces) <br>
+`A3.txt` - 3-adjacency matrix for 3-cells (polyhedra) <br>
 
-`B1.txt` - incidence matrix (0-cells are row indexes, 1-cells are columns) <br>
-`B2.txt` - incidence matrix (1-cells are row indexes, 2-cells are columns) <br>
-`B3.txt` - incidence matrix (2-cells are row indexes, 3-cells are columns) <br>
+`B1.txt` - incidence matrix or boundary operator (0-cells are row indexes, 1-cells are columns) <br>
+`B2.txt` - incidence matrix or boundary operator (1-cells are row indexes, 2-cells are columns) <br>
+`B3.txt` - incidence matrix or boundary operator (2-cells are row indexes, 3-cells are columns) <br>
 
 In the 2D case, there are no _A3_ and _B3_ matrices.
 
-`voro_Ncells.txt` - each row in the file corresponds to the numbers of different _k_-cells: the first row is the number of 0-cells,
+`voro_Ncells.txt` - each row in the file corresponds to the numbers of different k-cells: the first row is the number of 0-cells,
 second - is a number of 1-cells and so on.
 
 `voro_normals.txt` - components of a normal vector for each face written in the format: <i> (face_id a b c) </i>, where 
-face_id coincide with the numeration of faces in _A2_ and _B2_ matrices; _a_, _b_ and _c_ - are the components of the normal vector of a face in a 3D cartesian coordinate system.
+<i>face_id</i> coincide with the numeration of faces in _A2_ and _B2_ matrices; _a_, _b_ and _c_ - are the components of the normal vector of a face in a 3D cartesian coordinate system.
 
 `voro_seeds.txt` - coordinates of the seed points of 3-cells used for Voronoi tessellation of space.
 
@@ -66,13 +66,13 @@ face_id coincide with the numeration of faces in _A2_ and _B2_ matrices; _a_, _b
 `AC2.txt` - adjacency matrix for 2-cells (faces) <br>
 `AC3.txt` - adjacency matrix for 3-cells (polyhedra) <br>
 
-`BC1.txt` - incidence matrix (0-cells are row indexes, 1-cells are columns) <br>
-`BC2.txt` - incidence matrix (1-cells are row indexes, 2-cells are columns) <br>
-`BC3.txt` - incidence matrix (2-cells are row indexes, 3-cells are columns) <br>
+`BC1.txt` - incidence matrix or co-boundary operator (0-cells are row indexes, 1-cells are columns) <br>
+`BC2.txt` - incidence matrix or co-boundary operator (1-cells are row indexes, 2-cells are columns) <br>
+`BC3.txt` - incidence matrix or co-boundary operator (2-cells are row indexes, 3-cells are columns) <br>
 
 In the 2D case, there are no _AC3_ and _BC3_ matrices.
 
-`delau_Ncells.txt` - each row in the file corresponds to the numbers of different _k_-cells: the first row is the number of 0-cells,
+`delau_Ncells.txt` - each row in the file corresponds to the numbers of different k-cells: the first row is the number of 0-cells,
 second - is a number of 1-cells and so on.
 
 <!-- `delone_normals.txt` - components of a normal vector for each face written in the format: <i> (face_id a b c) </i>, where 
