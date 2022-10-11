@@ -95,7 +95,7 @@ face_id coincide with the numeration of faces in _a2_ and _b2_ matrices; _a_, _b
 Please, see more <a href="https://neper.info/doc/neper_t.html#examples" target="_blank"> examples </a> on the Neper webpage.
 </li>
 
-<li> If you need volumes and areas for the primal complex, it can be obtained the same way by Neper using the ``delau_seeds.txt`` file provided by the code. These node coordinates serve as the seed points for the new Neper tessellation (Delaunay triangulation, if the initial complex (dual) was Voronoi). So the terminal command, providing volumes and areas of the primal complex, may looks like 
+<li> If you need volumes and areas for the primal complex, it can be obtained the same way by Neper using the delau_seeds.txt file provided by the code. These node coordinates serve as the seed points for the new Neper tessellation (Delaunay triangulation, if the initial complex (dual) was Voronoi). So the terminal command, providing volumes and areas of the primal complex, may looks like 
 
 ```
 neper -T -n <number of delau_seeds> -id 1 -statcell vol -statface area -domain "cube(1.0,1.0,1.0)" -morphooptiini "coo:file(delau_seeds.txt)"
@@ -115,7 +115,7 @@ Here <i> d, a, b </i>, and <i>c</i> are parameters in the corresponding equation
 </ul>
 
 ## 5. Examples
-The folder with several examples contains discrete cell complexes already created by Neper and processed with Voro_DCC_Analyser tool. The command below shows five terminal commands launching the creation of the Vorinoi DCC containing 5000 3-cells and 32126 0-cells with its primal Delaunay DCC:
+The folder with several examples contains discrete cell complexes already created by Neper and processed with DCC Generator Tool. The command below shows five terminal commands launching the creation of the Vorinoi dual complex containing 5000 3-cells and Delaunay primal containing 32126 3-cells:
 
 ```
 neper -T -n 5000 -dim 3 -id 1 -ori uniform -statcell vol -statface area; \
