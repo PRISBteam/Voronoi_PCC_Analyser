@@ -87,7 +87,7 @@ face_id coincide with the numeration of faces in _a2_ and _b2_ matrices; _a_, _b
 
 ## 4. Tips and tricks
 <ul>
-<li> The metric information like the volumes of all 3-cells and areas of all 2-cells can be obtain directly from the Neper output using  <a href="https://neper.info/doc/neper_t.html#cmdoption-statcell" target="_blank"> statcell </a> and statface options with the corresponding <a href="https://neper.info/doc/exprskeys.html#tessellation-keys" target="_blank"> keys </a> like "-statcell vol -statface area" or  providing the corresponding values for every k-cell in the complex. In this case the terminal command may look like 
+<li> The metric information like the volumes of all 3-cells and areas of all 2-cells can be obtain directly from the Neper output using  <a href="https://neper.info/doc/neper_t.html#cmdoption-statcell" target="_blank"> statcell </a> and statface options with the corresponding <a href="https://neper.info/doc/exprskeys.html#tessellation-keys" target="_blank"> keys </a> like "-statcell vol -statface area" or  providing the corresponding values for every k-cell in the complex. In this case, the terminal command may look like 
   
 ```
    neper -T -n 300 -id 1 -dim 3 -statcell vol -statface area
@@ -100,7 +100,7 @@ Please, see more <a href="https://neper.info/doc/neper_t.html#examples" target="
 ```
 neper -T -n <number of delau_seeds> -id 1 -statcell vol -statface area -domain "cube(1.0,1.0,1.0)" -morphooptiini "coo:file(delau_seeds.txt)"
 ```
-You must call Neper from the folder (cd <path to the directory containing “delau_seeds.txt”>) containing the “delau_seeds.txt” file, or write the whole path instead of the file name in the _coo:file(<path to delau_seeds.txt>)_ command.
+You must call Neper from the folder (cd <path to the directory containing "delau_seeds.txt">) containing the 'delau_seeds.txt' file, or write the whole path instead of the <i>file name</i> in the <i>coo:file(<path to delau_seeds.txt>)</i> command.
 </li>
 
 <li> More flexibility in the tesselation provide the <a href="[https://neper.info/doc/neper_t.html#examples" target="_blank](https://neper.info/doc/neper_t.html#cmdoption-transform)"> transformation options </a> of the Neper. In particular, for the creation of a 2D complex as a plane cut of the 3D one, the <i> slice(d,a,b,c)</i> function can be used as it is shown below for the half-cut of the Voronoi complex containing 1000 grains:
