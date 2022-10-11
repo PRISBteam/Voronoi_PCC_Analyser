@@ -100,7 +100,7 @@ Please, see more <a href="https://neper.info/doc/neper_t.html#examples" target="
 ```
 neper -T -n <number of delau_seeds> -id 1 -statcell vol -statface area -domain "cube(1.0,1.0,1.0)" -morphooptiini "coo:file(delau_seeds.txt)"
 ```
-You must call Neper from the folder (cd <path to the directory containing "delau_seeds.txt">) containing the 'delau_seeds.txt' file, or write the whole path instead of the <i>file name</i> in the <i>coo:file(<path to delau_seeds.txt>)</i> command.
+You must call Neper from the folder (cd <path to the directory containing "delau_seeds.txt">) containing the delau_seeds.txt file, or write the whole path instead of the file name in the <i>coo:file(<path to delau_seeds.txt>)</i> command.
 </li>
 
 <li> More flexibility in the tesselation provide the <a href="https://neper.info/doc/neper_t.html#examples" target="_blank"> transformation options </a> of the Neper. In particular, for the creation of a 2D complex as a plane cut of the 3D one, the <i> slice(d,a,b,c)</i> function can be used as it is shown below for the half-cut of the Voronoi complex containing 1000 grains:
