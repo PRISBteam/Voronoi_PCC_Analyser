@@ -3,7 +3,7 @@
 import math
 from typing import Dict, Iterable, List, Tuple
 import numpy as np
-from scipy import sparse
+from scipy import sparse, linalg
 import logging
 
 # from matgen.base import Grain
@@ -205,7 +205,7 @@ def get_d_tuple(j_tuple: Tuple) -> Tuple:
         return d1, d2, d3
 
 
-def _ori_mat(ori: Tuple, oridesc: str ='euler-bunge:active') -> np.ndarray:
+def ori_mat(ori: Tuple, oridesc: str ='euler-bunge:active') -> np.ndarray:
     """
     returns orientation matrix
     """
@@ -221,10 +221,11 @@ def _ori_mat(ori: Tuple, oridesc: str ='euler-bunge:active') -> np.ndarray:
         f2 = math.radians(ori[2] - 90)
         return _R_from_Euler(f1, F, f2)
     elif oridesc == 'rodrigues:active':
-        t = math.sqrt(ori[0] * ori[0] + ori[1] * ori[1] + ori[2] * ori[2])
-        ux = ori[0] / t
-        uy = ori[1] / t
-        uz = ori[2] / t
+        tt = math.sqrt(ori[0] * ori[0] + ori[1] * ori[1] + ori[2] * ori[2])
+        t = 2 * math.atan(tt)
+        ux = ori[0] / tt
+        uy = ori[1] / tt
+        uz = ori[2] / tt
         return _R_from_Rodrigues(t, (ux, uy, uz))
 
 
@@ -279,15 +280,16 @@ def _R_from_Rodrigues(t: float, u: Tuple) -> np.ndarray:
         [R21, R22, R23],
         [R31, R32, R33]
     ])
-    return R
+    return R.T
 
 
-def _calculate_disorient(R1, R2, crysym: str = 'cubic'):
+def calculate_disorient(R1, R2, crysym: str = 'cubic'):
     """
     симметрия кристалла имеет значение - какие еще бывают варианты?
     """
         
-    _g = R1 @ np.linalg.inv(R2)
+    # _g = R1 @ np.linalg.inv(R2)
+    _g = R1 @ linalg.inv(R2)
     theta_min = math.acos((_g[0, 0] + _g[1, 1] + _g[2, 2] - 1) / 2)
     
     if crysym == 'cubic':
@@ -306,9 +308,9 @@ def dis_angle(g1: 'Grain', g2: 'Grain') -> float:
     """
     if g1.crysym != g2.crysym:
         raise ValueError("Crysym of g1 and g2 don't match")
-    R1 = _ori_mat(g1.ori, g1.oridesc)
-    R2 = _ori_mat(g2.ori, g2.oridesc)
-    return _calculate_disorient(R1, R2, g1.crysym)
+    R1 = ori_mat(g1.ori, g1.oridesc)
+    R2 = ori_mat(g2.ori, g2.oridesc)
+    return calculate_disorient(R1, R2, g1.crysym)
 
 
 # Cubic symmetry axes

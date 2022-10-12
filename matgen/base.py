@@ -96,6 +96,10 @@ class Grain(Cell):
         """
         self.seed = seed_coord
 
+    @property
+    def R(self):
+        return matutils.ori_mat(self.ori, self.oridesc)
+    
     def dis_angle(self, other: Grain) -> float:
         """
         """
@@ -1366,8 +1370,14 @@ class CellComplex:
         etc.
         """
         angles = []
+        for g in self._grains.values():
+            g.rot_mtx = g.R
         for g1 in self._grains.values():
             for n_id in getattr(g1, f'n{order}_ids'):
                 if g1.id < n_id:
-                    angles.append(g1.dis_angle(self._grains[n_id]))
+                    angle = matutils.calculate_disorient(
+                        g1.rot_mtx,
+                        self._grains[n_id].rot_mtx,
+                        g1.crysym)
+                    angles.append(angle)
         return angles
