@@ -5,6 +5,7 @@ import io
 import time
 from typing import Dict, Iterable, List, Tuple
 import logging
+from tqdm import tqdm
 import numpy as np
 # import pandas as pd
 
@@ -1372,7 +1373,7 @@ class CellComplex:
         angles = []
         for g in self._grains.values():
             g.rot_mtx = g.R
-        for g1 in self._grains.values():
+        for g1 in tqdm(self._grains.values()):
             for n_id in getattr(g1, f'n{order}_ids'):
                 if g1.id < n_id:
                     angle = matutils.calculate_disorient(
