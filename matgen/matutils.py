@@ -290,13 +290,26 @@ def calculate_disorient(R1, R2, crysym: str = 'cubic'):
         
     # _g = R1 @ np.linalg.inv(R2)
     _g = R1 @ linalg.inv(R2)
-    theta_min = math.acos((_g[0, 0] + _g[1, 1] + _g[2, 2] - 1) / 2)
-    
+    costheta = (_g[0, 0] + _g[1, 1] + _g[2, 2] - 1) / 2
+    if abs(costheta) <= 1:
+        theta_min = math.acos(costheta)
+    elif costheta > 1:
+        theta_min = 0
+    elif costheta < -1:
+        theta_min = math.acos(-1)
+         
     if crysym == 'cubic':
         for Os1 in Osym:
             for Os2 in Osym:
                 g = Os1 @ _g @ Os2
-                theta = math.acos((g[0, 0] + g[1, 1] + g[2, 2] - 1) / 2)
+                costheta = (g[0, 0] + g[1, 1] + g[2, 2] - 1) / 2
+                if abs(costheta) <= 1:
+                    theta = math.acos(costheta)
+                elif costheta > 1:
+                    theta = 0
+                elif costheta < -1:
+                    theta = math.acos(-1)
+                # theta = math.acos((g[0, 0] + g[1, 1] + g[2, 2] - 1) / 2)
                 if theta < theta_min:
                     theta_min = theta
     
