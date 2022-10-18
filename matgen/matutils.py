@@ -3,7 +3,7 @@
 import math
 from typing import Dict, Iterable, List, Tuple
 import numpy as np
-from scipy import sparse, linalg
+from scipy import sparse, linalg, stats
 import logging
 
 # from matgen.base import Grain
@@ -449,6 +449,45 @@ Osym = np.array([
         [ -1, 0, 0]
     ]
 ])
+
+
+def _check_chi2(ns: np.ndarray, ms: np.ndarray) -> Tuple:
+    """
+    """
+    if len(ns) != len(ms):
+        raise ValueError("Numbers of bins must be equal")
+    else:
+        df = len(ns) - 1
+    N = ns.sum()
+    M = ms.sum()
+    s = ((M * ns - N * ms) * (M * ns - N * ms) / (ns + ms)).sum() / N / M
+    p_value = 1 - stats.chi2.cdf(s, df=df)
+
+    return s, p_value
+
+
+def check_distr_diff(
+    angles1: np.ndarray,
+    angles2: np.ndarray,
+    alpha: float = 0.001
+):
+    """
+    LAGBS and HABGS - two categories
+    LAGBS if < 15
+    HAGBs if >= 15
+    """
+
+    ns = np.array([(angles1 < 15).sum(), (angles1 >= 15).sum()])
+    ms = np.array([(angles2 < 15).sum(), (angles2 >= 15).sum()])
+
+    _, p_value = _check_chi2(ns, ms)
+
+    if p_value < alpha:
+        return True # difference is significant
+    else:
+        return False # difference is not significant
+
+
 
 
 # """
