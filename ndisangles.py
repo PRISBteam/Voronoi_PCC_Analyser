@@ -58,7 +58,7 @@ def main() -> None:
         print(f'Finished: {len(angles)} disangles of order {i}')
         filename = os.path.join(args.dir, f'disangles{i}.txt')
         asum += len(angles)
-        np.savetxt(filename, angles, fmt='%.2f')
+        np.savetxt(filename, angles, fmt='%.3f')
     
     print('Total disangles calculated:', asum)
     print('Total time elapsed:', round(time.time() - start, 2), 's')
