@@ -453,6 +453,8 @@ Osym = np.array([
 
 def _check_chi2(ns: np.ndarray, ms: np.ndarray) -> Tuple:
     """
+    ns and ms contain frequencies of classes (categories)
+    number of bins is equal to number of classes (categories)
     """
     if len(ns) != len(ms):
         raise ValueError("Numbers of bins must be equal")
@@ -483,12 +485,36 @@ def check_distr_diff(
     _, p_value = _check_chi2(ns, ms)
 
     if p_value < alpha:
-        return True # difference is significant
+        return p_value, True # difference is significant
     else:
-        return False # difference is not significant
+        return p_value, False # difference is not significant
 
 
+def _hellinger(P: np.ndarray, Q: np.ndarray):
+    """
+    """
+    if not isinstance(P, np.ndarray):
+        P = np.array(P)
+    if not isinstance(Q, np.ndarray):
+        Q = np.array(Q)
 
+    if not np.all(P >= 0) or not np.all(Q >= 0):
+        raise ValueError
+    if len(P) != len(Q):
+        raise ValueError
+
+    return np.sqrt(((np.sqrt(P) - np.sqrt(Q)) ** 2).sum()) / math.sqrt(2)
+
+def hellinger_distance(
+    angles1: np.ndarray,
+    angles2: np.ndarray
+):
+    """
+    """
+    P = np.array([(angles1 < 15).sum(), (angles1 >= 15).sum()]) / angles1.sum()
+    Q = np.array([(angles2 < 15).sum(), (angles2 >= 15).sum()]) / angles2.sum()
+
+    return _hellinger(P, Q)
 
 # """
 # https://networkx.org/documentation/stable/tutorial.html
