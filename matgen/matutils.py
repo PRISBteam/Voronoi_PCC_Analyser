@@ -511,10 +511,10 @@ def hellinger_distance(
 ):
     """
     """
-    P = np.array([(angles1 < 15).sum(), (angles1 >= 15).sum()]) / angles1.sum()
-    Q = np.array([(angles2 < 15).sum(), (angles2 >= 15).sum()]) / angles2.sum()
+    P = np.array([(angles1 < 15).sum(), (angles1 >= 15).sum()]) / len(angles1)
+    Q = np.array([(angles2 < 15).sum(), (angles2 >= 15).sum()]) / len(angles2)
 
-    return _hellinger(P, Q)
+    return P, Q, _hellinger(P, Q)
 
 # """
 # https://networkx.org/documentation/stable/tutorial.html
