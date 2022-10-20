@@ -95,14 +95,6 @@ face_id coincide with the numeration of faces in _a2_ and _b2_ matrices; _a_, _b
 Please, see more <a href="https://neper.info/doc/neper_t.html#examples" target="_blank"> examples </a> on the Neper webpage.
 </li>
 
-<li> If you need volumes and areas for the primal complex, it can be obtained the same way by Neper using the delau_seeds.txt file provided by the code. These node coordinates serve as the seed points for the new Neper tessellation (Delaunay triangulation, if the initial complex (dual) was Voronoi). So the terminal command, providing volumes and areas of the primal complex, may looks like 
-
-```
-neper -T -n <number of delau_seeds> -id 1 -statcell vol -statface area -domain "cube(1.0,1.0,1.0)" -morphooptiini "coo:file(delau_seeds.txt)"
-```
-You must call Neper from the folder (cd <path to the directory containing "delau_seeds.txt">) containing the ``delau_seeds.txt`` file, or write the whole path instead of the file name in the <i>coo:file(<path to delau_seeds.txt>)</i> command.
-</li>
-
 <li> More flexibility in the tesselation provide the <a href="https://neper.info/doc/neper_t.html#examples" target="_blank"> transformation </a> options of the Neper. In particular, for the creation of a 2D complex as a plane cut of the 3D one, the <i> slice(d,a,b,c)</i> function can be used as it is shown below for the half-cut of the Voronoi complex containing 1000 grains:
 
 ```
@@ -115,14 +107,12 @@ Here <i> d, a, b </i>, and <i>c</i> are parameters in the corresponding equation
 </ul>
 
 ## 5. Examples
-The folder with several examples contains discrete cell complexes already created by Neper and processed with DCC Generator Tool. The command below shows five terminal commands launching the creation of the Vorinoi dual complex containing 5000 3-cells and Delaunay primal containing 32126 3-cells:
+The folder with several examples contains discrete cell complexes already created by Neper and processed with DCC Generator Tool. The command below shows three terminal commands launching the creation of the Vorinoi dual complex containing 5000 3-cells and its further processing using DCC Generator Tool:
 
 ```
 neper -T -n 5000 -dim 3 -id 1 -ori uniform -statcell vol -statface area; \
 neper -V n5000-id1.tess -datacelltrs 0.5  -print DCC_voronoi_5000; \
-python <path/to/the/directory>/Voronoi_DCC_Analyser/sparsemat.py --file <path/to/the/directory>/n5000-id1.tess --dir <path/to/right/directory>; \
-neper -T -n 32126 -id 2 -statcell vol -statface area -domain "cube(1.0,1.0,1.0)" -morphooptiini "coo:file(delau_seeds.txt)"; \
-neper -V n32126-id2.tess -datacelltrs 0.5  -print DCC_delau_32126
+python <path/to/the/directory>/Voronoi_DCC_Analyser/sparsemat.py --file <path/to/the/directory>/n5000-id1.tess --dir <path/to/right/directory>;
 ```
 All the amounts of k-cells in the complex can be taken directly from the `voro_Ncells.txt` or `delau_Ncells.txt` files.
 
