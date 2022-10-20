@@ -95,10 +95,10 @@ face_id coincide with the numeration of faces in _a2_ and _b2_ matrices; _a_, _b
 Please, see more <a href="https://neper.info/doc/neper_t.html#examples" target="_blank"> examples </a> on the Neper webpage.
 </li>
   
-<li> Using the file with a specific set of seed points a new Neper tessellation can be performed. The terminal command creating the complex with the coordinates of the seed points as the centres of 3-cells may looks like 
+<li> Using the file ``seeds.txt`` with some specific set of seed points a new Neper tessellation can be performed. The terminal command creating a complex with coordinates of the seed points as the centres of 3-cells may looks like 
  
 ```
-neper -T -n <number of delau_seeds> -id 1 -statcell vol -statface area -domain "cube(1.0,1.0,1.0)" -morphooptiini "coo:file(delau_seeds.txt)"
+neper -T -n <number of seeds> -id 1 -statcell vol -statface area -domain "cube(1.0,1.0,1.0)" -morphooptiini "coo:file(seeds.txt)"
 ```
 You must call Neper from the folder (cd <path to the directory containing the file "seeds.txt">) containing the ``seeds.txt`` file, or write the whole path instead of the file name in the <i>coo:file(<path to seeds.txt>)</i> command.
 </li>
