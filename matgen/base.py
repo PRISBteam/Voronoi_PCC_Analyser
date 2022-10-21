@@ -1369,12 +1369,13 @@ class CellComplex:
         1 order - grain neighbor ids
         2 order - grain neighbor of neighbor ids
         etc.
-        """
+        """     
         angles = []
         for g in self._grains.values():
             g.rot_mtx = g.R
         for g1 in tqdm(self._grains.values()):
-            for n_id in getattr(g1, f'n{order}_ids'):
+            n_ids = getattr(g1, f'n{order}_ids')
+            for n_id in n_ids:
                 if g1.id < n_id:
                     angle = matutils.calculate_disorient(
                         g1.rot_mtx,
@@ -1382,3 +1383,10 @@ class CellComplex:
                         g1.crysym)
                     angles.append(angle)
         return angles
+
+    def get_neighbor_counts_of_order(self, order: int):
+        """
+        """
+        return np.array(
+            [len(getattr(g, f'n{order}_ids')) for g in self._grains.values()]
+        )
