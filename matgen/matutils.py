@@ -462,6 +462,10 @@ def _check_chi2(ns: np.ndarray, ms: np.ndarray) -> Tuple:
         df = len(ns) - 1
     N = ns.sum()
     M = ms.sum()
+
+    mask = (ns != 0) + (ms != 0)
+    ns = ns[mask]
+    ms = ms[mask]
     s = ((M * ns - N * ms) * (M * ns - N * ms) / (ns + ms)).sum() / N / M
     p_value = 1 - stats.chi2.cdf(s, df=df)
 
