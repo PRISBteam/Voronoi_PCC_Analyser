@@ -520,6 +520,61 @@ def hellinger_distance(
 
     return P, Q, _hellinger(P, Q)
 
+
+def _Xfunc(x):
+    return (np.sqrt(2) - 1) / np.sqrt(1 - (np.sqrt(2) - 1)**2 / np.tan(x / 2)**2)
+
+
+def _Yfunc(x):
+    return (np.sqrt(2) - 1)**2 / np.sqrt(3 - 1 / np.tan(x / 2)**2)
+
+
+def mackenzie(angles: np.ndarray, precision: int = 5):
+    """
+    degrees (with 2 decimal digits)
+
+    TODO: try np.piecewise
+
+    """
+    angles_rad = np.radians(np.round(angles, 2))
+    p = np.zeros_like(angles_rad, dtype=float)
+
+    # 0 <= angle <= 45
+    mask = (angles >= 0)&(angles <= 45)
+    x = angles_rad[mask]
+    p[mask] = (2/15)*(1 - np.cos(x))
+
+    # 45 < angle <= 60
+    mask = (angles > 45)&(angles <= 60)
+    x = angles_rad[mask]
+    p[mask] = (2/15)*(3*(np.sqrt(2) - 1)*np.sin(x) - 2*(1 - np.cos(x)))
+
+    # 60 < angle <= 60.72
+    mask = (angles > 60)&(angles <= 60.72)
+    x = angles_rad[mask]
+    p[mask] = (2/15)*(
+        (3*(np.sqrt(2) - 1) + 4/np.sqrt(3))*np.sin(x) - 6*(1 - np.cos(x))
+    )
+
+    # 60.73 <= angle <= 62.8
+    mask = (angles >= 60.73)&(angles <= 62.8)
+    x = angles_rad[mask]
+    X = _Xfunc(x)
+    Y = _Yfunc(x)
+    p[mask] = (2 / 15) * (
+        (3*(np.sqrt(2) - 1) + 4/np.sqrt(3))*np.sin(x) - 6*(1 - np.cos(x))
+    ) - (8/5/math.pi)*(
+        (2*(np.sqrt(2) - 1)*np.arccos(X/np.tan(x/2))) +\
+            (1/np.sqrt(3))*np.arccos(Y/np.tan(x/2))
+    )*np.sin(x) + (8/5/math.pi)*(
+        2*np.arccos((np.sqrt(2) + 1)*X/np.sqrt(2)) +\
+            np.arccos((np.sqrt(2) + 1)*Y/np.sqrt(2))
+    )*(1 - np.cos(x))
+
+    return np.round(p, precision)
+
+
+
 # """
 # https://networkx.org/documentation/stable/tutorial.html
 
