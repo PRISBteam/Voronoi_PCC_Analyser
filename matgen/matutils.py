@@ -573,6 +573,56 @@ def mackenzie(angles: np.ndarray, precision: int = 5):
 
     return np.round(p, precision)
 
+def _cdf1(angles):
+    """
+    angles in degrees
+    all angles must be less than or equal to 45
+    """
+    x = np.radians(angles)
+    return 180/math.pi*2/15*(x - np.sin(x))
+
+def _cdf2(angles):
+    """
+    angles in degrees
+    all angles must be greater than 45 and less than or equal to 60
+    """
+    x = np.radians(angles)
+    return 180/math.pi*2/15*(3*(1 - np.sqrt(2))*np.cos(x) - 2*(x - np.sin(x)))
+
+def mackenzie_cdf(angles, precision: int = 5):
+    """
+    angles in degrees
+    less than or equal to 60
+    """
+    prob = np.zeros_like(angles, dtype=float)
+    
+    mask = (angles >= 0)&(angles <= 45)
+    x = angles[mask]
+    prob[mask] = _cdf1(x)
+    
+    mask = (angles > 45)&(angles <= 60)
+    x = angles[mask]
+    prob[mask] = _cdf2(x) - _cdf2(45) + _cdf1(45)
+
+    mask = (angles > 45)&(angles <= 60)
+    x = angles[mask]
+    prob[mask] = _cdf2(x) - _cdf2(45) + _cdf1(45)
+    
+    mask = (angles > 60)&(angles <= 61)
+    x = angles[mask]
+    prob[mask] = 0.99850 # approx, not exact
+
+    mask = (angles >= 62)
+    x = angles[mask]
+    prob[mask] = 1.0 # approx, not exact
+    
+    return np.round(prob, precision)
+
+def mackenzie_pmf(angles):
+    """
+    """
+    return np.diff(mackenzie_cdf(angles))
+
 
 
 # """
