@@ -12,6 +12,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from matgen import matutils
 
@@ -1237,12 +1238,13 @@ class CellComplex:
         return [cell.id for cell in self._GBs.values() if cell.is_special]
 
     def plot_vertices(
-            self,
-            v_ids: List = [],
-            ax: Axes = None,
-            figsize: Tuple = (8,8),
-            labels: bool = False,
-            **kwargs):
+        self,
+        v_ids: List = [],
+        ax: Axes = None,
+        figsize: Tuple = (8,8),
+        labels: bool = False,
+        **kwargs
+    ) -> Axes:
         """
         """
         if not ax:
@@ -1261,12 +1263,13 @@ class CellComplex:
         return ax
 
     def plot_edges(
-            self,
-            e_ids: List = [],
-            ax: Axes = None,
-            figsize: Tuple = (8,8),
-            labels: bool = False,
-            **kwargs):
+        self,
+        e_ids: List = [],
+        ax: Axes = None,
+        figsize: Tuple = (8,8),
+        labels: bool = False,
+        **kwargs
+    ) -> Axes:
         """
         """
         if not ax:
@@ -1292,6 +1295,66 @@ class CellComplex:
                     ax.plot(x_space, y_space, z_space, **kwargs)
         if labels:
             ax.legend(loc='best')
+        return ax
+
+    def plot_faces(
+        self,
+        f_ids: List = [],
+        ax: Axes = None,
+        figsize: Tuple = (8,8),
+        labels: bool = False,
+        **kwargs
+    ) -> Axes:
+        """
+        labels doesn't work with 3d faces
+        """
+        if not ax:
+            ax = _create_ax(self.dim, figsize)
+        if f_ids:
+            f_list = self.get_many('f', f_ids)
+        else:
+            f_list = self.faces
+        f_coord_list = []
+        for f in f_list:
+            v_list = self.get_many('v', f.v_ids)
+
+            if self.dim == 2:
+                xs = [v.x for v in v_list]
+                ys = [v.y for v in v_list]
+                if labels:
+                    ax.fill(xs, ys, label=f.id, **kwargs)
+                else:
+                    ax.fill(xs, ys, **kwargs)
+            elif self.dim == 3:
+                coord_list = [v.coord for v in v_list]
+                f_coord_list.append(coord_list)
+
+        if self.dim == 3:
+            poly = Poly3DCollection(f_coord_list, alpha = 0.2, **kwargs)
+            ax.add_collection3d(poly)
+        elif labels:
+            ax.legend(loc='best')
+        return ax
+
+    def plot_polyhedra(
+        self,
+        p_ids: List = [],
+        ax: Axes = None,
+        figsize: Tuple = (8,8),
+        **kwargs
+    ) -> Axes:
+        """
+        """
+        if not ax:
+            ax = _create_ax(self.dim, figsize)
+        if p_ids:
+            p_list = self.get_many('p', p_ids)
+        else:
+            p_list = self.polyhedra
+        
+        for p in p_list:
+            ax = self.plot_faces(f_ids=p.f_ids, ax=ax, **kwargs)
+
         return ax
 
     def get_junction_ids_of_type(self, junction_type: int) -> List:
