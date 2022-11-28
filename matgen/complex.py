@@ -7,30 +7,10 @@ class CellComplex
 # import time
 
 # import numpy as np
-# import matplotlib.pyplot as plt
-# from matplotlib.axes import Axes
 # from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 # #import representation
 # from matgen import matutils
-
-
-# def _create_ax(dim: int = 2, figsize: Tuple = (8,8)) -> Axes:
-#     """
-#     """
-#     if dim == 2:
-#         projection = None
-#         xlim = ylim = (-0.1, 1.1)
-#     elif dim == 3:
-#         projection = '3d'
-#         xlim = ylim = zlim = (0, 1)
-#     fig = plt.figure(figsize=figsize)
-#     ax = fig.add_subplot(111, projection=projection)
-#     ax.set_xlim(*xlim)
-#     ax.set_ylim(*ylim)
-#     if dim == 3:
-#         ax.set_zlim(*zlim)
-#     return ax
 
 # class Vertex():
 #     """

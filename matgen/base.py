@@ -1,4 +1,5 @@
 """Base classes for complex analysis.
+
 """
 from __future__ import annotations # to avoid NameError in type hinting
 import io
@@ -8,6 +9,9 @@ import logging
 from tqdm import tqdm
 import numpy as np
 # import pandas as pd
+
+import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 
 from matgen import matutils
 
@@ -240,6 +244,24 @@ class GrainBoundary(CellLowerDim):
             self.theta = None
 
     
+def _create_ax(dim: int = 2, figsize: Tuple = (8,8)) -> Axes:
+    """
+    """
+    if dim == 2:
+        projection = None
+        # xlim = ylim = (-0.1, 1.1)
+    elif dim == 3:
+        projection = '3d'
+        # xlim = ylim = zlim = (0, 1)
+    fig = plt.figure(figsize=figsize)
+    ax = fig.add_subplot(111, projection=projection)
+    # ax.set_xlim(*xlim)
+    # ax.set_ylim(*ylim)
+    # if dim == 3:
+    #     ax.set_zlim(*zlim)
+    return ax
+
+
 class Vertex(CellLowerDim):
     """
     """
@@ -309,9 +331,33 @@ class Vertex2D(Vertex, TripleJunction):
         """
         return (self.x, self.y)
 
+    def plot(
+            self,
+            ax: Axes = None,
+            figsize: Tuple = (8,8),
+            **kwargs) -> Axes:
+        """
+        """
+        if not ax:
+            ax = _create_ax(dim=2, figsize=figsize)
+        ax.scatter(self.x, self.y, **kwargs)
+        return ax
+
 
 class Vertex3D(Vertex):
-    pass
+    """
+    """
+    def plot(
+            self,
+            ax: Axes = None,
+            figsize: Tuple = (8,8),
+            **kwargs) -> Axes:
+        """
+        """
+        if not ax:
+            ax = _create_ax(dim=3, figsize=figsize)
+        ax.scatter(self.x, self.y, self.z, **kwargs)
+        return ax
 
 
 class Edge(CellLowerDim):
