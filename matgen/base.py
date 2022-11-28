@@ -1236,6 +1236,30 @@ class CellComplex:
         """
         return [cell.id for cell in self._GBs.values() if cell.is_special]
 
+    def plot_vertices(
+            self,
+            v_ids: List = [],
+            ax: Axes = None,
+            figsize: Tuple = (8,8),
+            labels: bool = False,
+            **kwargs):
+        """
+        """
+        if not ax:
+            ax = _create_ax(self.dim, figsize)
+        if v_ids:
+            v_list = self.get_many('v', v_ids)
+        else:
+            v_list = self.vertices
+        for v in v_list:
+            if labels:
+                ax = v.plot(ax=ax, label=v.id, **kwargs)
+            else:
+                ax = v.plot(ax=ax, **kwargs)
+        if labels:
+            ax.legend(loc='best')
+        return ax
+
     def get_junction_ids_of_type(self, junction_type: int) -> List:
         """
         2D - vertices are junctions

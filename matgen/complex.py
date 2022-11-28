@@ -40,25 +40,6 @@ class CellComplex
 #     add_incident_edges
         
 #     get_degree
-        
-
-#     def plot(
-#             self,
-#             dim: int = 2,
-#             ax: Axes = None,
-#             figsize: Tuple = (8,8),
-#             **kwargs) -> Axes:
-#         """
-#         """
-#         if not ax:
-#             ax = _create_ax(dim, figsize)
-#         if dim == 2:
-#             ax.scatter(self.x, self.y, **kwargs)
-#         elif dim == 3:
-#             ax.scatter(self.x, self.y, self.z, **kwargs)
-#         return ax
-
-
 
 
 # class Edge():
@@ -91,9 +72,6 @@ class CellComplex
 #     get_degree
     
 #     """
-#     def __init__(self, id: int, v_ids: Iterable):
-#         """
-#         ""
 
 
 #     # def plot(
