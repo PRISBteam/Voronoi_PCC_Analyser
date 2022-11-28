@@ -11,7 +11,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 matr*/
-
+pictures*/
 # C extensions
 *.so
 
