@@ -1260,6 +1260,40 @@ class CellComplex:
             ax.legend(loc='best')
         return ax
 
+    def plot_edges(
+            self,
+            e_ids: List = [],
+            ax: Axes = None,
+            figsize: Tuple = (8,8),
+            labels: bool = False,
+            **kwargs):
+        """
+        """
+        if not ax:
+            ax = _create_ax(self.dim, figsize)
+        if e_ids:
+            e_list = self.get_many('e', e_ids)
+        else:
+            e_list = self.edges
+        for e in e_list:
+            v1, v2 = self.get_many('v', e.v_ids)
+            x_space = np.linspace(v1.x, v2.x, 50)
+            y_space = np.linspace(v1.y, v2.y, 50)
+            if self.dim == 2:
+                if labels:
+                    ax.plot(x_space, y_space, label=e.id, **kwargs)
+                else:
+                    ax.plot(x_space, y_space, **kwargs)
+            elif self.dim == 3:
+                z_space = np.linspace(v1.z, v2.z, 50)
+                if labels:
+                    ax.plot(x_space, y_space, z_space, label=e.id, **kwargs)
+                else:
+                    ax.plot(x_space, y_space, z_space, **kwargs)
+        if labels:
+            ax.legend(loc='best')
+        return ax
+
     def get_junction_ids_of_type(self, junction_type: int) -> List:
         """
         2D - vertices are junctions
