@@ -25,12 +25,15 @@ def main() -> None:
 
     parser.add_argument(
         "--dir",
-        default='.',
+        default=None,
         help="Path to folder which contain complexes to characterise"
     )
 
     args = parser.parse_args()
-    filenames = glob.glob(args.dir + '/*')
+    if args.dir:
+        filenames = glob.glob(args.dir + '/*')
+    else:
+        filenames = []
 
     TJsets = {}
     complex_id = 0
@@ -74,7 +77,7 @@ def main() -> None:
             'd3': [TJsets[i].d3 for i in ids]
         }
     )
-    
+    df = df.sort_values(by='p')
     df.to_csv('characteristics.txt', index=False, sep=' ')
 
     print('Time elapsed:', round(time.time() - start, 2), 's')
