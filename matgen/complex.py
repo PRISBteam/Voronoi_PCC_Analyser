@@ -3,13 +3,6 @@ class CellComplex
 """
 
 # import os
-# from typing import Dict, Iterable, List, Tuple, Union
-# import time
-
-# import numpy as np
-
-# #import representation
-# from matgen import matutils
 
 # class Vertex():
 #     """

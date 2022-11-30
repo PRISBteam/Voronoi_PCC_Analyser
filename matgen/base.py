@@ -19,7 +19,7 @@ from matgen import matutils
 
 class Cell:
     """
-    Abstract Cell class.
+    Cell class.
 
     Parameters
     ----------
@@ -32,37 +32,61 @@ class Cell:
         Identifier of the cell.
     n_ids : List
         A list of neighbouring cells identifiers.
-    
-    """
-    def __init__(self, id: int):
-        """
-        """
+    is_external : bool
+        True if the cell is external, False if the cell is internal.
+    measure : float, optional
+        A measure of the cell. It can be created by using `set_measure`
+        method.
 
+    Methods
+    -------
+    add_neighbor(n_id)
+    add_neighbors(n_ids)
+    set_external(is_external=True)
+    set_measure(measure)
+    """
+
+    def __init__(self, id: int):
         self.id = id
         self.n_ids = [] # neighbour ids
         # self.nn_ids = [] # neighbour of neighbor ids
         self.is_external = False
 
     def __str__(self):
-        """
-        """
         cell_str = self.__class__.__name__ + "(id=%d)" % self.id
-        
         return cell_str
     
     def __repr__(self) -> str:
-        """
-        """
         return self.__str__()
 
-    def add_neighbor(self, n_id: int):
-        """
+    def add_neighbor(self, n_id: int) -> None:
+        """Add a neighbour identifier to neighbouring cells list.
+
+        Parameters
+        ----------
+        n_id
+            A neighbour identifier.
+
+        Notes
+        -----
+        Neighbouring cells list doesn't contain duplicates and the cell's
+        own identifier.
         """
         if n_id not in self.n_ids and n_id != self.id:
             self.n_ids.append(n_id)
     
-    def add_neighbors(self, n_ids: Iterable):
-        """
+    def add_neighbors(self, n_ids: List) -> None:
+        """Add a list of identifiers to neighbouring cells list.
+
+        Parameters
+        ----------
+        n_ids
+            A list of neighbours identifiers.
+
+        Notes
+        -----
+        Neighbouring cells list doesn't contain duplicates and the cell's
+        own identifier.
         """
         self.n_ids += n_ids
         s = set(self.n_ids) # eliminate duplicates
@@ -77,26 +101,62 @@ class Cell:
     #     s.difference_update([self.id] + self.n_ids) # eliminate id and n_ids
     #     self.nn_ids = list(s)
 
-    def set_external(self, is_external: bool = True):
-        """
+    def set_external(self, is_external: bool = True) -> None:
+        """Make the cell external (is_external=True) or internal
+        (is_external=False).
+
+        Parameters
+        ----------
+        is_external
+            True if the cell is external, False if the cell is internal.
         """
         self.is_external = is_external
 
-    def set_measure(self, measure: float):
-        """
+    def set_measure(self, measure: float) -> None:
+        """Add measure attribute to the cell.
         """
         self.measure = measure
 
 
 class Grain(Cell):
     """
-    https://neper.info/doc/exprskeys.html#rotation-and-orientation-descriptors
+    Grain class.
+
+    Parameters
+    ----------
+    id : int
+        Identifier of the grain.
+        
+    Attributes
+    ----------
+    id : int
+        Identifier of the grain.
+    seed : Tuple
+        A grain seed (x, y, z) coordinates.
+    crysym: str
+        Grain crystal symmetry (see Crystal Symmetries section of Neper
+        documentation).
+    oridesc: str
+        A descriptor of used to parameterize the crystal orientations. See
+        Rotations and Orientations section of Neper documentation for the
+        list of available descriptors.
+    ori : Tuple
+        Grain crystal orientation components. They depends on the descriptor
+        (`oridesc` attribute).
+    R : np.ndarray, optional
+
+    Methods
+    -------
+    set_crystal_ori(crysym, oridesc, ori_components)
+    set_seed(seed_coord)
+    dis_angle(other)
     """
+
     def __init__(self, id: int):
         super().__init__(id)
         self.seed = None
-        self.ori = None
         self.oridesc = None
+        self.ori = None
         self.crysym = None
 
     def set_crystal_ori(
@@ -104,24 +164,26 @@ class Grain(Cell):
         crysym: str,
         oridesc: str,
         ori_components: Tuple
-    ):
-        """
+    ) -> None:
+        """Set grain crystal orientation parameters.
         """
         self.crysym = crysym
         self.oridesc = oridesc
         self.ori = ori_components
 
-    def set_seed(self, seed_coord: Tuple):
-        """
+    def set_seed(self, seed_coord: Tuple) -> None:
+        """Set grain seed (x, y, z) coordinates.
         """
         self.seed = seed_coord
 
     @property
-    def R(self):
+    def R(self) -> np.ndarray:
+        """Rotation matrix associated with grain crystal orientation.
+        """
         return matutils.ori_mat(self.ori, self.oridesc)
     
     def dis_angle(self, other: Grain) -> float:
-        """
+        """Calculate disorientation angle between the grain and another one.
         """
         return matutils.dis_angle(self, other)
 
