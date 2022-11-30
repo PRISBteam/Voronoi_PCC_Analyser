@@ -3,13 +3,14 @@ sample_data/
 simul2D/
 .vscode/
 Experimental_Data/
-DataECAP/
-pictures*/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 matr*/
+angles*/
+pictures*
 
 # C extensions
 *.so
