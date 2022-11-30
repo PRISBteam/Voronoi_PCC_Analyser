@@ -1,12 +1,9 @@
 # Output and Neper files
-*.out
-*.mat
-*.png
 sample_data/
 simul2D/
 .vscode/
 Experimental_Data/
-.DS_Store
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -139,3 +136,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+.DS_Store
