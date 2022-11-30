@@ -19,6 +19,20 @@ from matgen import matutils
 
 class Cell:
     """
+    Abstract Cell class.
+
+    Parameters
+    ----------
+    id : int
+        Identifier of the cell.
+        
+    Attributes
+    ----------
+    id : int
+        Identifier of the cell.
+    n_ids : List
+        A list of neighbouring cells identifiers.
+    
     """
     def __init__(self, id: int):
         """
@@ -26,7 +40,7 @@ class Cell:
 
         self.id = id
         self.n_ids = [] # neighbour ids
-        self.nn_ids = [] # neighbour of neighbor ids
+        # self.nn_ids = [] # neighbour of neighbor ids
         self.is_external = False
 
     def __str__(self):
@@ -55,13 +69,13 @@ class Cell:
         s.difference_update([self.id]) # eliminate self.id
         self.n_ids = list(s)
 
-    def add_neighbors_neighbors(self, nn_ids: Iterable):
-        """
-        """
-        self.nn_ids += nn_ids
-        s = set(self.nn_ids) # eliminate duplicates
-        s.difference_update([self.id] + self.n_ids) # eliminate id and n_ids
-        self.nn_ids = list(s)
+    # def add_neighbors_neighbors(self, nn_ids: Iterable):
+    #     """
+    #     """
+    #     self.nn_ids += nn_ids
+    #     s = set(self.nn_ids) # eliminate duplicates
+    #     s.difference_update([self.id] + self.n_ids) # eliminate id and n_ids
+    #     self.nn_ids = list(s)
 
     def set_external(self, is_external: bool = True):
         """
@@ -868,14 +882,14 @@ def _add_neighbors(_cells: Dict, _incident_cells: Dict):
             _incident_cells[inc_cell_id].add_neighbors(cell.incident_ids)
 
 
-def _add_neighbors_neighbors(_cells: Dict):
-    """
-    """
-    for cell in _cells.values():
-        nn_ids = []
-        for n_id in cell.n_ids:
-            nn_ids += _cells[n_id].n_ids
-        cell.add_neighbors_neighbors(nn_ids)
+# def _add_neighbors_neighbors(_cells: Dict):
+#     """
+#     """
+#     for cell in _cells.values():
+#         nn_ids = []
+#         for n_id in cell.n_ids:
+#             nn_ids += _cells[n_id].n_ids
+#         cell.add_neighbors_neighbors(nn_ids)
 
 
 def _add_measures(_cells: Dict, measures: List):
@@ -988,8 +1002,8 @@ class CellComplex:
             _edges = Edge3D.from_tess_file(file, _vertices)
                     
         _add_neighbors(_vertices, _edges)
-        _add_neighbors_neighbors(_vertices)
-        _add_neighbors_neighbors(_edges)
+        # _add_neighbors_neighbors(_vertices)
+        # _add_neighbors_neighbors(_edges)
 
         if dim == 2:
             _faces = Face2D.from_tess_file(file, _edges)
@@ -997,12 +1011,12 @@ class CellComplex:
             _faces = Face3D.from_tess_file(file, _edges)
         
         _add_neighbors(_edges, _faces)
-        _add_neighbors_neighbors(_faces)
+        # _add_neighbors_neighbors(_faces)
 
         if dim == 3:
             _polyhedra = Poly.from_tess_file(file, _faces)
             _add_neighbors(_faces, _polyhedra)
-            _add_neighbors_neighbors(_polyhedra)
+            # _add_neighbors_neighbors(_polyhedra)
         
         # Set external
         if dim == 2:
