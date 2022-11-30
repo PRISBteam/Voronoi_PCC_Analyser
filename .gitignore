@@ -1,13 +1,10 @@
 # Output and Neper files
-*.out
-*.mat
-*.png
 sample_data/
 simul2D/
 .vscode/
 Experimental_Data/
 DataECAP/
-.DS_Store
+pictures*/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
