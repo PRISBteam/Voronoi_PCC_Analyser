@@ -188,22 +188,58 @@ class Grain(Cell):
         return matutils.dis_angle(self, other)
 
 
-class CellLowerDim(Cell):
+class LowerOrderCell(Cell):
     """
+    Cells of order k = 0, 1, ..., p - 1 of a p-complex.
+
+    Parameters
+    ----------
+    id : int
+        Identifier of the cell.
+    
+    Attributes
+    ----------
+    id : int
+        Identifier of the cell.
+    signed_incident_ids: List
+        A list of incident cells identifiers. Identifiers are signed: they
+        are negative if orientations of the cell and incident cell differ.
+    incident_ids: List
+        A list of unsigned incident cells identifiers.
+    degree: int
+        Number of incident cells of the given cell. 
+
+    Methods
+    -------
+    add_incident_cell(signed_incident_id)
+    
+    Notes
+    -----
+    All k-cells except for p-cells have incident (k + 1)-cells that can be
+    of same or different orientation. If orientations are different, then
+    this incident cell with different orientations will denoted with negative
+    id in the incident cells list.
+
+    References
+    ---------
+    ..  [1] Grady, Leo J., and Jonathan R. Polimeni. Discrete calculus: Applied
+        analysis on graphs for computational science. Vol. 3. London: Springer, 2010.
+        https://doi.org/10.1007/978-1-84996-290-2
     """
+    
     def __init__(self, id: int):
         super().__init__(id)
         self.signed_incident_ids = []
 
     @property
     def incident_ids(self):
-        """
-        unsigned ids
+        """A list of unsigned incident cells identifiers.
         """
         return list(map(abs, self.signed_incident_ids))
     
     def add_incident_cell(self, signed_incident_id: int):
-        """
+        """Add a signed incident cell identifier to signed incident cells
+        list.
         """
         if abs(signed_incident_id) not in self.incident_ids:
             self.signed_incident_ids.append(signed_incident_id)
@@ -217,12 +253,12 @@ class CellLowerDim(Cell):
 
     @property
     def degree(self) -> int:
-        """
+        """Number of incident cells of the given cell.
         """
         return len(self.signed_incident_ids)
 
 
-class TripleJunction(CellLowerDim):
+class TripleJunction(LowerOrderCell):
     """
     """
     def __init__(self, id: int):
@@ -242,7 +278,7 @@ class TripleJunction(CellLowerDim):
             )
 
 
-class GrainBoundary(CellLowerDim):
+class GrainBoundary(LowerOrderCell):
     """
     """
     def __init__(self, id: int):
@@ -339,7 +375,7 @@ def _create_ax(dim: int = 2, figsize: Tuple = (8,8)) -> Axes:
     return ax
 
 
-class Vertex(CellLowerDim):
+class Vertex(LowerOrderCell):
     """
     """
     def __init__(self, id: int, x: float, y: float, z: float = 0):
@@ -437,7 +473,7 @@ class Vertex3D(Vertex):
         return ax
 
 
-class Edge(CellLowerDim):
+class Edge(LowerOrderCell):
     """
     """
     def __init__(self, id: int, v_ids: Iterable):

@@ -7,7 +7,7 @@ import time
 from typing import Dict, List, Tuple
 import numpy as np
 
-from matgen import base, matutils
+from matgen import base
 
 
 def main() -> None:

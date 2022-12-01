@@ -679,30 +679,3 @@ class CellComplex
 #         ax.legend(loc="best")
 #     plt.show()
 
-# def plot_edge(
-#         ax: Axes,
-#         vertices: Dict,
-#         edge: List,
-#         color: str = None,
-#         label: List = None) -> None:
-#     """
-#     """
-#     x = np.linspace(vertices[edge[0]]['x'], vertices[edge[1]]['x'], 50)
-#     y = np.linspace(vertices[edge[0]]['y'], vertices[edge[1]]['y'], 50)
-#     z = np.linspace(vertices[edge[0]]['z'], vertices[edge[1]]['z'], 50)
-#     ax.plot(x, y, z, color=color, label=label)
-#     if label:
-#         ax.legend(loc="best")
-#     plt.show()
-
-# def plot_face(
-#         ax: Axes,
-#         vertices: Dict,
-#         face: List,
-#         color: str =None,
-#         alpha: float = 0.2) -> None:
-#     """
-#     """
-#     vl = _from_dict_to_coord_tuples(vertices, face)
-#     poly = Poly3DCollection([vl], alpha=alpha, color=color)
-#     ax.add_collection3d(poly)
