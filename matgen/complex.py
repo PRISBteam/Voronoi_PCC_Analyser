@@ -3,34 +3,6 @@ class CellComplex
 """
 
 # import os
-# from typing import Dict, Iterable, List, Tuple, Union
-# import time
-
-# import numpy as np
-# import matplotlib.pyplot as plt
-# from matplotlib.axes import Axes
-# from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-
-# #import representation
-# from matgen import matutils
-
-
-# def _create_ax(dim: int = 2, figsize: Tuple = (8,8)) -> Axes:
-#     """
-#     """
-#     if dim == 2:
-#         projection = None
-#         xlim = ylim = (-0.1, 1.1)
-#     elif dim == 3:
-#         projection = '3d'
-#         xlim = ylim = zlim = (0, 1)
-#     fig = plt.figure(figsize=figsize)
-#     ax = fig.add_subplot(111, projection=projection)
-#     ax.set_xlim(*xlim)
-#     ax.set_ylim(*ylim)
-#     if dim == 3:
-#         ax.set_zlim(*zlim)
-#     return ax
 
 # class Vertex():
 #     """
@@ -60,25 +32,6 @@ class CellComplex
 #     add_incident_edges
         
 #     get_degree
-        
-
-#     def plot(
-#             self,
-#             dim: int = 2,
-#             ax: Axes = None,
-#             figsize: Tuple = (8,8),
-#             **kwargs) -> Axes:
-#         """
-#         """
-#         if not ax:
-#             ax = _create_ax(dim, figsize)
-#         if dim == 2:
-#             ax.scatter(self.x, self.y, **kwargs)
-#         elif dim == 3:
-#             ax.scatter(self.x, self.y, self.z, **kwargs)
-#         return ax
-
-
 
 
 # class Edge():
@@ -111,9 +64,6 @@ class CellComplex
 #     get_degree
     
 #     """
-#     def __init__(self, id: int, v_ids: Iterable):
-#         """
-#         ""
 
 
 #     # def plot(
@@ -190,231 +140,9 @@ class CellComplex
 #     set_special
     
 #     """
-#     def __init__(self, id: int, v_ids: Iterable):
-#         """
-#         """
-#         self.id = id
-#         self.v_ids = v_ids
-#         self.e_ids = []
-#         self.n_ids = []
-#         self.p_ids = []
-#         self.is_special = False
-#         self.is_external = False
-#         self.theta = None
-        
-#     @classmethod
-#     def from_tess_file(
-#             cls,
-#             filename: str,
-#             _edges: Dict = {},
-#             measure: bool = False,
-#             theta: bool = False,
-#             lower_thrd: float = None,
-#             upper_thrd: float = None):
-#         """
-#         """
-#         _faces = {}
-#         with open(filename, 'r', encoding="utf-8") as f:
-#             for line in f:
-#                 if '**face' in line:
-#                     n = int(f.readline().rstrip('\n'))
-#                     for i in range(n):
-#                         row = f.readline().split()
-#                         f_id = int(row[0])
-#                         v_ids = []
-#                         for k in range(2, int(row[1]) + 2):
-#                             v_ids.append(int(row[k]))
-#                         face = cls(f_id, v_ids)
-                        
-#                         row = f.readline().split()
-#                         e_ids = []
-#                         for k in range(1, int(row[0]) + 1):
-#                             e_id = abs(int(row[k]))
-#                             e_ids.append(e_id)
-#                             if _edges:
-#                                 _edges[e_id].add_incident_face(f_id)
-#                         face.add_edges(e_ids)
-                        
-#                         row = f.readline().split()
-#                         face.add_equation(
-#                             float(row[0]),
-#                             float(row[1]),
-#                             float(row[2]),
-#                             float(row[3])
-#                         )
-#                         _ = f.readline()
-                        
-#                         _faces[f_id] = face
-#                     break
-#         if measure:
-#             filename_m = filename.rstrip('.tess') + '.stface'
-#             with open(filename_m, 'r', encoding="utf-8") as file:
-#                 for line in file:
-#                     row = line.split()
-#                     f_id = int(row[0])
-#                     f_area = float(row[1])
-#                     _faces[f_id].set_area(f_area)
-#                     if theta:
-#                         f_theta = float(row[2])
-#                         _faces[f_id].set_theta(
-#                             f_theta,
-#                             lower_thrd=lower_thrd,
-#                             upper_thrd=upper_thrd
-#                         )
-#         for e in _edges.values():
-#             for f_id in e.f_ids:
-#                 s = set(e.f_ids)
-#                 s.difference_update([f_id])
-#                 _faces[f_id].add_neighbors(list(s))
-#         return _faces
-        
-#     def __str__(self):
-#         """
-#         """
-#         f_str = "Face(id=%d)" % self.id
-        
-#         return f_str
-    
-#     def __repr__(self):
-#         """
-#         """
-#         f_str = f"Face(id={self.id})"
-        
-#         return f_str
-    
-#     @property
-#     def incident_cells(self):
-#         """
-#         """
-#         return self.p_ids
-    
-#     def add_neighbor(self, n_id: int):
-#         """
-#         """
-#         self.n_ids.append(n_id)
-#         self.n_ids = list(set(self.n_ids))
-    
-#     def add_neighbors(self, n_ids: Iterable):
-#         """
-#         """
-#         self.n_ids += n_ids
-#         self.n_ids = list(set(self.n_ids))
-        
-#     def add_incident_poly(self, p_id: int):
-#         """
-#         """
-#         self.p_ids.append(p_id)
-#         self.p_ids = list(set(self.p_ids))
-        
-#     def add_incident_polys(self, p_ids: Iterable):
-#         """
-#         """
-#         self.p_ids += p_ids
-#         self.p_ids = list(set(self.p_ids))
-    
-#     def add_edges(self, e_ids: Iterable):
-#         """
-#         """
-#         self.e_ids += e_ids
-#         self.e_ids = list(set(self.e_ids))
-    
-#     def add_equation(self, d: float, a: float, b: float, c: float):
-#         """
-#         """
-#         self.d = d
-#         self.a = a
-#         self.b = b
-#         self.c = c
-#         self.normal = (a, b, c)
-    
-#     def get_degree(self):
-#         """
-#         internal / external
-#         """
-#         return len(self.p_ids)
-    
-#     def set_seed(self, seed_coord: Tuple):
-#         """
-#         """
-#         self.seed = seed_coord
 
-#     def set_area(self, area: float):
-#         """
-#         """
-#         self.area = area
-
-#     def set_theta(
-#             self,
-#             theta: float,
-#             lower_thrd: float = None,
-#             upper_thrd: float = None):
-#         """
-#         3D
-#         disorientation angle (in degrees)
-#         theta must be >= 0 ?
-#         for external cells theta = -1
-#         """
-#         if theta < 0:
-#             self.set_external(True, dim=3)
-#             return
-#         elif self.is_external:
-#             raise ValueError(f"External doesn't have theta (id={self.id})")
         
-#         self.theta = theta
-        
-#         if lower_thrd and upper_thrd:
-#             if  theta >= lower_thrd and theta <= upper_thrd:
-#                 self.set_special(True)
-#             else:
-#                 self.set_special(False)
-#         elif lower_thrd:
-#             if  theta >= lower_thrd:
-#                 self.set_special(True)
-#             else:
-#                 self.set_special(False)
-#         elif upper_thrd:
-#             if  theta <= upper_thrd:
-#                 self.set_special(True)
-#             else:
-#                 self.set_special(False)
-
-
-#     def set_special(self, is_special: bool = True):
-#         """
-#         External cannot be set special
-#         """
-#         if is_special and not self.is_external:
-#             self.is_special = is_special
-#         elif not is_special:
-#             self.is_special = is_special
-#         elif self.is_external:
-#             raise ValueError('External cannot be set special')
-#         # if is_special:
-#         #     self.set_external(False)
-#         #     if self.theta < 0:
-#         #         self.theta = None
-
-
-#     def set_external(self, is_external: bool = True, dim: int = 3):
-#         """
-#         When set external, it is set not special with theta = -1
-#         Default for face dim = 2
-#         """
-#         self.is_external = is_external
-#         if dim == 3:
-#             if is_external:
-#                 self.theta = -1
-#                 self.set_special(False)
-#             elif self.theta == -1:
-#                 self.theta = None
-
-    
-#     def set_crystal_ori(self, ori_format: str, ori_components: Tuple):
-#         """
-#         """
-#         self.ori_format = ori_format
-#         self.ori = ori_components
-
+  
 
 # class Poly():
 #     """
@@ -446,140 +174,8 @@ class CellComplex
 #     def __init__(self, id: int, f_ids: Iterable):
 #         """
 #         """
-#         self.id = id
-#         self.v_ids = []
-#         self.e_ids = []
-#         self.n_ids = []
-#         self.f_ids = f_ids
-#         self.is_external = False
 
-#     @classmethod
-#     def from_tess_file(
-#             cls,
-#             filename: str,
-#             _faces: Dict,
-#             measure: bool = False):
-#         """
-#         """
-#         seeds = {}
-#         ori = {}
-#         _polyhedra = {}
-#         with open(filename, 'r', encoding="utf-8") as f:
-#             for line in f:
-#                 if '**cell' in line:
-#                     N = int(f.readline().rstrip('\n'))
-#                 if '*seed' in line:
-#                     for i in range(N):
-#                         row = f.readline().split()
-#                         seeds[int(row[0])] = tuple([*map(float, row[1:4])])
-#                 if '*ori' in line:
-#                     ori_format = f.readline().strip() #.rstrip('\n')
-#                     for i in range(N):
-#                         row = f.readline().split()
-#                         ori[i + 1] = tuple([*map(float, row)])
-#                 if '**polyhedron' in line:
-#                     n = int(f.readline().rstrip('\n'))
-#                     for i in range(n):
-#                         row = f.readline().split()
-#                         p_id = int(row[0])
-#                         f_ids = []
-#                         v_ids = []
-#                         e_ids = []
-#                         for k in range(2, int(row[1]) + 2):
-#                             f_id = abs(int(row[k]))
-#                             f_ids.append(f_id)
-#                             v_ids += _faces[f_id].v_ids
-#                             e_ids += _faces[f_id].e_ids
-#                             _faces[f_id].add_incident_poly(p_id)
-#                         f_ids = list(set(f_ids))
-#                         poly = cls(p_id, f_ids)
-#                         poly.v_ids += v_ids
-#                         poly.v_ids = list(set(poly.v_ids))
-#                         poly.add_edges(e_ids)
-#                         poly.set_crystal_ori(ori_format, ori[p_id])
-#                         poly.set_seed(seeds[p_id])
-#                         _polyhedra[p_id] = poly
-#                     break
-#         if measure:
-#             filename_m = filename.rstrip('.tess') + '.stpoly'
-#             with open(filename_m, 'r', encoding="utf-8") as file:
-#                 for line in file:
-#                     row = line.split()
-#                     p_id = int(row[0])
-#                     p_vol = float(row[1])
-#                     _polyhedra[p_id].set_volume(p_vol)
-#         for f in _faces.values():
-#             for p_id in f.p_ids:
-#                 s = set(f.p_ids)
-#                 s.difference_update([p_id])
-#                 _polyhedra[p_id].add_neighbors(list(s))
-#         return _polyhedra
-        
-#     def __str__(self):
-#         """
-#         """
-#         p_str = "Poly(id=%d)" % self.id
-        
-#         return p_str
-    
-#     def __repr__(self):
-#         """
-#         """
-#         p_str = f"Poly(id={self.id})"
-        
-#         return p_str
-    
-#     def add_neighbor(self, n_id: int):
-#         """
-#         """
-#         self.n_ids.append(n_id)
-#         self.n_ids = list(set(self.n_ids))
-    
-#     def add_neighbors(self, n_ids: Iterable):
-#         """
-#         """
-#         self.n_ids += n_ids
-#         self.n_ids = list(set(self.n_ids))
-        
-#     def add_face(self, f_id: int):
-#         """
-#         """
-#         self.f_ids.append(f_id)
-#         self.f_ids = list(set(self.f_ids))
-        
-#     def add_faces(self, f_ids: Iterable):
-#         """
-#         """
-#         self.f_ids += f_ids
-#         self.f_ids = list(set(self.f_ids))
-    
-#     def add_edges(self, e_ids: Iterable):
-#         """
-#         """
-#         self.e_ids += e_ids
-#         self.e_ids = list(set(self.e_ids))
-    
-    
-#     def set_seed(self, seed_coord: Tuple):
-#         """
-#         """
-#         self.seed = seed_coord
-    
-#     def set_crystal_ori(self, ori_format: str, ori_components: Tuple):
-#         """
-#         """
-#         self.ori_format = ori_format
-#         self.ori = ori_components
 
-#     def set_volume(self, volume: float):
-#         """
-#         """
-#         self.vol = volume
-
-#     def set_external(self, is_external: bool = True):
-#         """
-#         """
-#         self.is_external = is_external
 
 # class CellComplex():
 #     """
@@ -750,486 +346,7 @@ class CellComplex
 
 #         self.load_time = round(time.time() - start, 1)
 #         print('Complex loaded:', self.load_time, 's')
-    
-#     def __str__(self):
-#         """
-#         """
-#         cc_str = f"<class CellComplex> {self.dim}D" +\
-#         f"\n{self.vernb} vertices" + f"\n{self.edgenb} edges" +\
-#         f"\n{self.facenb} faces" 
-        
-#         if self.dim == 3:
-#             cc_str += f"\n{self.polynb} polyhedra"
 
-#         return cc_str
-    
-#     def __repr__(self) -> str:
-#         """
-#         """
-#         return self.__str__()
-
-#     @property
-#     def vernb(self):
-#         """
-#         """
-#         return len(self._vertices)
-
-#     @property
-#     def edgenb(self):
-#         """
-#         """
-#         return len(self._edges)
-
-#     @property
-#     def facenb(self):
-#         """
-#         """
-#         return len(self._faces)
-
-#     @property
-#     def polynb(self):
-#         """
-#         """
-#         return len(self._polyhedra)
-
-#     def _choose_cell_type(self, cell_type: Union[str, int]):
-#         """
-#         """
-#         if cell_type in ['v', 'vertex', 0, '0']:
-#             _cells = self._vertices
-#         elif cell_type in ['e', 'edge', 1, '1']:
-#             _cells = self._edges
-#         elif cell_type in ['f', 'face', 2, '2']:
-#             _cells = self._faces
-#         elif cell_type in ['p', 'poly', 3, '3']:
-#             _cells = self._polyhedra
-#         else:
-#             raise TypeError('Unknown cell type')
-        
-#         return _cells
-    
-#     def get_one(self, cell_type: Union[str, int], cell_id: int):
-#         """
-#         """
-#         _cells = self._choose_cell_type(cell_type)
-        
-#         return _cells[cell_id]
-    
-#     def get_many(self, cell_type: Union[str, int], cell_ids: Iterable):
-#         """
-#         """
-#         _cells = self._choose_cell_type(cell_type)
-
-#         return [_cells[cell_id] for cell_id in cell_ids]
-
-#     def get_external_ids(self, cell_type: Union[str, int]):
-#         """
-#         """
-#         _cells = self._choose_cell_type(cell_type)
-
-#         return [cell.id for cell in _cells.values() if cell.is_external]
-
-#     def get_internal_ids(self, cell_type: Union[str, int]):
-#         """
-#         """
-#         _cells = self._choose_cell_type(cell_type)
-
-#         return [cell.id for cell in _cells.values() if not cell.is_external]
-
-#     def get_special_ids(self):
-#         """
-#         2D - edges can be special
-#         3D - faces can be special
-#         """
-#         if self.dim == 2:
-#             _cells = self._choose_cell_type('edge')
-#         elif self.dim == 3:
-#             _cells = self._choose_cell_type('face')
-
-#         return [cell.id for cell in _cells.values() if cell.is_special]
-
-#     def get_junction_ids_of_type(self, junction_type: int) -> List:
-#         """
-#         2D - vertices are junctions
-#         3D - edges are junctions
-#         """
-        
-#         if self.dim == 2:
-#             _cells = self._choose_cell_type('vertex')
-#         elif self.dim == 3:
-#             _cells = self._choose_cell_type('edge')
-
-#         junction_ids = []
-#         for cell in _cells.values():
-#             if cell.junction_type == junction_type:
-#                 junction_ids.append(cell.id)
-
-#         return junction_ids
-
-#     def get_spec_fraction(self):
-#         """
-#         number_of_special / number_of_internal
-#         """
-#         n_spec = len(self.get_special_ids())
-#         if self.dim == 2:
-#             n_int = len(self.get_internal_ids('e'))
-#         elif self.dim == 3:
-#             n_int = len(self.get_internal_ids('f'))
-
-#         frac = n_spec / n_int
-
-#         return frac
-
-#     def get_ext_fraction(self, cell_type: Union[str, int]):
-#         """
-#         number_of_external / number_of_cells
-#         """
-#         n_ext = len(self.get_external_ids(cell_type))
-#         n_cells = len(self._choose_cell_type(cell_type))
-
-#         frac = n_ext / n_cells
-
-#         return frac
-
-#     def get_j_fraction(self, junction_type: int):
-#         """
-#         number_of_junction_of_type / number_of_internal
-#         """
-#         n_junc = len(self.get_junction_ids_of_type(junction_type))
-#         if self.dim == 2:
-#             n_int = len(self.get_internal_ids('v'))
-#         elif self.dim == 3:
-#             n_int = len(self.get_internal_ids('e'))
-
-#         frac = n_junc / n_int
-
-#         return frac
-    
-#     def set_junction_types(self) -> None:
-#         """
-#         external has None junction type
-#         """
-#         # junction_types = {
-#         #     0: 'J0',
-#         #     1: 'J1',
-#         #     2: 'J2',
-#         #     3: 'J3',
-#         #     4: 'U'
-#         # }
-
-#         if self.dim == 2:
-#             for v in self.vertices:
-#                 v.n_spec_edges = 0
-#                 if v.is_external:
-#                     v.set_junction_type(None)
-#                 else:
-#                     for e_id in v.e_ids:
-#                         if self._edges[e_id].is_special:
-#                             v.n_spec_edges += 1
-#                     if v.n_spec_edges > 3:
-#                         print(
-#                             f'{v} is incident to ' +
-#                             f'{v.n_spec_edges} special edges'
-#                         )
-#                     v.set_junction_type(v.n_spec_edges)
-#         elif self.dim == 3:
-#             for e in self.edges:
-#                 e.n_spec_faces = 0
-#                 if e.is_external:
-#                     e.set_junction_type(None)
-#                 else:
-#                     for f_id in e.f_ids:
-#                         if self._faces[f_id].is_special:
-#                             e.n_spec_faces += 1
-#                     if e.n_spec_faces > 3:
-#                         print(
-#                             f'{e} is incident to ' +
-#                             f'{e.n_spec_faces} special faces'
-#                         )
-#                     e.set_junction_type(e.n_spec_faces)
-
-#     def reset_special(
-#             self,
-#             lower_thrd: float = None,
-#             upper_thrd: float = None):
-#         """
-#         """
-#         if self.dim == 2:
-#             _cells = self._choose_cell_type('edge')
-#         elif self.dim == 3:
-#             _cells = self._choose_cell_type('face')
-
-#         for cell in _cells.values():
-#             if not cell.is_external:
-#                 if lower_thrd and upper_thrd:
-#                     if  cell.theta >= lower_thrd and cell.theta <= upper_thrd:
-#                         cell.set_special(True)
-#                     else:
-#                         cell.set_special(False)
-#                 elif lower_thrd:
-#                     if  cell.theta >= lower_thrd:
-#                         cell.set_special(True)
-#                     else:
-#                         cell.set_special(False)
-#                 elif upper_thrd:
-#                     if  cell.theta <= upper_thrd:
-#                         cell.set_special(True)
-#                     else:
-#                         cell.set_special(False)
-#                 else:
-#                     cell.set_special(False)
-#         self.set_junction_types()
-
-#     def plot_vertices(
-#             self,
-#             v_ids: List = [],
-#             ax: Axes = None,
-#             figsize: Tuple = (8,8),
-#             labels: bool = False,
-#             **kwargs):
-#         """
-#         """
-#         if not ax:
-#             ax = _create_ax(self.dim, figsize)
-#         if v_ids:
-#             v_list = self.get_many('v', v_ids)
-#         else:
-#             v_list = self.vertices
-#         for v in v_list:
-#             if labels:
-#                 ax = v.plot(dim=self.dim, ax=ax, label=v.id, **kwargs)
-#             else:
-#                 ax = v.plot(dim=self.dim, ax=ax, **kwargs)
-#         if labels:
-#             ax.legend(loc='best')
-#         return ax
-
-    
-#     def plot_edges(
-#             self,
-#             e_ids: List = [],
-#             ax: Axes = None,
-#             figsize: Tuple = (8,8),
-#             labels: bool = False,
-#             **kwargs):
-#         """
-#         """
-#         if not ax:
-#             ax = _create_ax(self.dim, figsize)
-#         if e_ids:
-#             e_list = self.get_many('e', e_ids)
-#         else:
-#             e_list = self.edges
-#         for e in e_list:
-#             v1, v2 = self.get_many('v', e.v_ids)
-#             x_space = np.linspace(v1.x, v2.x, 50)
-#             y_space = np.linspace(v1.y, v2.y, 50)
-#             if self.dim == 2:
-#                 if labels:
-#                     ax.plot(x_space, y_space, label=e.id, **kwargs)
-#                 else:
-#                     ax.plot(x_space, y_space, **kwargs)
-#             elif self.dim == 3:
-#                 z_space = np.linspace(v1.z, v2.z, 50)
-#                 if labels:
-#                     ax.plot(x_space, y_space, z_space, label=e.id, **kwargs)
-#                 else:
-#                     ax.plot(x_space, y_space, z_space, **kwargs)
-#         if labels:
-#             ax.legend(loc='best')
-#         return ax
-
-#     # def plot_vertices_3D(
-#     #         self,
-#     #         v_ids: List = [],
-#     #         ax: Axes = None,
-#     #         **kwargs):
-#     #     """
-#     #     """
-#     #     if not ax:
-#     #         fig, ax = representation.create_3D_axis()
-#     #     if v_ids:
-#     #         v_list = self.get_many('v', v_ids)
-#     #     else:
-#     #         v_list = self.vertices
-#     #     for v in v_list:
-#     #         ax = v.plot3D(ax, **kwargs)
-        
-#     #     return ax
-
-#     # def plot_edges_3D(
-#     #         self,
-#     #         e_ids: List = [],
-#     #         ax: Axes = None,
-#     #         **kwargs):
-#     #     if not ax:
-#     #         fig, ax = representation.create_3D_axis()
-#     #     if e_ids:
-#     #         e_list = self.get_many('e', e_ids)
-#     #     else:
-#     #         e_list = self.edges
-#     #     for e in e_list:
-#     #         v1, v2 = self.get_many('v', e.v_ids)
-
-#     #         x_space = np.linspace(v1.x, v2.x, 50)
-#     #         y_space = np.linspace(v1.y, v2.y, 50)
-#     #         z_space = np.linspace(v1.z, v2.z, 50)
-            
-#     #         ax.plot(x_space, y_space, z_space, **kwargs)
-            
-#     #     return ax
-    
-    
-#     def plot_faces(
-#             self,
-#             f_ids: List = [],
-#             ax: Axes = None,
-#             figsize: Tuple = (8,8),
-#             labels: bool = False,
-#             **kwargs):
-#         """
-#         labels doesn't work with 3d faces
-#         """
-#         if not ax:
-#             ax = _create_ax(self.dim, figsize)
-#         if f_ids:
-#             f_list = self.get_many('f', f_ids)
-#         else:
-#             f_list = self.faces
-#         f_coord_list = []
-#         for f in f_list:
-#             v_list = self.get_many('v', f.v_ids)
-
-#             if self.dim == 2:
-#                 xs = [v.x for v in v_list]
-#                 ys = [v.y for v in v_list]
-#                 if labels:
-#                     ax.fill(xs, ys, label=f.id, **kwargs)
-#                 else:
-#                     ax.fill(xs, ys, **kwargs)
-#             elif self.dim == 3:
-#                 coord_list = [v.coord for v in v_list]
-#                 f_coord_list.append(coord_list)
-
-#         if self.dim == 3:
-#             poly = Poly3DCollection(f_coord_list, alpha = 0.2, **kwargs)
-#             ax.add_collection3d(poly)
-#         elif labels:
-#             ax.legend(loc='best')
-#         return ax
-
-#     # def plot_faces_3D(
-#     #         self,
-#     #         f_ids: List = [],
-#     #         ax: Axes = None,
-#     #         **kwargs):
-#     #     """
-#     #     """
-#     #     if not ax:
-#     #         fig, ax = representation.create_3D_axis()
-#     #     if f_ids:
-#     #         f_list = self.get_many('f', f_ids)
-#     #     else:
-#     #         f_list = self.faces
-#     #     f_coord_list = []
-#     #     for f in f_list:
-#     #         v_list = self.get_many('v', f.v_ids)
-#     #         coord_list = [v.coord for v in v_list]
-#     #         f_coord_list.append(coord_list)
-#     #     poly = Poly3DCollection(f_coord_list, alpha = 0.2, **kwargs)
-#     #     ax.add_collection3d(poly)
-
-#     #     return ax
-
-#     def plot_polyhedra(
-#             self,
-#             p_ids: List = [],
-#             ax: Axes = None,
-#             figsize: Tuple = (8,8),
-#             **kwargs):
-#         """
-#         """
-#         if not ax:
-#             ax = _create_ax(self.dim, figsize)
-#         if p_ids:
-#             p_list = self.get_many('p', p_ids)
-#         else:
-#             p_list = self.polyhedra
-        
-#         for p in p_list:
-#             ax = self.plot_faces(f_ids=p.f_ids, ax=ax, **kwargs)
-
-#         return ax
-
-#     # def plot_vertices_2D(
-#     #         self,
-#     #         v_ids: List = [],
-#     #         ax: Axes = None,
-#     #         **kwargs):
-#     #     """
-#     #     """
-#     #     if not ax:
-#     #         fig, ax = representation.create_2D_axis()
-#     #     if v_ids:
-#     #         v_list = self.get_many('v', v_ids)
-#     #     else:
-#     #         v_list = self.vertices
-#     #     for v in v_list:
-#     #         ax = v.plot2D(ax, **kwargs)
-        
-#     #     return ax
-
-#     # def plot_edges_2D(
-#     #         self,
-#     #         e_ids: List = [],
-#     #         ax: Axes = None,
-#     #         **kwargs):
-#     #     if not ax:
-#     #         fig, ax = representation.create_2D_axis()
-#     #     if e_ids:
-#     #         e_list = self.get_many('e', e_ids)
-#     #     else:
-#     #         e_list = self.edges
-#     #     for e in e_list:
-#     #         v1, v2 = self.get_many('v', e.v_ids)
-
-#     #         x_space = np.linspace(v1.x, v2.x, 50)
-#     #         y_space = np.linspace(v1.y, v2.y, 50)
-            
-#     #         ax.plot(x_space, y_space, **kwargs)
-            
-#     #     return ax
-
-
-#     # def plot_faces_2D(
-#     #         self,
-#     #         f_ids: List = [],
-#     #         ax: Axes = None,
-#     #         **kwargs):
-#     #     """
-#     #     """
-#     #     if not ax:
-#     #         fig, ax = representation.create_2D_axis()
-#     #     if f_ids:
-#     #         f_list = self.get_many('f', f_ids)
-#     #     else:
-#     #         f_list = self.faces
-#     #     for f in f_list:
-#     #         # _ = self.plot_edges_2D(f.e_ids, ax, **kwargs)
-#     #         v_list = self.get_many('v', f.v_ids)
-#     #         xs = [v.x for v in v_list]
-#     #         ys = [v.y for v in v_list]
-#     #         ax.fill(xs, ys, **kwargs)
-
-#     #     return ax
-
-#     #     
-#     #     for f in f_list:
-#     #         v_list = self.get_many('v', f.v_ids)
-#     #         coord_list = [v.coord for v in v_list]
-#     #         f_coord_list.append(coord_list)
-#     #     poly = Poly3DCollection(f_coord_list, alpha = 0.2, **kwargs)
-#     #     ax.add_collection3d(poly)
 
 #     def plot_seeds(
 #             self,
@@ -1268,56 +385,6 @@ class CellComplex
 #             ax.scatter(xs, ys, zs, **kwargs)
 #         return ax
 
-
-#     # def plot_seeds_2D(
-#     #         self,
-#     #         f_ids: List = [],
-#     #         ax: Axes = None,
-#     #         **kwargs):
-#     #     """
-#     #     """
-#     #     if not ax:
-#     #         ax = plt.subplot(111)
-#     #         # ax.set_xlim(0, 1)
-#     #         # ax.set_ylim(0, 1)
-#     #     if f_ids:
-#     #         f_list = self.get_many('f', f_ids)
-#     #     else:
-#     #         f_list = self.faces
-        
-#     #     xs = []
-#     #     ys = []
-#     #     for f in f_list:
-#     #         x, y = f.seed
-#     #         xs.append(x)
-#     #         ys.append(y)
-#     #     ax.scatter(xs, ys, **kwargs)
-#     #     return ax
-
-#     # def plot_seeds_3D(
-#     #         self,
-#     #         p_ids: List = [],
-#     #         ax: Axes = None,
-#     #         **kwargs):
-#     #     """
-#     #     """
-#     #     if not ax:
-#     #         fig, ax = representation.create_2D_axis()
-#     #     if p_ids:
-#     #         p_list = self.get_many('p', p_ids)
-#     #     else:
-#     #         p_list = self.polyhedra
-        
-#     #     xs = []
-#     #     ys = []
-#     #     zs = []
-#     #     for p in p_list:
-#     #         x, y, z = p.seed
-#     #         xs.append(x)
-#     #         ys.append(y)
-#     #         zs.append(z)
-#     #     ax.scatter(xs, ys, zs, **kwargs)
-#     #     return ax
   
 #     def get_sparse_A(self, cell_type: Union[str, int]):
 #         """
@@ -1369,3 +436,246 @@ class CellComplex
 #             elif self.dim == 3:
 #                 for poly in self.polyhedra:
 #                     file.write('%.12f %.12f %.12f\n' % poly.seed) 
+
+
+# representation
+
+# """
+# Get cells from Neper .tess file in different formats.
+# 1. Cells list representation stores a p-complex using p dictionaries.
+# The key of each dictionary corresponds to a k-cell and each value contains
+# the vertex list (0-cells) of the corresponding k-cell. 
+
+# Plotting https://likegeeks.com/3d-plotting-in-python/ 
+
+# """
+
+# import numpy as np
+# from typing import Dict, List, Tuple
+
+# from matplotlib.axes import Axes
+# import matplotlib.pyplot as plt
+# from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
+
+# def get_v_coordinates(filename: str) -> Dict:
+#     """
+#     Get coordinates of vertices from Neper .tess file in the form
+#     of a dictionary:
+#     {vertex_id: {'x': x_coord, 'y': y_coord, 'z': z_coord}}
+
+#     Parameters
+#     ----------
+#     filename
+#         Name of Neper file.
+
+#     Returns
+#     -------
+#     vertices
+#         Dictionary of vertices and their coordinates.
+#     """
+#     vertices = {}
+#     with open(filename, 'r', encoding="utf-8") as f:
+#         for line in f:
+#             if '**vertex' in line:
+#                 n = int(f.readline().rstrip('\n'))
+#                 for i in range(n):
+#                     row = f.readline().split()
+#                     v_id = int(row[0])
+#                     vertices[v_id] = {}
+#                     vertices[v_id]['x'] = float(row[1])
+#                     vertices[v_id]['y'] = float(row[2])
+#                     vertices[v_id]['z'] = float(row[3])
+#                 return vertices
+
+
+# def get_edges_from_tess(filename: str) -> Dict:
+#     """
+#     Get edges of a complex from Neper .tess file in the form
+#     of a dictionary:
+#     {edge_id: [ver_1, ver_2]}
+
+#     Parameters
+#     ----------
+#     filename
+#         Name of Neper file.
+
+#     Returns
+#     -------
+#     edges
+#         Dictionary of edges and their vertices.
+#     """
+#     edges = {}
+#     with open(filename, 'r', encoding="utf-8") as f:
+#             for line in f:
+#                 if '**edge' in line:
+#                     n = int(f.readline().rstrip('\n'))
+#                     for i in range(n):
+#                         row = f.readline().split()
+#                         e_id = int(row[0])
+#                         edges[e_id] = [int(row[1]), int(row[2])]
+#                     return edges
+
+
+# def get_faces_from_tess(filename: str) -> Dict:
+#     """
+#     Get faces of a complex from Neper .tess file in the form
+#     of a dictionary:
+#     {face_id: [ver_1, ver_2 ...]}
+
+#     Parameters
+#     ----------
+#     filename
+#         Name of Neper file.
+
+#     Returns
+#     -------
+#     faces
+#         Dictionary of faces and their vertices.
+#     """
+#     faces = {}
+#     with open(filename, 'r', encoding="utf-8") as f:
+#         for line in f:
+#             if '**face' in line:
+#                 n = int(f.readline().rstrip('\n'))
+#                 for i in range(n):
+#                     row = f.readline().split()
+#                     f_id = int(row[0])
+#                     faces[f_id] = []
+#                     for k in range(2, int(row[1]) + 2):
+#                         faces[f_id].append(int(row[k]))
+#                     _ = f.readline()
+#                     _ = f.readline()
+#                     _ = f.readline()
+#                 return faces
+
+
+# def get_poly_from_tess(filename: str) -> Dict:
+#     """
+#     Get polyhedra of a complex from Neper .tess file in the form
+#     of a dictionary:
+#     {poly_id: [ver_1, ver_2 ...]}
+
+#     Parameters
+#     ----------
+#     filename
+#         Name of Neper file.
+
+#     Returns
+#     -------
+#     polyhedra
+#         Dictionary of polyhedra and their vertices.
+#     """
+#     polyhedra = {}
+#     faces = get_faces_from_tess(filename)
+#     with open(filename, 'r', encoding="utf-8") as f:
+#             for line in f:
+#                 if '**polyhedron' in line:
+#                     n = int(f.readline().rstrip('\n'))
+#                     for i in range(n):
+#                         row = f.readline().split()
+#                         p_id = int(row[0])
+#                         polyhedra[p_id] = []
+#                         for k in range(2, int(row[1]) + 2):
+#                             polyhedra[p_id] += faces[abs(int(row[k]))]
+#                         polyhedra[p_id] = list(set(polyhedra[p_id]))
+#                     return polyhedra
+
+
+# def _from_dict_to_coord_tuples(
+#         vertices: Dict, 
+#         subset=[]) -> List[Tuple]:
+#     """
+#     """
+#     v_list = []
+#     keys_list = vertices.keys() if not subset else subset
+#     for v in keys_list:
+#         v_list.append(
+#             (vertices[v]['x'], 
+#              vertices[v]['y'], 
+#              vertices[v]['z'])
+#         )
+#     return v_list
+
+
+# def _transform_coord(
+#         vertices: Dict, 
+#         vertices_subset: List = []) -> Tuple[List]:
+#     """
+#     Transform coordinates of vertices in the form (xs, ys, zs),
+#     where xs, ys and zs are the lists of x-, y- and z-coordinates
+#     respectively.
+
+#     Parameters
+#     ----------
+#     vertices
+#         Dictionary of vertices and their coordinates.
+#     vertices_subset, optional
+#         List of vertices to transfrom. If not present,
+#         output will contain all the vertices from the dictionary.
+
+#     Returns
+#     -------
+#     xs
+#         List of x-coordinates of vertices.
+#     ys
+#         List of y-coordinates of vertices.
+#     zs
+#         List of z-coordinates of vertices.
+#     """
+#     xs = []
+#     ys = []
+#     zs = []
+#     if not vertices_subset:
+#         vertices_subset = vertices.keys()
+#     for v in vertices_subset:
+#         xs.append(vertices[v]['x'])
+#         ys.append(vertices[v]['y'])
+#         zs.append(vertices[v]['z'])
+#     return (xs, ys, zs)
+
+
+# def create_3D_axis(
+#         figsize: Tuple = (8, 8),
+#         xlim: Tuple = (0, 1),
+#         ylim: Tuple = (0, 1),
+#         zlim: Tuple = (0, 1)
+#         ):
+#     """
+#     """
+#     fig = plt.figure(figsize=figsize)
+#     ax = fig.add_subplot(111, projection='3d')
+#     ax.set_xlim(*xlim)
+#     ax.set_ylim(*ylim)
+#     ax.set_zlim(*zlim)
+#     return fig, ax
+
+
+# def create_2D_axis(
+#         figsize: Tuple = (8, 8),
+#         xlim: Tuple = (0, 1),
+#         ylim: Tuple = (0, 1)
+#         ):
+#     """
+#     """
+#     fig = plt.figure(figsize=figsize)
+#     ax = fig.add_subplot(111)
+#     # ax.set_xlim(*xlim)
+#     # ax.set_ylim(*ylim)
+#     # plt.grid()
+#     return fig, ax
+
+# def plot_points(
+#         ax: Axes,
+#         vertices: Dict,
+#         vert_id_list: List,
+#         color=None,
+#         label: List = None) -> None:
+#     """
+#     """
+#     xs, ys, zs = _transform_coord(vertices, vert_id_list)
+#     ax.scatter(xs, ys, zs, label=label, c=color)
+#     if label:
+#         ax.legend(loc="best")
+#     plt.show()
+
