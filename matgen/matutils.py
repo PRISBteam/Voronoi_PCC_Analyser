@@ -338,7 +338,10 @@ def calculate_disorient_quatern(R1, R2, crysym: str = 'cubic'):
         for Os1 in Osym:
             for Os2 in Osym:
                 A = Os1 @ _A @ Os2
-                q = math.sqrt(1 + A[0, 0] + A[1, 1] + A[2, 2]) / 2
+                try:
+                    q = math.sqrt(1 + A[0, 0] + A[1, 1] + A[2, 2]) / 2
+                except ValueError:
+                    q = 0
                 # if q0 <= 1:
                 #     theta = 2 * math.acos(q0)
                 # elif q0 > 1:
@@ -350,10 +353,14 @@ def calculate_disorient_quatern(R1, R2, crysym: str = 'cubic'):
                     # q1 = (A[2, 1] - A[1, 2]) / (4 * q0)
                     # q2 = (A[0, 2] - A[2, 0]) / (4 * q0)
                     # q3 = (A[1, 0] - A[0, 1]) / (4 * q0)
-
-    q1 = (A_min[2, 1] - A_min[1, 2]) / (4 * q0)
-    q2 = (A_min[0, 2] - A_min[2, 0]) / (4 * q0)
-    q3 = (A_min[1, 0] - A_min[0, 1]) / (4 * q0)
+    if not math.isclose(q0, 0):
+        q1 = (A_min[2, 1] - A_min[1, 2]) / (4 * q0)
+        q2 = (A_min[0, 2] - A_min[2, 0]) / (4 * q0)
+        q3 = (A_min[1, 0] - A_min[0, 1]) / (4 * q0)
+    else:
+        q1 = math.sqrt(1 + A[0, 0] - A[1, 1] - A[2, 2]) / 2
+        q2 = (A_min[0, 1] + A_min[1, 0]) / (4 * q1)
+        q3 = (A_min[0, 2] + A_min[2, 0]) / (4 * q1)
     
     return (q0, q1, q2, q3)
 
