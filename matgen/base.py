@@ -377,6 +377,35 @@ def _create_ax(dim: int = 2, figsize: Tuple = (8,8)) -> Axes:
 
 class Vertex(LowerOrderCell):
     """
+    Vertex (0-cell) of a cell complex.
+
+    Parameters
+    ----------
+    id : int
+        Identifier of the vertex.
+    x: float
+        Vertex x-coordinate.
+    y: float
+        Vertex y-coordinate.
+    z: float, optional
+        Vertex z-coordinate.
+    
+    Attributes
+    ----------
+    id : int
+        Identifier of the vertex.
+    x: float
+        Vertex x-coordinate.
+    y: float
+        Vertex y-coordinate.
+    z: float, optional
+        Vertex z-coordinate.
+    coord: Tuple[float]
+        A tuple of x-, y-, z-coordinates.
+
+    Methods
+    -------
+    from_tess_file(file)
     """
     def __init__(self, id: int, x: float, y: float, z: float = 0):
         super().__init__(id)
@@ -386,9 +415,24 @@ class Vertex(LowerOrderCell):
 
     @classmethod
     def from_tess_file(cls, file: io.TextIOBase | str) -> Dict:
-        """
-        Note that file must be oper prior to calling this method
-        Be careful with reading the same file with different methods
+        """Extracts vertices from Neper .tess file and returns a dictionary
+        of Vertex examples.
+
+        Parameters
+        ----------
+        file
+            Filename or file object.
+
+        Returns
+        -------
+        _vertices
+            A dictionary of vertices. Keys are vertex identifiers, values are
+            Vertex examples.
+
+        Notes
+        -----
+        Expects valid .tess file format (as for Neper 4.5.0). See details
+        https://neper.info/doc/fileformat.html
         """      
         if isinstance(file, str):
             file = open(file, 'r', encoding='utf-8')
@@ -409,8 +453,6 @@ class Vertex(LowerOrderCell):
                 return _vertices
 
     def __str__(self) -> str:
-        """
-        """
         v_str = self.__class__.__name__ + "(id=%d, x=%.3f, y=%.3f, z=%.3f)" % (
             self.id, self.x, self.y, self.z
         )
@@ -418,7 +460,7 @@ class Vertex(LowerOrderCell):
 
     @property
     def coord(self) -> Tuple[float]:
-        """
+        """A tuple of x-, y-, z-coordinates.
         """
         return (self.x, self.y, self.z)
 
@@ -431,8 +473,6 @@ class Vertex2D(Vertex, TripleJunction):
         self.junction_type = None
 
     def __str__(self) -> str:
-        """
-        """
         v_str = self.__class__.__name__ + "(id=%d, x=%.3f, y=%.3f)" % (
             self.id, self.x, self.y
         )
@@ -475,8 +515,29 @@ class Vertex3D(Vertex):
 
 class Edge(LowerOrderCell):
     """
+    Edge (1-cell) of a cell complex.
+
+    Parameters
+    ----------
+    id : int
+        Identifier of the edge.
+    v_ids: List
+        A list of two vertex identifiers of the edge.
+    
+    Attributes
+    ----------
+    id : int
+        Identifier of the edge.
+    v_ids : List
+        A list of two vertex identifiers of the edge.
+    length : float, optional
+        Length of the edge.
+
+    Methods
+    -------
+    from_tess_file(file)
     """
-    def __init__(self, id: int, v_ids: Iterable):
+    def __init__(self, id: int, v_ids: List):
         super().__init__(id)
         self.v_ids = v_ids
 
@@ -486,7 +547,24 @@ class Edge(LowerOrderCell):
         file: io.TextIOBase | str,
         _vertices: Dict = {}
     ):
-        """
+        """Extracts edges from Neper .tess file and returns a dictionary
+        of Edge examples.
+
+        Parameters
+        ----------
+        file
+            Filename or file object.
+
+        Returns
+        -------
+        _edges
+            A dictionary of edges. Keys are edge identifiers, values are
+            Edge examples.
+
+        Notes
+        -----
+        Expects valid .tess file format (as for Neper 4.5.0). See details
+        https://neper.info/doc/fileformat.html
         """
         if isinstance(file, str):
             file = open(file, 'r', encoding='utf-8')
@@ -524,7 +602,7 @@ class Edge(LowerOrderCell):
 class Edge2D(Edge, GrainBoundary):
     """
     """
-    def __init__(self, id: int, v_ids: Iterable):
+    def __init__(self, id: int, v_ids: List):
         super().__init__(id, v_ids)
         self.is_special = False
 
@@ -532,15 +610,51 @@ class Edge2D(Edge, GrainBoundary):
 class Edge3D(Edge, TripleJunction):
     """
     """
-    def __init__(self, id: int, v_ids: Iterable):
+    def __init__(self, id: int, v_ids: List):
         super().__init__(id, v_ids)
         self.junction_type = None
 
 
 class Face(Cell):
     """
+    Face (2-cell) of a cell complex.
+
+    Parameters
+    ----------
+    id : int
+        Identifier of the face.
+    v_ids : List
+        A list of vertex identifiers of the face.
+    
+    Attributes
+    ----------
+    id : int
+        Identifier of the face.
+    v_ids: List
+        A list of vertex identifiers of the face.
+    e_ids : List
+        A list of edge identifiers of the face.
+    d : float
+
+    a : float
+
+    b : float
+
+    c : float
+
+    normal : Tuple[float]
+
+    area : float, optional
+        Area of the face.
+
+    Methods
+    -------
+    from_tess_file(file)
+    add_edge(e_id)
+    add_edges(e_ids)
+    add_equation(d, a, b, c)
     """
-    def __init__(self, id: int, v_ids: Iterable):
+    def __init__(self, id: int, v_ids: List):
         super().__init__(id)
         self.v_ids = v_ids
         self.e_ids = []
@@ -551,7 +665,24 @@ class Face(Cell):
         file: io.TextIOBase | str,
         _edges: Dict = {}
     ):
-        """
+        """Extracts faces from Neper .tess file and returns a dictionary
+        of Face examples.
+
+        Parameters
+        ----------
+        file
+            Filename or file object.
+
+        Returns
+        -------
+        _faces
+            A dictionary of faces. Keys are face identifiers, values are
+            Face examples.
+
+        Notes
+        -----
+        Expects valid .tess file format (as for Neper 4.5.0). See details
+        https://neper.info/doc/fileformat.html
         """
         if isinstance(file, str):
             file = open(file, 'r', encoding='utf-8')
@@ -600,7 +731,7 @@ class Face(Cell):
         if e_id not in self.e_ids:
             self.e_ids.append(e_id)
 
-    def add_edges(self, e_ids: Iterable):
+    def add_edges(self, e_ids: List):
         """
         """
         self.e_ids += e_ids
@@ -608,6 +739,12 @@ class Face(Cell):
 
     def add_equation(self, d: float, a: float, b: float, c: float):
         """
+
+        Notes
+        -----
+        Parameters d, a, b, c are the parameters of the equation of a face
+        :math:`ax + by + cz = d` with :math:`a^2 + b^2 + c^2 = 1`. See details
+        https://neper.info/doc/fileformat.html
         """
         self.d = d
         self.a = a
@@ -628,7 +765,7 @@ class Face(Cell):
 class Face2D(Face, Grain):
     """
     """
-    def __init__(self, id: int, v_ids: Iterable):
+    def __init__(self, id: int, v_ids: List):
         super().__init__(id, v_ids)
         self.seed = None
         self.ori = None
@@ -705,15 +842,44 @@ class Face2D(Face, Grain):
 class Face3D(Face, GrainBoundary):
     """
     """
-    def __init__(self, id: int, v_ids: Iterable):
+    def __init__(self, id: int, v_ids: List):
         super().__init__(id, v_ids)
         self.is_special = False
 
 
 class Poly(Grain):
     """
+    Polyhedron (3-cell) of a cell complex.
+
+    Parameters
+    ----------
+    id : int
+        Identifier of the polyhedron.
+    f_ids : List
+        A list of face identifiers of the polyhedron.
+    
+    Attributes
+    ----------
+    id : int
+        Identifier of the face.
+    v_ids: List
+        A list of vertex identifiers of the polyhedron.
+    e_ids : List
+        A list of edge identifiers of the polyhedron.
+    f_ids : List
+        A list of face identifiers of the polyhedron.
+    vol : float, optional
+        Volume of the polyhedron.
+
+    Methods
+    -------
+    from_tess_file(file)
+    add_vertex(v_id)
+    add_vertices(v_ids):
+    add_edge(e_id)
+    add_edges(e_ids)
     """
-    def __init__(self, id: int, f_ids: Iterable):
+    def __init__(self, id: int, f_ids: List):
         super().__init__(id)
         self.v_ids = []
         self.e_ids = []
@@ -782,7 +948,7 @@ class Poly(Grain):
         if v_id not in self.v_ids:
             self.v_ids.append(v_id)
 
-    def add_vertices(self, v_ids: Iterable):
+    def add_vertices(self, v_ids: List):
         """
         """
         self.v_ids += v_ids
@@ -794,7 +960,7 @@ class Poly(Grain):
         if e_id not in self.e_ids:
             self.e_ids.append(e_id)
 
-    def add_edges(self, e_ids: Iterable):
+    def add_edges(self, e_ids: List):
         """
         """
         self.e_ids += e_ids
@@ -1005,7 +1171,7 @@ def _add_measures(_cells: Dict, measures: List):
 
 def _add_thetas(
     _cells: Dict,
-    thetas: List,
+    thetas: Iterable,
     lower_thrd: float = None,
     upper_thrd: float = None
 ):
@@ -1041,6 +1207,34 @@ def _parse_stfile(file: io.TextIOBase | str):
 
 class CellComplex:
     """
+    Cell complex.
+
+    Parameters
+    ----------
+    dim: int
+    _vertices: Dict
+    _edges: Dict
+    _faces: Dict
+    _polyhedra: Dict, optional
+    
+    Attributes
+    ----------
+    dim: int
+    _vertices: Dict
+    _edges: Dict
+    _faces: Dict
+    _polyhedra: Dict, optional
+    crysym : str
+    load_time: float
+
+
+    Methods
+    -------
+    from_tess_file(file)
+    add_vertex(v_id)
+    add_vertices(v_ids):
+    add_edge(e_id)
+    add_edges(e_ids)
     """
     def __init__(
         self,
@@ -1324,7 +1518,7 @@ class CellComplex:
         _cells = self._choose_cell_type(cell_type)
         return _cells[cell_id]
     
-    def get_many(self, cell_type: str | int, cell_ids: Iterable):
+    def get_many(self, cell_type: str | int, cell_ids: List):
         """
         """
         _cells = self._choose_cell_type(cell_type)
@@ -1467,6 +1661,42 @@ class CellComplex:
         for p in p_list:
             ax = self.plot_faces(f_ids=p.f_ids, ax=ax, **kwargs)
 
+        return ax
+
+    def plot_seeds(
+        self,
+        cell_ids: List = [],
+        ax: Axes = None,
+        figsize: Tuple = (8,8),
+        **kwargs
+    ) -> Axes:
+        """
+        """
+        if not ax:
+            ax = _create_ax(self.dim, figsize)
+        if self.dim == 2 and cell_ids:
+            cell_list = self.get_many('f', cell_ids)
+        elif self.dim == 2 and not cell_ids:
+            cell_list = self.faces
+        elif self.dim == 3 and cell_ids:
+            cell_list = self.get_many('p', cell_ids)
+        elif self.dim == 3 and not cell_ids:
+            cell_list = self.polyhedra
+        
+        xs = []
+        ys = []
+        if self.dim == 3:
+            zs = []
+        for cell in cell_list:
+            x, y, z = cell.seed
+            if self.dim == 3: 
+                zs.append(z)
+            xs.append(x)
+            ys.append(y)
+        if self.dim == 2:
+            ax.scatter(xs, ys, **kwargs)
+        elif self.dim == 3:
+            ax.scatter(xs, ys, zs, **kwargs)
         return ax
 
     def get_junction_ids_of_type(self, junction_type: int) -> List:

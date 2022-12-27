@@ -316,14 +316,67 @@ def calculate_disorient(R1, R2, crysym: str = 'cubic'):
     return math.degrees(theta_min)
 
 
-def dis_angle(g1: 'Grain', g2: 'Grain') -> float:
+def calculate_disorient_quatern(R1, R2, crysym: str = 'cubic'):
+    """
+    симметрия кристалла имеет значение - какие еще бывают варианты?
+    """
+        
+    # _g = R1 @ np.linalg.inv(R2)
+    _A = R1 @ linalg.inv(R2)
+    q0 = math.sqrt(1 + _A[0, 0] + _A[1, 1] + _A[2, 2]) / 2
+    A_min = _A
+    # q1 = (_A[2, 1] - _A[1, 2]) / (4 * q0)
+    # q2 = (_A[0, 2] - _A[2, 0]) / (4 * q0)
+    # q3 = (_A[1, 0] - _A[0, 1]) / (4 * q0)
+    
+    # if q0 <= 1:
+    #     theta_min = 2 * math.acos(q0)
+    # elif q0 > 1:
+    #     theta_min = 0
+         
+    if crysym == 'cubic':
+        for Os1 in Osym:
+            for Os2 in Osym:
+                A = Os1 @ _A @ Os2
+                try:
+                    q = math.sqrt(1 + A[0, 0] + A[1, 1] + A[2, 2]) / 2
+                except ValueError:
+                    q = 0
+                # if q0 <= 1:
+                #     theta = 2 * math.acos(q0)
+                # elif q0 > 1:
+                #     theta = 0
+
+                if math.acos(q) < math.acos(q0):
+                    q0 = q
+                    A_min = A
+                    # q1 = (A[2, 1] - A[1, 2]) / (4 * q0)
+                    # q2 = (A[0, 2] - A[2, 0]) / (4 * q0)
+                    # q3 = (A[1, 0] - A[0, 1]) / (4 * q0)
+    if not math.isclose(q0, 0):
+        q1 = (A_min[2, 1] - A_min[1, 2]) / (4 * q0)
+        q2 = (A_min[0, 2] - A_min[2, 0]) / (4 * q0)
+        q3 = (A_min[1, 0] - A_min[0, 1]) / (4 * q0)
+    else:
+        q1 = math.sqrt(1 + A[0, 0] - A[1, 1] - A[2, 2]) / 2
+        q2 = (A_min[0, 1] + A_min[1, 0]) / (4 * q1)
+        q3 = (A_min[0, 2] + A_min[2, 0]) / (4 * q1)
+    
+    return (q0, q1, q2, q3)
+
+
+def dis_angle(g1: 'Grain', g2: 'Grain', quaternions=False) -> float:
     """
     """
     if g1.crysym != g2.crysym:
         raise ValueError("Crysym of g1 and g2 don't match")
     R1 = ori_mat(g1.ori, g1.oridesc)
     R2 = ori_mat(g2.ori, g2.oridesc)
-    return calculate_disorient(R1, R2, g1.crysym)
+
+    if not quaternions:
+        return calculate_disorient(R1, R2, g1.crysym)
+    else:
+        return calculate_disorient_quatern(R1, R2, g1.crysym)
 
 
 # Cubic symmetry axes
