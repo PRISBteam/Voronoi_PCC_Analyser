@@ -82,18 +82,22 @@ def main() -> None:
     for i in range(args.min_order, args.order + 1):
         logging.info(f'Start: calculation of order {i}')
         quaternions = []
+        thetas = []
         for g1 in tqdm(cellcomplex._grains.values()):
             n_ids = getattr(g1, f'n{i}_ids')
             for n_id in n_ids:
                 if g1.id < n_id:
-                    q_tuple = matutils.calculate_disorient_quatern(
+                    q_tuple, theta = matutils.calculate_disorient_quatern(
                         g1.rot_mtx,
                         cellcomplex._grains[n_id].rot_mtx,
-                        g1.crysym)
+                        g1.crysym,
+                        angle=True)
                     quaternions.append(q_tuple)
+                    thetas.append(theta)
         filename = os.path.join(args.dir, f'quaternions{i}.txt')
-        
         np.savetxt(filename, quaternions, fmt='%.5f')
+        filename = os.path.join(args.dir, f'disangles{i}.txt')
+        np.savetxt(filename, thetas, fmt='%.3f')
         logging.info(
             f'Finished: {len(quaternions)} disorientations of order {i}'
         )
