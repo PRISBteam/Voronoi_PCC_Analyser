@@ -1840,11 +1840,20 @@ class CellComplex:
                 e_ids_set.update(vertex.incident_ids)
                 if vertex.junction_type and vertex.junction_type >= 2:
                     j += 1
+            
+            # fourth junction
+            fourth_junction = 0
+            for edge in self.get_many('e', face.e_ids):
+                if edge.is_special:
+                    fourth_junction += 1
+            if fourth_junction >= 2:
+                j += 1
+
             if len(e_ids_set) != 6:
                 logging.warning(
-                            f'{face.id} three-sided grain has ' +
-                            f'{len(e_ids_set)} boundaries'
-                        )
+                    f'{face.id} three-sided grain has ' +
+                    f'{len(e_ids_set)} boundaries'
+                )
             for edge in self.get_many('e', list(e_ids_set)):
                 if edge.is_special:
                     i += 1
