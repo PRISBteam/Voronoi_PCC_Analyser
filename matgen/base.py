@@ -30,7 +30,7 @@ class Cell:
     ----------
     id : int
         Identifier of the cell.
-    n_ids : List
+    n_ids : list
         A list of neighbouring cells identifiers.
     is_external : bool
         True if the cell is external, False if the cell is internal.
@@ -75,7 +75,7 @@ class Cell:
         if n_id not in self.n_ids and n_id != self.id:
             self.n_ids.append(n_id)
     
-    def add_neighbors(self, n_ids: List) -> None:
+    def add_neighbors(self, n_ids: list) -> None:
         """Add a list of identifiers to neighbouring cells list.
 
         Parameters
@@ -201,10 +201,10 @@ class LowerOrderCell(Cell):
     ----------
     id : int
         Identifier of the cell.
-    signed_incident_ids: List
+    signed_incident_ids: list
         A list of incident cells identifiers. Identifiers are signed: they
         are negative if orientations of the cell and incident cell differ.
-    incident_ids: List
+    incident_ids: list
         A list of unsigned incident cells identifiers.
     degree: int
         Number of incident cells of the given cell. 
@@ -521,14 +521,14 @@ class Edge(LowerOrderCell):
     ----------
     id : int
         Identifier of the edge.
-    v_ids: List
+    v_ids: list
         A list of two vertex identifiers of the edge.
     
     Attributes
     ----------
     id : int
         Identifier of the edge.
-    v_ids : List
+    v_ids : list
         A list of two vertex identifiers of the edge.
     length : float, optional
         Length of the edge.
@@ -537,7 +537,7 @@ class Edge(LowerOrderCell):
     -------
     from_tess_file(file)
     """
-    def __init__(self, id: int, v_ids: List):
+    def __init__(self, id: int, v_ids: list):
         super().__init__(id)
         self.v_ids = v_ids
 
@@ -602,7 +602,7 @@ class Edge(LowerOrderCell):
 class Edge2D(Edge, GrainBoundary):
     """
     """
-    def __init__(self, id: int, v_ids: List):
+    def __init__(self, id: int, v_ids: list):
         super().__init__(id, v_ids)
         self.is_special = False
 
@@ -610,7 +610,7 @@ class Edge2D(Edge, GrainBoundary):
 class Edge3D(Edge, TripleJunction):
     """
     """
-    def __init__(self, id: int, v_ids: List):
+    def __init__(self, id: int, v_ids: list):
         super().__init__(id, v_ids)
         self.junction_type = None
 
@@ -623,16 +623,16 @@ class Face(Cell):
     ----------
     id : int
         Identifier of the face.
-    v_ids : List
+    v_ids : list
         A list of vertex identifiers of the face.
     
     Attributes
     ----------
     id : int
         Identifier of the face.
-    v_ids: List
+    v_ids: list
         A list of vertex identifiers of the face.
-    e_ids : List
+    e_ids : list
         A list of edge identifiers of the face.
     d : float
 
@@ -654,7 +654,7 @@ class Face(Cell):
     add_edges(e_ids)
     add_equation(d, a, b, c)
     """
-    def __init__(self, id: int, v_ids: List):
+    def __init__(self, id: int, v_ids: list):
         super().__init__(id)
         self.v_ids = v_ids
         self.e_ids = []
@@ -731,7 +731,7 @@ class Face(Cell):
         if e_id not in self.e_ids:
             self.e_ids.append(e_id)
 
-    def add_edges(self, e_ids: List):
+    def add_edges(self, e_ids: list):
         """
         """
         self.e_ids += e_ids
@@ -765,7 +765,7 @@ class Face(Cell):
 class Face2D(Face, Grain):
     """
     """
-    def __init__(self, id: int, v_ids: List):
+    def __init__(self, id: int, v_ids: list):
         super().__init__(id, v_ids)
         self.seed = None
         self.ori = None
@@ -842,7 +842,7 @@ class Face2D(Face, Grain):
 class Face3D(Face, GrainBoundary):
     """
     """
-    def __init__(self, id: int, v_ids: List):
+    def __init__(self, id: int, v_ids: list):
         super().__init__(id, v_ids)
         self.is_special = False
 
@@ -855,18 +855,18 @@ class Poly(Grain):
     ----------
     id : int
         Identifier of the polyhedron.
-    f_ids : List
+    f_ids : list
         A list of face identifiers of the polyhedron.
     
     Attributes
     ----------
     id : int
         Identifier of the face.
-    v_ids: List
+    v_ids: list
         A list of vertex identifiers of the polyhedron.
-    e_ids : List
+    e_ids : list
         A list of edge identifiers of the polyhedron.
-    f_ids : List
+    f_ids : list
         A list of face identifiers of the polyhedron.
     vol : float, optional
         Volume of the polyhedron.
@@ -879,7 +879,7 @@ class Poly(Grain):
     add_edge(e_id)
     add_edges(e_ids)
     """
-    def __init__(self, id: int, f_ids: List):
+    def __init__(self, id: int, f_ids: list):
         super().__init__(id)
         self.v_ids = []
         self.e_ids = []
@@ -948,7 +948,7 @@ class Poly(Grain):
         if v_id not in self.v_ids:
             self.v_ids.append(v_id)
 
-    def add_vertices(self, v_ids: List):
+    def add_vertices(self, v_ids: list):
         """
         """
         self.v_ids += v_ids
@@ -960,7 +960,7 @@ class Poly(Grain):
         if e_id not in self.e_ids:
             self.e_ids.append(e_id)
 
-    def add_edges(self, e_ids: List):
+    def add_edges(self, e_ids: list):
         """
         """
         self.e_ids += e_ids
@@ -1105,7 +1105,7 @@ class TripleJunctionSet:
         """
         return getattr(self, attr)
     
-    def get_properties(self, attr_list: List = []) -> Dict:
+    def get_properties(self, attr_list: list = []) -> Dict:
         """
         """
         if not attr_list:
@@ -1156,7 +1156,7 @@ def _add_neighbors(_cells: Dict, _incident_cells: Dict):
 #         cell.add_neighbors_neighbors(nn_ids)
 
 
-def _add_measures(_cells: Dict, measures: List):
+def _add_measures(_cells: Dict, measures: list):
     """
     """
     n = len(_cells.keys())
@@ -1398,6 +1398,8 @@ class CellComplex:
         # If lower or upper threshold are known or both
         if lower_thrd or upper_thrd:
             cellcomplex.set_junction_types()
+            if cellcomplex.dim == 2:
+                cellcomplex.set_three_sided_types()
 
         cellcomplex.load_time = round(time.time() - start, 1)
         print('Complex loaded:', cellcomplex.load_time, 's')
@@ -1512,13 +1514,24 @@ class CellComplex:
             _cells = self._choose_cell_type('poly')
         return _cells
 
+    @property
+    def _three_sided_grains(self):
+        """
+        """
+        if self.dim == 2:
+            three_sided = {}
+            for f_id, face in self._faces.items():
+                if len(face.e_ids) == 3 and not face.is_external:
+                    three_sided[f_id] = face
+        return three_sided
+
     def get_one(self, cell_type: str | int, cell_id: int):
         """
         """
         _cells = self._choose_cell_type(cell_type)
         return _cells[cell_id]
     
-    def get_many(self, cell_type: str | int, cell_ids: List):
+    def get_many(self, cell_type: str | int, cell_ids: list):
         """
         """
         _cells = self._choose_cell_type(cell_type)
@@ -1545,7 +1558,7 @@ class CellComplex:
 
     def plot_vertices(
         self,
-        v_ids: List = [],
+        v_ids: list = [],
         ax: Axes = None,
         figsize: Tuple = (8,8),
         labels: bool = False,
@@ -1570,7 +1583,7 @@ class CellComplex:
 
     def plot_edges(
         self,
-        e_ids: List = [],
+        e_ids: list = [],
         ax: Axes = None,
         figsize: Tuple = (8,8),
         labels: bool = False,
@@ -1605,7 +1618,7 @@ class CellComplex:
 
     def plot_faces(
         self,
-        f_ids: List = [],
+        f_ids: list = [],
         ax: Axes = None,
         figsize: Tuple = (8,8),
         labels: bool = False,
@@ -1644,7 +1657,7 @@ class CellComplex:
 
     def plot_polyhedra(
         self,
-        p_ids: List = [],
+        p_ids: list = [],
         ax: Axes = None,
         figsize: Tuple = (8,8),
         **kwargs
@@ -1665,7 +1678,7 @@ class CellComplex:
 
     def plot_seeds(
         self,
-        cell_ids: List = [],
+        cell_ids: list = [],
         ax: Axes = None,
         figsize: Tuple = (8,8),
         **kwargs
@@ -1699,7 +1712,7 @@ class CellComplex:
             ax.scatter(xs, ys, zs, **kwargs)
         return ax
 
-    def get_junction_ids_of_type(self, junction_type: int) -> List:
+    def get_junction_ids_of_type(self, junction_type: int) -> list:
         """
         2D - vertices are junctions
         3D - edges are junctions
@@ -1749,6 +1762,17 @@ class CellComplex:
             frac = n_junc / n_int
             return frac
 
+    def get_three_sided_distribution(self):
+        """
+        dictionary {type: fraction}
+        fraction = number_of_grains_of_type / number_of_three_sided_grains
+        11 possible types for i + j
+        """
+        distribution = {three_sided_type: 0 for three_sided_type in range(11)}
+        for face in self._three_sided_grains.values():
+            distribution[face.three_sided_type] += 1
+        return distribution
+
     @property
     def p(self):
         return self.get_spec_fraction()
@@ -1797,6 +1821,35 @@ class CellComplex:
                         )
                     e.set_junction_type(e.n_spec_faces)
 
+    def set_three_sided_types(self) -> None:
+        """
+        T_{i + j}
+        i - the number of special GBs (0...6)
+        j - the number of triple junctions with two or more special
+        boundaries (0...4) 
+        i + j = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+        """
+        if self.dim != 2:
+            logging.warning('Three sided types are for 2D complexes')
+            return
+        for face in self._three_sided_grains.values():
+            e_ids_set = set()
+            i = 0
+            j = 0
+            for vertex in self.get_many('v', face.v_ids):
+                e_ids_set.update(vertex.incident_ids)
+                if vertex.junction_type and vertex.junction_type >= 2:
+                    j += 1
+            if len(e_ids_set) != 6:
+                logging.warning(
+                            f'{face.id} three-sided grain has ' +
+                            f'{len(e_ids_set)} boundaries'
+                        )
+            for edge in self.get_many('e', list(e_ids_set)):
+                if edge.is_special:
+                    i += 1
+            face.three_sided_type = i + j
+    
     def reset_special(
             self,
             lower_thrd: float = None,
@@ -1806,8 +1859,10 @@ class CellComplex:
         for cell in self._GBs.values():
             cell._reset_theta_thrds(lower_thrd, upper_thrd)
         self.set_junction_types()
+        if self.dim == 2:
+            self.set_three_sided_types()
 
-    def describe(self, attr_list: List = []):
+    def describe(self, attr_list: list = []):
         """
         """
         state = self.to_TJset()
