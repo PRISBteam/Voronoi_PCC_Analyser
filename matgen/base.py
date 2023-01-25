@@ -1402,7 +1402,7 @@ class CellComplex:
                 cellcomplex.set_three_sided_types()
 
         cellcomplex.load_time = round(time.time() - start, 1)
-        print('Complex loaded:', cellcomplex.load_time, 's')
+        # print('Complex loaded:', cellcomplex.load_time, 's')
         return cellcomplex
 
     def __str__(self):
@@ -1866,6 +1866,8 @@ class CellComplex:
         """
         """
         for cell in self._GBs.values():
+            if not cell.is_external and not cell.theta:
+                raise ValueError('Set theta first!')
             cell._reset_theta_thrds(lower_thrd, upper_thrd)
         self.set_junction_types()
         if self.dim == 2:
