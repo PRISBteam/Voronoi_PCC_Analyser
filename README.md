@@ -148,6 +148,6 @@ This code has been created as a part of the EPSRC funded projects <a href="https
 Distributed under the GNU General Public License v3.0. See `LICENSE.txt` for more information.
   
 ## Contacts
-<a href="mailto: prisb.team@gmail.com"> Send e-mail</a> <br>
+<a href="mailto: prisb.team@gmail.com" target="_blank"> Send e-mail</a> <br>
 Dr Oleg Bushuev (technical support) <br>
 Dr Elijah Borodin (any other questions) <br>
