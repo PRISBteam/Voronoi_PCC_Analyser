@@ -1,14 +1,14 @@
 """
 """
 import math
-from typing import Dict, Iterable, List, Tuple
+from typing import Dict, Iterable, List
 import numpy as np
 from scipy import sparse, linalg, stats
 import logging
 
 # from matgen.base import Grain
 
-def _get_IJV_from_neighbors(_cells: Dict) -> Tuple[List]:
+def _get_IJV_from_neighbors(_cells: Dict) -> tuple[List]:
     """Get I, J, V lists of the adjacency matrix from a dictionary of cells.
 
     Cells can be vertices, edges, faces or polyhedra of a corresponding
@@ -41,7 +41,7 @@ def _get_IJV_from_neighbors(_cells: Dict) -> Tuple[List]:
     return (I, J, V)
 
 
-def _get_IJV_from_incidence(_cells: Dict) -> Tuple[List]:
+def _get_IJV_from_incidence(_cells: Dict) -> tuple[List]:
     """Get I, J, V lists of the incidence matrix from a dictionary of cells.
 
     Cells can be vertices, edges, faces or polyhedra of a corresponding
@@ -192,7 +192,7 @@ def entropy_s(*args):
         return - Ss
 
 
-def get_d_tuple(j_tuple: Tuple) -> Tuple:
+def get_d_tuple(j_tuple: tuple) -> tuple:
     """
     """
     if j_tuple[0] == 1:
@@ -205,7 +205,7 @@ def get_d_tuple(j_tuple: Tuple) -> Tuple:
         return d1, d2, d3
 
 
-def ori_mat(ori: Tuple, oridesc: str ='euler-bunge:active') -> np.ndarray:
+def ori_mat(ori: tuple, oridesc: str ='euler-bunge:active') -> np.ndarray:
     """
     returns orientation matrix
     """
@@ -227,6 +227,8 @@ def ori_mat(ori: Tuple, oridesc: str ='euler-bunge:active') -> np.ndarray:
         uy = ori[1] / tt
         uz = ori[2] / tt
         return _R_from_Rodrigues(t, (ux, uy, uz))
+    elif oridesc == 'quaternion:active':
+        return _R_from_quaternion(ori)
 
 
 def _R_from_Euler(f1: float, F: float, f2: float):
@@ -255,7 +257,7 @@ def _R_from_Euler(f1: float, F: float, f2: float):
     return R
 
 
-def _R_from_Rodrigues(t: float, u: Tuple) -> np.ndarray:
+def _R_from_Rodrigues(t: float, u: tuple) -> np.ndarray:
     """
     """
     ux, uy, uz = u
@@ -282,6 +284,31 @@ def _R_from_Rodrigues(t: float, u: Tuple) -> np.ndarray:
     ])
     return R.T
 
+
+def _R_from_quaternion(q_tuple: tuple):
+    """
+    """
+    qr, qi, qj, qk = q_tuple
+
+    R11 = 1 - 2*(qj*qj + qk*qk)
+    R21 = 2*(qi*qj + qk*qr)
+    R31 = 2*(qi*qk - qj*qr)
+
+    R12 = 2*(qi*qj - qk*qr)
+    R22 = 1 - 2*(qi*qi + qk*qk)
+    R32 = 2*(qj*qk + qi*qr)
+
+    R13 = 2*(qi*qk + qj*qr)
+    R23 = 2*(qj*qk - qi*qr)
+    R33 = 1 - 2*(qi*qi + qj*qj)
+
+    R = np.array([
+        [R11, R12, R13],
+        [R21, R22, R23],
+        [R31, R32, R33]
+    ])
+
+    return R
 
 def calculate_disorient(R1, R2, crysym: str = 'cubic'):
     """
@@ -316,7 +343,12 @@ def calculate_disorient(R1, R2, crysym: str = 'cubic'):
     return math.degrees(theta_min)
 
 
-def calculate_disorient_quatern(R1, R2, crysym: str = 'cubic'):
+def calculate_disorient_quatern(
+    R1: np.ndarray,
+    R2: np.ndarray,
+    crysym: str = 'cubic',
+    angle: bool = False
+) -> tuple:
     """
     симметрия кристалла имеет значение - какие еще бывают варианты?
     """
@@ -362,6 +394,10 @@ def calculate_disorient_quatern(R1, R2, crysym: str = 'cubic'):
         q2 = (A_min[0, 1] + A_min[1, 0]) / (4 * q1)
         q3 = (A_min[0, 2] + A_min[2, 0]) / (4 * q1)
     
+    if angle:
+        theta = 2 * math.acos(q0)
+        return (q0, q1, q2, q3), math.degrees(theta)
+
     return (q0, q1, q2, q3)
 
 
@@ -504,7 +540,7 @@ Osym = np.array([
 ])
 
 
-def _check_chi2(ns: np.ndarray, ms: np.ndarray) -> Tuple:
+def _check_chi2(ns: np.ndarray, ms: np.ndarray) -> tuple:
     """
     ns and ms contain frequencies of classes (categories)
     number of bins is equal to number of classes (categories)
