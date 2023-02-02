@@ -3,6 +3,7 @@
 import math
 from typing import Dict, Iterable, List
 import numpy as np
+import random
 from scipy import sparse, linalg, stats
 import logging
 
@@ -711,6 +712,140 @@ def mackenzie_pmf(angles):
     """
     """
     return np.diff(mackenzie_cdf(angles))
+
+
+def _in_polygon(x: float, y: float, xp: list, yp: list) -> bool:
+    """Find whether a point (x, y) is inside the polygon with (xp, yp)
+    coordinates of vertices.
+
+    Parameters
+    ----------
+    x
+        x-coordinate of a point
+    y
+        y-coordinate of a point
+    xp
+        A list of x-coordinates of the polygon vertices
+    yp
+        A list of y-coordinates of the polygon vertices
+
+    Returns
+    -------
+    bool
+        True if a point is inside the polygon, False otherwise.
+
+    Notes
+    -----
+    See https://shorturl.at/FLR69 for details.
+    """
+    c = 0
+    for i in range(len(xp)):
+        if ((
+            (yp[i] <= y and y < yp[i - 1]) or (yp[i - 1] <= y and y < yp[i])
+            ) and (
+                x > (xp[i - 1] - xp[i]) * (y - yp[i]) / (yp[i - 1] - yp[i]) +\
+                xp[i]
+            )):
+            c = 1 - c
+    return True if c == 1 else False
+
+
+def _get_random(min_value: float, max_value: float) -> float:
+    """
+    """
+    return random.uniform(min_value, max_value)
+
+
+def get_random_point_on_face(
+    a: float,
+    b: float,
+    c: float,
+    d: float,
+    xp: list,
+    yp: list,
+    zp: list
+) -> tuple:
+    """Get (x, y, z) coordinates of a random point on a given face with
+    the equation :math:`ax + by + cz = d`.
+
+    Parameters
+    ----------
+    a, b, c, d
+        See Notes
+    xp
+        A list of x-coordinates of the face vertices
+    yp
+        A list of y-coordinates of the face vertices
+    zp
+        A list of z-coordinates of the face vertices
+    
+    Returns
+    -------
+    (x, y, z)
+        A tuple of the new random point coordinates
+
+    Notes
+    -----
+    Parameters d, a, b, c are the parameters of the equation of a face
+    :math:`ax + by + cz = d` with :math:`a^2 + b^2 + c^2 = 1`. See details
+    https://neper.info/doc/fileformat.html
+    """
+
+    xmin = np.min(xp)
+    xmax = np.max(xp)
+    ymin = np.min(yp)
+    ymax = np.max(yp)    
+    zmin = np.min(zp)
+    zmax = np.max(zp)    
+    
+    
+    if c == 0 and b == 0:
+        while True:
+            y = _get_random(ymin, ymax)
+            z = _get_random(zmin, zmax)
+            if _in_polygon(y, z, yp, zp):
+                break
+        x = (d - b * y - c * z) / a
+    elif c == 0:
+        while True:
+            x = _get_random(xmin, xmax)
+            z = _get_random(zmin, zmax)
+            if _in_polygon(x, z, xp, zp):
+                break
+        y = (d - a * x - c * z) / b
+    else:
+        while True:
+            x = _get_random(xmin, xmax)
+            y = _get_random(ymin, ymax)
+            if _in_polygon(x, y, xp, yp):
+                break
+        z = (d - a * x - b * y) / c
+
+    return (x, y, z)
+
+
+def get_random_point_on_edge(xp, yp):
+    """
+    """
+    if math.isclose(xp[0], xp[1]):
+        x = xp[0]
+        y = _get_random(yp[0], yp[1])
+        # if isclose(y, yp[0]):
+        #     y = _get_random(yp[0], yp[1])
+    else:
+        x = _get_random(xp[0], xp[1])
+        # if isclose(x, xp[0]):
+        #     x = _get_random(xp[0], xp[1])    
+        y = (yp[1] - yp[0]) / (xp[1] - xp[0]) * (x - xp[0]) + yp[0]
+
+    return (x, y)
+
+
+
+
+
+
+
 
 
 
