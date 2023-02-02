@@ -8,6 +8,7 @@ from typing import Dict, Iterable, List, Tuple
 import logging
 from tqdm import tqdm
 import numpy as np
+import random
 # import pandas as pd
 
 import matplotlib.pyplot as plt
@@ -1965,3 +1966,42 @@ class CellComplex:
         return np.array(
             [len(getattr(g, f'n{order}_ids')) for g in self._grains.values()]
         )
+
+    def get_new_random_seeds(self, k: int) -> list:
+        """
+        """
+        special_ids = self.get_special_ids()
+        if self.dim == 2:
+            internal_ids = self.get_internal_ids('e')
+        elif self.dim == 3:
+            internal_ids = self.get_internal_ids('f')
+
+        # Choose k random grain boundaries
+        nonspecial_ids = list(set(internal_ids) - set(special_ids))
+        if nonspecial_ids:
+            sample_ids = random.sample(nonspecial_ids, k=k)
+        else:
+            logging.warning('All GBs are special')
+            return
+        
+        # Choose a point for each chosen grain boundary 
+        new_seeds = []
+        for sample_id in sample_ids:
+            grain_boundary = self._GBs[sample_id]
+            vs = self.get_many('v', grain_boundary.v_ids)
+            xp = [v.x for v in vs]
+            yp = [v.y for v in vs]
+            if self.dim == 3:
+                zp = [v.z for v in vs]
+                new_seed_coord = matutils.get_random_point_on_face(
+                    a=grain_boundary.a,
+                    b=grain_boundary.b,
+                    c=grain_boundary.c,
+                    d=grain_boundary.d,
+                    xp=xp, yp=yp, zp=zp
+                )
+                new_seeds.append(new_seed_coord)
+            else:
+                new_seed_coord = matutils.get_random_point_on_edge(xp, yp)
+                new_seeds.append(new_seed_coord)
+        return new_seeds
