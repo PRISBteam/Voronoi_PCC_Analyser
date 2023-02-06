@@ -1863,13 +1863,36 @@ class CellComplex:
     def reset_special(
             self,
             lower_thrd: float = None,
-            upper_thrd: float = None):
+            upper_thrd: float = None,
+            special_ids: list = [],
+            warn_external: bool = True):
         """
+        two options for reset:
+        1. Specify new thresholds if theta is known
+        2. Specify explicitly the list of special GBs
+        Options cannot be combained together.
+        If special_ids specified, then thresholds are ignored.
         """
-        for cell in self._GBs.values():
-            if not cell.is_external and not cell.theta:
-                raise ValueError('Set theta first!')
-            cell._reset_theta_thrds(lower_thrd, upper_thrd)
+        external_ids = []
+        if special_ids:
+            for cell in self._GBs.values():
+                if cell.id in special_ids:
+                    if cell.is_external:
+                        external_ids.append(cell.id)
+                    else:
+                        cell.set_special(True)
+                else:
+                    cell.set_special(False)
+            if external_ids and warn_external:
+                logging.warning(
+                    f'GBs with id {external_ids}' +
+                    ' are external and cannot be special'
+                )
+        else:        
+            for cell in self._GBs.values():
+                if not cell.is_external and not cell.theta:
+                    raise ValueError('Set theta first!')
+                cell._reset_theta_thrds(lower_thrd, upper_thrd)
         self.set_junction_types()
         if self.dim == 2:
             self.set_three_sided_types()
