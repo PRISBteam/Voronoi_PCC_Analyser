@@ -806,7 +806,8 @@ class Face2D(Face, Grain):
             if '*seed' in line:
                 for i in range(N):
                     row = file.readline().split()
-                    seeds[int(row[0])] = tuple([*map(float, row[1:4])])
+                    seeds[int(row[0])] = tuple([*map(float, row[1:3])])
+                    # seeds[int(row[0])] = tuple([*map(float, row[1:4])])
             if '*ori' in line:
                 oridesc = file.readline().strip() #.rstrip('\n')
                 for i in range(N):
@@ -1493,6 +1494,12 @@ class CellComplex:
         """
         return len(self._polyhedra)
 
+    @property
+    def grainnb(self):
+        """
+        """
+        return len(self._grains)
+
     def _choose_cell_type(self, cell_type: str | int):
         """
         """
@@ -1577,8 +1584,19 @@ class CellComplex:
         """
         2D - edges can be special
         3D - faces can be special
+        only internal GBs may be special
         """
         return [cell.id for cell in self._GBs.values() if cell.is_special]
+
+    def get_nonspecial_internal_ids(self):
+        """
+        internal and external can be special
+        """
+        cell_ids = []
+        for cell in self._GBs.values():
+            if not cell.is_special and not cell.is_external:
+                cell_ids.append(cell.id)
+        return cell_ids
 
     def plot_vertices(
         self,
@@ -2013,22 +2031,62 @@ class CellComplex:
             [len(getattr(g, f'n{order}_ids')) for g in self._grains.values()]
         )
 
-    def get_new_random_seeds(self, k: int) -> list:
+    def get_new_random_seeds(
+        self,
+        k: int,
+        spec_prob: float = 0,
+        exclusion_list: list = [],
+        replace: bool = True
+    ) -> list:
         """
-        """
-        special_ids = self.get_special_ids()
-        if self.dim == 2:
-            internal_ids = self.get_internal_ids('e')
-        elif self.dim == 3:
-            internal_ids = self.get_internal_ids('f')
+        k - the number of new seeds
+        k = k_spec + k_nonspec
 
-        # Choose k random grain boundaries from non-special
-        nonspecial_ids = list(set(internal_ids) - set(special_ids))
-        if len(nonspecial_ids) >= k:
-            sample_ids = random.sample(nonspecial_ids, k=k)
-        else:
-            logging.warning('All GBs are special')
+        k_spec is defined by spec_prob probability for new seed to be on
+        special GB
+
+        exclusion_list - list of GB ids that cannot produce a new seed 
+        """
+        # Get special and non-special GB ids
+        special_ids = self.get_special_ids()
+        nonspecial_ids = self.get_nonspecial_internal_ids()
+
+        # Eliminate GB ids from exclusion list
+        special_ids = list(set(special_ids).difference(exclusion_list))
+        nonspecial_ids = list(set(nonspecial_ids).difference(exclusion_list))
+
+        # Choose randomly k_spec and k_nonspec
+        rng = np.random.default_rng()
+        k_spec = rng.binomial(k, p=spec_prob)
+        k_nonspec = k - k_spec
+
+        # Choose k random grain boundaries from special and non-special
+        if len(special_ids) >= k_spec and len(nonspecial_ids) >= k_nonspec:
+            sample_ids = rng.choice(
+                special_ids, size=k_spec, replace=replace
+            ).tolist()
+            sample_ids += rng.choice(
+                nonspecial_ids, size=k_nonspec, replace=replace
+            ).tolist()
+        elif len(special_ids) < k_spec:
+            logging.exception(
+                f'Not enough special GBs to produce new {k_spec} seeds'
+            )
             return []
+        elif len(nonspecial_ids) < k_nonspec:
+            logging.exception(
+                f'Not enough non-special GBs to produce new {k_nonspec} seeds'
+            )
+            return []
+
+
+#         # Choose k random grain boundaries from non-special
+# #        nonspecial_ids = list(set(internal_ids) - set(special_ids))
+#         if len(nonspecial_ids) >= k:
+#             sample_ids = random.sample(nonspecial_ids, k=k)
+#         else:
+#             logging.warning('All GBs are special')
+#             return []
         
         # Choose a point for each chosen grain boundary 
         new_seeds = []
