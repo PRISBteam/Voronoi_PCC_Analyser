@@ -188,6 +188,15 @@ class Grain(Cell):
         """
         return matutils.dis_angle(self, other)
 
+    @property
+    def size(self) -> float:
+        """
+        """
+        try:
+            return self.measure
+        except AttributeError:
+            return None 
+
 
 class LowerOrderCell(Cell):
     """
@@ -1258,6 +1267,7 @@ class CellComplex:
     def from_tess_file(
         cls,
         file: io.TextIOBase | str,
+        with_cell_size: bool = False,
         with_measures: bool = False,
         with_theta: bool = False,
         theta_file: str = None,
@@ -1265,6 +1275,8 @@ class CellComplex:
         upper_thrd: float = None
     ):
         """
+        with_measures: all measures desired (.stedge, .stface, .stpoly)
+        with_cell_size: only size for cells desired (.stcell)
         """
         start = time.time()
         filename = None
@@ -1334,30 +1346,41 @@ class CellComplex:
                         _polyhedra[p_id].set_external(True)
             file.close()
  
+        if with_cell_size and filename:
+            filename_m = filename.rstrip('.tess') + '.stcell'
+            try:
+                columns = _parse_stfile(filename_m)
+            except:
+                logging.warning(f'Error reading file {filename_m}')
+            if dim == 2:
+                _add_measures(_faces, columns[0])
+            elif dim == 3:
+                _add_measures(_polyhedra, columns[0])
+
         if with_measures and filename:
             filename_m = filename.rstrip('.tess') + '.stedge'
             try:
                 columns = _parse_stfile(filename_m)
                 _add_measures(_edges, columns[0])
             except:
-                logging.error(f'Error reading file {filename_m}')
+                logging.warning(f'Error reading file {filename_m}')
             if with_theta and dim == 2:
                 try:
                     _add_thetas(_edges, columns[1], lower_thrd, upper_thrd)
                 except:
-                    logging.error(f'Error reading theta from file {filename_m}')
+                    logging.warning(f'Error reading theta from file {filename_m}')
 
             filename_m = filename.rstrip('.tess') + '.stface'
             try:
                 columns = _parse_stfile(filename_m)
                 _add_measures(_faces, columns[0])
             except:
-                logging.error(f'Error reading file {filename_m}')
+                logging.warning(f'Error reading file {filename_m}')
             if with_theta and dim == 3:
                 try:
                     _add_thetas(_faces, columns[1], lower_thrd, upper_thrd)
                 except:
-                    logging.error(f'Error reading theta from file {filename_m}')
+                    logging.warning(f'Error reading theta from file {filename_m}')
 
             if dim == 3:
                 filename_m = filename.rstrip('.tess') + '.stpoly'
@@ -1365,7 +1388,7 @@ class CellComplex:
                     columns = _parse_stfile(filename_m)
                     _add_measures(_polyhedra, columns[0])
                 except:
-                    logging.error(f'Error reading file {filename_m}')
+                    logging.warning(f'Error reading file {filename_m}')
         
         elif with_theta and filename or theta_file:
             if theta_file:
@@ -1377,7 +1400,7 @@ class CellComplex:
                     columns = _parse_stfile(filename_m)
                     _add_thetas(_edges, columns[0], lower_thrd, upper_thrd)
                 except:
-                    logging.error(f'Error reading theta from file {filename_m}')
+                    logging.warning(f'Error reading theta from file {filename_m}')
             elif dim == 3:
                 if not theta_file:
                     filename_m = filename.rstrip('.tess') + '.stface'
@@ -1385,7 +1408,7 @@ class CellComplex:
                     columns = _parse_stfile(filename_m)
                     _add_thetas(_faces, columns[0], lower_thrd, upper_thrd)
                 except:
-                    logging.error(f'Error reading theta from file {filename_m}')
+                    logging.warning(f'Error reading theta from file {filename_m}')
 
         if dim ==2:
             cellcomplex = cls(dim, _vertices, _edges, _faces)
@@ -1999,13 +2022,13 @@ class CellComplex:
         elif self.dim == 3:
             internal_ids = self.get_internal_ids('f')
 
-        # Choose k random grain boundaries
+        # Choose k random grain boundaries from non-special
         nonspecial_ids = list(set(internal_ids) - set(special_ids))
-        if nonspecial_ids:
+        if len(nonspecial_ids) >= k:
             sample_ids = random.sample(nonspecial_ids, k=k)
         else:
             logging.warning('All GBs are special')
-            return
+            return []
         
         # Choose a point for each chosen grain boundary 
         new_seeds = []
