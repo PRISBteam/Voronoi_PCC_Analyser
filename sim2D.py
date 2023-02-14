@@ -28,7 +28,7 @@ def create_new_complex(
     """
     """
     seeds_filename = os.path.join(wdir, 'seeds.txt')
-    output_file = wdir + '/' + f'n{n}-id{neper_id}-{dim}D.tess'
+    output_file =os.path.join(wdir, f'n{n}-id{neper_id}-{dim}D.tess') # wdir + '/' + f'n{n}-id{neper_id}-{dim}D.tess'
 
     com_line_list = [
         'neper', '-T', '-n', str(n),
@@ -47,6 +47,7 @@ def create_new_complex(
 NUMBER_OF_STEPS = 10
 NUMBER_OF_NEW_SEEDS = [1 for _ in range(NUMBER_OF_STEPS)]
 SPEC_PROB = 0
+MAX_VOLUME_FRACTION = 0.9
 
 def main():
     """
@@ -67,7 +68,7 @@ def main():
     wdir = args.dir
     
     initial_complex = base.CellComplex.from_tess_file(args.tessfile, with_cell_size=True)
-    # extract_seeds(initial_complex, wdir)
+    extract_seeds(initial_complex, wdir)
     n0 = initial_complex.grainnb
     dim = initial_complex.dim
 
@@ -82,15 +83,20 @@ def main():
 
     neper_id = args.id
     output_file = wdir + '/' + f'n{n0}-id{neper_id}-{dim}D.tess'
-    initial_complex.plot_edges()
+    
+    
+    e_spec = initial_complex.get_special_ids()
+    ax = initial_complex.plot_edges(color='b')
+    ax = initial_complex.plot_edges(e_spec, color='g', ax=ax)
     plt.savefig(output_file.rstrip('.tess') + '.png')
+    plt.close()
     #n0 = args.n
     #dim = args.dim
     
     # seeds_ini = wdir + '/' + 'seeds_initial.txt'
     
     
-    seeds_filename = wdir + '/' + 'seeds.txt'
+    seeds_filename = os.path.join(wdir, 'seeds.txt')
 
     # shutil.copy(seeds_ini, seeds_filename) 
 
@@ -99,14 +105,20 @@ def main():
 
     n = n0
     m = 0
+    c = initial_complex
 
     # for m in tqdm(range(15)):
     # while True:
 
     for step_idx in range(NUMBER_OF_STEPS):
         #TODO Change initial step 
-        n += NUMBER_OF_NEW_SEEDS[step_idx]
-        output_file = wdir + '/' + f'n{n}-id{neper_id}-{dim}D.tess'
+        k = NUMBER_OF_NEW_SEEDS[step_idx]
+        new_seeds = np.array(c.get_new_random_seeds(k=k, spec_prob=SPEC_PROB))
+        with open(seeds_filename, 'a') as file:
+            np.savetxt(file, new_seeds, fmt='%.12f')
+        
+        n += k
+        output_file =os.path.join(wdir, f'n{n}-id{neper_id}-{dim}D.tess')
         # com_line_list = ['neper', '-T', '-n', str(n), '-id', str(neper_id), '-dim', str(dim), '-morphooptiini', f'coo:file({seeds_filename})', '-o', output_file.rstrip('.tess')]
         # run = subprocess.run(com_line_list, capture_output=True)
         # c = base.CellComplex.from_tess_file(output_file)
@@ -126,8 +138,7 @@ def main():
                 [c._grains[g_id].size for g_id in range(n0 + 1, n + 1)]
             )
             new_cells_volume_fraction = new_cells_size / total_size
-
-
+            
 
         e_int = c.get_internal_ids('e')
         e_ext = c.get_external_ids('e')
@@ -141,9 +152,9 @@ def main():
         e_spec = c.get_special_ids()
         
         e_sel = list(set(e_int) - set(e_spec))
-        if e_sel:
-            e_id_sampled = random.sample(e_sel, 1)[0]
-        else:
+        # if e_sel:
+        #     e_id_sampled = random.sample(e_sel, 1)[0]
+        if not e_sel:
             print('All GB are special')
             ax = c.plot_edges(e_spec, color='g')
             ax = c.plot_edges(e_ext, color='k', ax=ax)
@@ -189,8 +200,7 @@ def main():
         else:
             w = -9999
 
-        k = 1
-        new_seeds = np.array(c.get_new_random_seeds(k=k, spec_prob=0.9))
+
         ax = c.plot_edges(e_sel, color='b')
         if e_spec:
             ax = c.plot_edges(e_spec, color='g', ax=ax)
@@ -206,11 +216,10 @@ def main():
             #     file.write('%.12f %.12f\n' % (new_seed_coord[0], new_seed_coord[1]))
         print('Total grains:', n, 'New grains:', n - n0)
         print('New grain fraction:', G_frac)
+        print('New grains volume fraction:', new_cells_volume_fraction)
         print('Special GB fraction:', GB_frac)
-        print(new_cells_volume_fraction)
         print(f'D0 = {D0}, D1 = {D1}, D2 = {D2}, w = {w}\n')
 
-        #m += k
 
     print('\nTotal time:', time.time() - st, 's')
 
