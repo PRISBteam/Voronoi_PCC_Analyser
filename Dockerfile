@@ -11,7 +11,7 @@ COPY ./requirements.test.txt ./requirements.txt
 COPY ./visual.py ./visual.py
 RUN python -m pip install --upgrade pip && pip install -r requirements.txt
 EXPOSE 5006
-CMD ["bokeh", "serve", "visual.py"]
+CMD ["bokeh", "serve", "visual_test.py"]
 # RUN tar -xf v4.5.0.tar.gz
 # WORKDIR /opt/neper-4.5.0/src/build
 # RUN cmake .. && make -j && make installs
