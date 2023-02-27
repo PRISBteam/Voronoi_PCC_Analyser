@@ -1,5 +1,7 @@
 .vscode/
 Data/
+figures_data/
+test_bugs/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
