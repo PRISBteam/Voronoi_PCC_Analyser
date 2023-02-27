@@ -8,7 +8,7 @@ RUN ./build-image/initial-setup.sh
 # RUN neper -T -id 42 -n 42 -dim 2
 
 COPY ./requirements.test.txt ./requirements.txt
-COPY ./visual.py ./visual.py
+COPY ./visual_test.py ./visual_test.py
 RUN python -m pip install --upgrade pip && pip install -r requirements.txt
 EXPOSE 5006
 CMD ["bokeh", "serve", "visual_test.py"]
