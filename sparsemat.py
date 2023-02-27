@@ -152,11 +152,10 @@ def parse_tess_file(filename) -> Tuple:
                     v_ids = []
                     for k in range(2, int(row[1]) + 2):
                         v_ids.append(int(row[k]))
-                    if dim == 3:
-                        face = base.Face3D(f_id, v_ids)
-                    else:
+                    if dim == 2:
                         face = base.Face2D(f_id, v_ids)
-                    
+                    else:
+                        face = base.Face3D(f_id, v_ids)                    
                     row = file.readline().split()
                     e_ids = []
                     for k in range(1, int(row[0]) + 1):
