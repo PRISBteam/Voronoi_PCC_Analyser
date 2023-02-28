@@ -3,6 +3,7 @@ Bokeh https://docs.bokeh.org/en/latest/docs/first_steps/first_steps_9.html
 '''
 import io
 import os
+import subprocess
 from base64 import b64decode
 
 import numpy as np
@@ -22,6 +23,20 @@ def extract_seeds(complex: CellComplex, seeds_pathname: str):
     N = complex.grainnb
     seeds = [complex._grains[g_id].seed for g_id in range(1, N + 1)]
     np.savetxt(seeds_pathname, seeds, fmt='%.12f')
+
+
+def get_xy_for_edges(complex: CellComplex, e_ids: list):
+    """
+    """
+    xs = []
+    ys = []
+
+    for e in complex.get_many('e', e_ids):
+        xs.append([v.x for v in complex.get_many('v', e.v_ids)])
+        ys.append([v.y for v in complex.get_many('v', e.v_ids)])
+
+    return xs, ys
+
 
 # Choose working directory (TextInput)
 def check_wdir(attrname, old, new):
@@ -48,11 +63,28 @@ def load_initial_complex(attrname, old, new):
     file = io.StringIO(b64decode(new).decode(encoding='utf-8'))
     # create CellComplex example
     global initial_complex
-    initial_complex = CellComplex.from_tess_file(file)
-    # save initial seeds to a file
-    seeds_pathname = os.path.join(wdir, 'seeds.txt')
-    extract_seeds(initial_complex, seeds_pathname)
-    div_message.text = f'Complex loaded! Seeds saved: {seeds_pathname}'
+    global pairs_with_special_GB
+    try:
+        initial_complex = CellComplex.from_tess_file(file)
+            # save initial seeds to a file
+        seeds_pathname = os.path.join(wdir, 'seeds.txt')
+        extract_seeds(initial_complex, seeds_pathname)
+        pairs_with_special_GB = []
+        div_message.text = f'Complex loaded! Seeds saved: {seeds_pathname}'
+    except:
+        div_message.text = f'Complex not loaded! Check .tess file!'
+
+    if initial_complex.dim == 2:
+        ext_ids = initial_complex.get_external_ids('e')
+        int_ids = initial_complex.get_internal_ids('e')
+        xs, ys = get_xy_for_edges(initial_complex, ext_ids)
+        complex0_ext.data = dict(x=xs, y=ys)
+        complex_ext.data = dict(x=xs, y=ys)
+        xs, ys = get_xy_for_edges(initial_complex, int_ids)
+        complex0_int.data = dict(x=xs, y=ys)
+        complex_int.data = dict(x=xs, y=ys)
+        # reset special GB on figure
+        complex0_spec.data = dict(x=[], y=[])
 
 input_complex = FileInput(multiple=False)
 input_complex.on_change('value', load_initial_complex)
@@ -95,17 +127,109 @@ def load_special(attrname, old, new):
         special_ids = np.loadtxt(file, dtype=int).tolist()
         # set special
         initial_complex.reset_special(special_ids=special_ids)
+        # find pairs of grains with special GB
+        for special_id in initial_complex.get_special_ids():
+            pair = set(initial_complex._GBs[special_id].incident_ids)
+            pairs_with_special_GB.append(pair)
+        # Success message
         div_message.text = f'Special GBs set!'
     except NameError:
         div_message.text = f'Load complex first!'
     except:
         div_message.text = f'Check file with special GB ids!'
+    
+    if initial_complex.dim == 2:
+        spec_ids = initial_complex.get_special_ids()
+        xs, ys = get_xy_for_edges(initial_complex, spec_ids)
+        complex0_spec.data = dict(x=xs, y=ys)
+        complex_spec.data = dict(x=xs, y=ys)
 
 input_special = FileInput(multiple=False)
 input_special.on_change('value', load_special)
 
 
+def create_new_complex(
+    n: int,
+    neper_id: int,
+    dim: int
+):
+    """
+    """
+    wdir = input_wdir.value
+    seeds_filename = os.path.join(wdir, 'seeds.txt')
+    output_file = os.path.join(wdir, f'n{n}-id{neper_id}-{dim}D.tess')
+
+    com_line_list = [
+        'neper', '-T', '-n', str(n),
+        '-id', str(neper_id), '-dim', str(dim),
+        '-morphooptiini', f'coo:file({seeds_filename})',
+        '-statcell', 'size',
+        '-o', output_file.rstrip('.tess')
+    ]
+      
+    run = subprocess.run(com_line_list, capture_output=True)
+    # print(run.stdout)
+    cell_complex = CellComplex.from_tess_file(
+        output_file, with_cell_size=True)
+    return cell_complex
+
+
+def run_simulation(event):
+    """
+    """
+    wdir = input_wdir.value
+    seeds_filename = os.path.join(wdir, 'seeds.txt')
+    cell_complex = initial_complex
+    n0 = cell_complex.grainnb
+    n = n0
+    k = spinner_new_seeds.value # TODO: k may be different for each step
+    for step_idx in range(spinner_steps.value):
+        # Generate k new random seeds
+        new_seeds = np.array(
+            cell_complex.get_new_random_seeds(
+                k=k, spec_prob=spinner_spec_prob.value
+            )
+        )
+        # Append new seeds to seeds.txt
+        with open(seeds_filename, 'a') as file:
+            np.savetxt(file, new_seeds, fmt='%.12f')
+        
+        # Plot new seeds
+        xs, ys = new_seeds[:, 0].tolist(), new_seeds[:, 1].tolist()
+        complex_new_seeds = dict(x=xs, y=ys)
+        
+        # Generate new complex from seeds.txt
+        n += k
+        cell_complex = create_new_complex(
+            n, neper_id=1, dim=initial_complex.dim
+        )
+        
+        # Set special GBs from initial complex
+        for cell in cell_complex._GBs.values():
+            if set(cell.incident_ids) in pairs_with_special_GB:
+                    if not cell.is_external:
+                        cell.set_special(True)
+        # Set special GBs for new grains
+        for grain_id in range(n0 + 1, n + 1):
+            gb_ids = cell_complex._grains[grain_id].gb_ids
+            for gb_id in gb_ids:
+                cell = cell_complex._GBs[gb_id]
+                if not cell.is_external:
+                    cell.set_special(True)
+        # Plot new complex
+        if initial_complex.dim == 2:
+            ext_ids = cell_complex.get_external_ids('e')
+            int_ids = cell_complex.get_internal_ids('e')
+            spec_ids = cell_complex.get_special_ids()
+            xs, ys = get_xy_for_edges(cell_complex, ext_ids)
+            complex_ext.data = dict(x=xs, y=ys)
+            xs, ys = get_xy_for_edges(cell_complex, int_ids)
+            complex_int.data = dict(x=xs, y=ys)
+            xs, ys = get_xy_for_edges(cell_complex, spec_ids)
+            complex_spec.data = dict(x=xs, y=ys)
+
 button_start = Button(label="Start simulation", width=200)
+button_start.on_click(run_simulation)
 
 div_load_complex = Div(
     text="Load initial complex",
@@ -193,6 +317,45 @@ div_params = Div(
     #width=200#, height=30
 )
 
+
+
+complex0_ext = ColumnDataSource(data=dict(x=[], y=[]))
+complex0_int = ColumnDataSource(data=dict(x=[], y=[]))
+complex0_spec = ColumnDataSource(data=dict(x=[], y=[]))
+
+plot_init = figure(
+    title="Initial Complex", x_axis_label='x', y_axis_label='y',
+    x_range=(-0.1, 1.1), y_range=(-0.1, 1.1),
+    width=500, height=500
+)
+plot_init.multi_line('x', 'y', source=complex0_ext, color='black')
+plot_init.multi_line('x', 'y', source=complex0_int, color='blue')
+plot_init.multi_line('x', 'y', source=complex0_spec, color='red')
+
+
+complex_ext = ColumnDataSource(data=dict(x=[], y=[]))
+complex_int = ColumnDataSource(data=dict(x=[], y=[]))
+complex_spec = ColumnDataSource(data=dict(x=[], y=[]))
+complex_new_seeds = ColumnDataSource(data=dict(x=[], y=[]))
+
+plot_simul = figure(
+    title="Final Complex", x_axis_label='x', y_axis_label='y',
+    x_range=(-0.1, 1.1), y_range=(-0.1, 1.1),
+    width=500, height=500
+)
+plot_simul.multi_line('x', 'y', source=complex_ext, color='black')
+plot_simul.multi_line('x', 'y', source=complex_int, color='blue')
+plot_simul.multi_line('x', 'y', source=complex_spec, color='red')
+plot_simul.circle('x', 'y', source=complex_new_seeds)
+
+w_vs_N = ColumnDataSource(data=dict(x=[], y=[]))
+
+plot_wN = figure(
+    title="w vs N", x_axis_label='x', y_axis_label='y',
+    x_range=(-0.1, 1.1), y_range=(-0.1, 1.1),
+    width=500, height=500
+)
+
 # layout = layout(
 #     [
 #         [input_wdir],
@@ -228,7 +391,12 @@ col3 = column(
         button_start
     ]
 )
-layout = layout([[col1, col2, col3]])
+layout = layout(
+    [
+        [col1, col2, col3],
+        [plot_init, plot_simul, plot_wN]
+    ]
+)
 
 curdoc().add_root(layout)
 
