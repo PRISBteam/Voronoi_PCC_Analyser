@@ -448,7 +448,8 @@ col2 = column(
 col3 = column(
     [
         div_params,
-        button_start
+        button_start,
+        button_step
     ]
 )
 layout = layout(
