@@ -88,6 +88,7 @@ def load_initial_complex(attrname, old, new):
         # reset special GB on figure
         complex0_spec.data = dict(x=[], y=[])
         complex_spec.data = dict(x=[], y=[])
+        complex_new_seeds.data = dict(x=[], y=[])
 
 input_complex = FileInput(multiple=False)
 input_complex.on_change('value', load_initial_complex)
