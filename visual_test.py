@@ -196,7 +196,7 @@ def run_simulation(event):
         
         # Plot new seeds
         xs, ys = new_seeds[:, 0].tolist(), new_seeds[:, 1].tolist()
-        complex_new_seeds = dict(x=xs, y=ys)
+        complex_new_seeds.data = dict(x=xs, y=ys)
         
         # Generate new complex from seeds.txt
         n += k
@@ -346,7 +346,7 @@ plot_simul = figure(
 plot_simul.multi_line('x', 'y', source=complex_ext, color='black')
 plot_simul.multi_line('x', 'y', source=complex_int, color='blue')
 plot_simul.multi_line('x', 'y', source=complex_spec, color='red')
-plot_simul.circle('x', 'y', source=complex_new_seeds)
+plot_simul.circle('x', 'y', source=complex_new_seeds, size=20, color="navy", alpha=0.5)
 
 w_vs_N = ColumnDataSource(data=dict(x=[], y=[]))
 
