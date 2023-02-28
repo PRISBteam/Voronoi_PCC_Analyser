@@ -857,6 +857,10 @@ class Face3D(Face, GrainBoundary):
         super().__init__(id, v_ids)
         self.is_special = False
 
+    @property
+    def gb_ids(self):
+        return self.e_ids
+
 
 class Poly(Grain):
     """
@@ -984,7 +988,11 @@ class Poly(Grain):
         try:
             return self.measure
         except AttributeError:
-            return None 
+            return None
+    
+    @property
+    def gb_ids(self):
+        return self.f_ids
 
 
 class TripleJunctionSet:
@@ -1913,6 +1921,9 @@ class CellComplex:
         2. Specify explicitly the list of special GBs
         Options cannot be combained together.
         If special_ids specified, then thresholds are ignored.
+
+        FIXME: for special_ids more effective way is to iterate
+        over special_ids instead of all GBs 
         """
         external_ids = []
         if special_ids:
