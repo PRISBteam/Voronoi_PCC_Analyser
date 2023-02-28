@@ -68,7 +68,7 @@ def load_initial_complex(attrname, old, new):
     global NUMBER_OF_GRAINS
     try:
         initial_complex = CellComplex.from_tess_file(file)
-            # save initial seeds to a file
+        # save initial seeds to a file
         seeds_pathname = os.path.join(wdir, 'seeds.txt')
         extract_seeds(initial_complex, seeds_pathname)
         pairs_with_special_GB = []
@@ -237,7 +237,8 @@ button_start.on_click(run_simulation)
 def run_simulation_step(event):
     """
     """
-    global cell_complex  
+    global cell_complex
+    global NUMBER_OF_GRAINS
     wdir = input_wdir.value
     seeds_filename = os.path.join(wdir, 'seeds.txt')
     k = spinner_new_seeds.value # TODO: k may be different for each step
