@@ -255,8 +255,12 @@ def run_simulation_step(event):
         np.savetxt(file, new_seeds, fmt='%.12f')
     
     # Plot new seeds
-    xs, ys = new_seeds[:, 0].tolist(), new_seeds[:, 1].tolist()
-    complex_new_seeds.data = dict(x=xs, y=ys)
+    try:
+        xs, ys = new_seeds[:, 0].tolist(), new_seeds[:, 1].tolist()
+        complex_new_seeds.data = dict(x=xs, y=ys)
+    except IndexError:
+        div_message.text = f'No new seeds!'
+
     
     # Generate new complex from seeds.txt
     NUMBER_OF_GRAINS += k
