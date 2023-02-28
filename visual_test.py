@@ -64,12 +64,16 @@ def load_initial_complex(attrname, old, new):
     # create CellComplex example
     global initial_complex
     global pairs_with_special_GB
+    global n0
+    global n
     try:
         initial_complex = CellComplex.from_tess_file(file)
             # save initial seeds to a file
         seeds_pathname = os.path.join(wdir, 'seeds.txt')
         extract_seeds(initial_complex, seeds_pathname)
         pairs_with_special_GB = []
+        n0 = initial_complex.grainnb
+        n = n0
         div_message.text = f'Complex loaded! Seeds saved: {seeds_pathname}'
     except:
         div_message.text = f'Complex not loaded! Check .tess file!'
@@ -180,7 +184,6 @@ def run_simulation(event):
     wdir = input_wdir.value
     seeds_filename = os.path.join(wdir, 'seeds.txt')
     cell_complex = initial_complex
-    n0 = cell_complex.grainnb
     n = n0
     k = spinner_new_seeds.value # TODO: k may be different for each step
     for step_idx in range(spinner_steps.value):
@@ -230,6 +233,63 @@ def run_simulation(event):
 
 button_start = Button(label="Start simulation", width=200)
 button_start.on_click(run_simulation)
+
+def run_simulation_step(event):
+    """
+    """
+    global cell_complex  
+    wdir = input_wdir.value
+    seeds_filename = os.path.join(wdir, 'seeds.txt')
+    k = spinner_new_seeds.value # TODO: k may be different for each step
+    if n == n0:
+        cell_complex = initial_complex
+    # Generate k new random seeds
+    new_seeds = np.array(
+        cell_complex.get_new_random_seeds(
+            k=k, spec_prob=spinner_spec_prob.value
+        )
+    )
+    # Append new seeds to seeds.txt
+    with open(seeds_filename, 'a') as file:
+        np.savetxt(file, new_seeds, fmt='%.12f')
+    
+    # Plot new seeds
+    xs, ys = new_seeds[:, 0].tolist(), new_seeds[:, 1].tolist()
+    complex_new_seeds.data = dict(x=xs, y=ys)
+    
+    # Generate new complex from seeds.txt
+    n += k
+    cell_complex = create_new_complex(
+        n, neper_id=1, dim=initial_complex.dim
+    )
+    
+    # Set special GBs from initial complex
+    for cell in cell_complex._GBs.values():
+        if set(cell.incident_ids) in pairs_with_special_GB:
+                if not cell.is_external:
+                    cell.set_special(True)
+    # Set special GBs for new grains
+    for grain_id in range(n0 + 1, n + 1):
+        gb_ids = cell_complex._grains[grain_id].gb_ids
+        for gb_id in gb_ids:
+            cell = cell_complex._GBs[gb_id]
+            if not cell.is_external:
+                cell.set_special(True)
+    # Plot new complex
+    if initial_complex.dim == 2:
+        ext_ids = cell_complex.get_external_ids('e')
+        int_ids = cell_complex.get_internal_ids('e')
+        spec_ids = cell_complex.get_special_ids()
+        xs, ys = get_xy_for_edges(cell_complex, ext_ids)
+        complex_ext.data = dict(x=xs, y=ys)
+        xs, ys = get_xy_for_edges(cell_complex, int_ids)
+        complex_int.data = dict(x=xs, y=ys)
+        xs, ys = get_xy_for_edges(cell_complex, spec_ids)
+        complex_spec.data = dict(x=xs, y=ys)
+
+button_step = Button(label="Simulation step by step", width=200)
+button_step.on_click(run_simulation_step)
+
 
 div_load_complex = Div(
     text="Load initial complex",
