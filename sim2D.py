@@ -1,5 +1,4 @@
 from matgen import base
-from sparsemat import extract_seeds
 
 import os
 import subprocess
