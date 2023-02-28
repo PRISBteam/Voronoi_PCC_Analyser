@@ -64,7 +64,6 @@ def load_initial_complex(attrname, old, new):
     # create CellComplex example
     global initial_complex
     global pairs_with_special_GB
-    global n0
     global NUMBER_OF_GRAINS
     try:
         initial_complex = CellComplex.from_tess_file(file)
@@ -72,8 +71,7 @@ def load_initial_complex(attrname, old, new):
         seeds_pathname = os.path.join(wdir, 'seeds.txt')
         extract_seeds(initial_complex, seeds_pathname)
         pairs_with_special_GB = []
-        n0 = initial_complex.grainnb
-        NUMBER_OF_GRAINS = n0
+        NUMBER_OF_GRAINS = initial_complex.grainnb
         div_message.text = f'Complex loaded! Seeds saved: {seeds_pathname}'
     except:
         div_message.text = f'Complex not loaded! Check .tess file!'
@@ -89,6 +87,7 @@ def load_initial_complex(attrname, old, new):
         complex_int.data = dict(x=xs, y=ys)
         # reset special GB on figure
         complex0_spec.data = dict(x=[], y=[])
+        complex_spec.data = dict(x=[], y=[])
 
 input_complex = FileInput(multiple=False)
 input_complex.on_change('value', load_initial_complex)
@@ -184,6 +183,7 @@ def run_simulation(event):
     wdir = input_wdir.value
     seeds_filename = os.path.join(wdir, 'seeds.txt')
     cell_complex = initial_complex
+    n0 = initial_complex.grainnb 
     n = n0
     k = spinner_new_seeds.value # TODO: k may be different for each step
     for step_idx in range(spinner_steps.value):
@@ -242,7 +242,7 @@ def run_simulation_step(event):
     wdir = input_wdir.value
     seeds_filename = os.path.join(wdir, 'seeds.txt')
     k = spinner_new_seeds.value # TODO: k may be different for each step
-    if NUMBER_OF_GRAINS == n0:
+    if NUMBER_OF_GRAINS == initial_complex.grainnb:
         cell_complex = initial_complex
     # Generate k new random seeds
     new_seeds = np.array(
@@ -270,7 +270,7 @@ def run_simulation_step(event):
                 if not cell.is_external:
                     cell.set_special(True)
     # Set special GBs for new grains
-    for grain_id in range(n0 + 1, NUMBER_OF_GRAINS + 1):
+    for grain_id in range(initial_complex.grainnb + 1, NUMBER_OF_GRAINS + 1):
         gb_ids = cell_complex._grains[grain_id].gb_ids
         for gb_id in gb_ids:
             cell = cell_complex._GBs[gb_id]
