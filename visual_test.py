@@ -204,6 +204,7 @@ def run_simulation(event):
         
         # Generate new complex from seeds.txt
         n += k
+        div_progress.text = f'Progress {n}/{n0 + spinner_steps.value}'
         cell_complex = create_new_complex(
             n, neper_id=1, dim=initial_complex.dim
         )
@@ -383,6 +384,11 @@ div_params = Div(
     #width=200#, height=30
 )
 
+div_progress = Div(
+    text=''
+    #width=200#, height=30
+)
+
 
 
 complex0_ext = ColumnDataSource(data=dict(x=[], y=[]))
@@ -455,6 +461,7 @@ col3 = column(
     [
         div_params,
         button_start,
+        div_progress,
         button_step
     ]
 )
