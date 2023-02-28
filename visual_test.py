@@ -65,7 +65,7 @@ def load_initial_complex(attrname, old, new):
     global initial_complex
     global pairs_with_special_GB
     global n0
-    global n
+    global N
     try:
         initial_complex = CellComplex.from_tess_file(file)
             # save initial seeds to a file
@@ -73,7 +73,7 @@ def load_initial_complex(attrname, old, new):
         extract_seeds(initial_complex, seeds_pathname)
         pairs_with_special_GB = []
         n0 = initial_complex.grainnb
-        n = n0
+        N = n0
         div_message.text = f'Complex loaded! Seeds saved: {seeds_pathname}'
     except:
         div_message.text = f'Complex not loaded! Check .tess file!'
@@ -241,7 +241,7 @@ def run_simulation_step(event):
     wdir = input_wdir.value
     seeds_filename = os.path.join(wdir, 'seeds.txt')
     k = spinner_new_seeds.value # TODO: k may be different for each step
-    if n == n0:
+    if N == n0:
         cell_complex = initial_complex
     # Generate k new random seeds
     new_seeds = np.array(
@@ -258,9 +258,9 @@ def run_simulation_step(event):
     complex_new_seeds.data = dict(x=xs, y=ys)
     
     # Generate new complex from seeds.txt
-    n += k
+    N += k
     cell_complex = create_new_complex(
-        n, neper_id=1, dim=initial_complex.dim
+        N, neper_id=1, dim=initial_complex.dim
     )
     
     # Set special GBs from initial complex
@@ -269,7 +269,7 @@ def run_simulation_step(event):
                 if not cell.is_external:
                     cell.set_special(True)
     # Set special GBs for new grains
-    for grain_id in range(n0 + 1, n + 1):
+    for grain_id in range(n0 + 1, N + 1):
         gb_ids = cell_complex._grains[grain_id].gb_ids
         for gb_id in gb_ids:
             cell = cell_complex._GBs[gb_id]
