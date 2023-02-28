@@ -781,6 +781,10 @@ class Face2D(Face, Grain):
         self.ori = None
         self.oridesc = None
 
+    @property
+    def gb_ids(self):
+        return self.e_ids
+
     @classmethod
     def from_tess_file(
         cls,
@@ -856,10 +860,6 @@ class Face3D(Face, GrainBoundary):
     def __init__(self, id: int, v_ids: list):
         super().__init__(id, v_ids)
         self.is_special = False
-
-    @property
-    def gb_ids(self):
-        return self.e_ids
 
 
 class Poly(Grain):
