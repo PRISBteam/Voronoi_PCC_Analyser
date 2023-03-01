@@ -2,13 +2,14 @@
 FROM python:3.11
 WORKDIR /app
 
-COPY ./build-image/ ./build-image/
+COPY . .
+# COPY ./build-image/ ./build-image/
 RUN chmod +x ./build-image/initial-setup.sh
 RUN ./build-image/initial-setup.sh
 # RUN neper -T -id 42 -n 42 -dim 2
 
-COPY ./requirements.test.txt ./requirements.txt
-COPY ./visual_test.py ./visual_test.py
+# COPY ./requirements.txt ./requirements.txt
+# COPY . .
 RUN python -m pip install --upgrade pip && pip install -r requirements.txt
 EXPOSE 5006
 CMD ["bokeh", "serve", "visual_test.py"]

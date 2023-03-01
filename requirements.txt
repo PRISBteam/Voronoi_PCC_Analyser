@@ -4,3 +4,4 @@ scipy==1.7.3
 tqdm
 jupyterlab
 matplotlib
+bokeh
