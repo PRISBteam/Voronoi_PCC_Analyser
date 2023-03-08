@@ -27,7 +27,7 @@ def create_new_complex(
     """
     """
     seeds_filename = os.path.join(wdir, 'seeds.txt')
-    output_file =os.path.join(wdir, f'n{n}-id{neper_id}-{dim}D.tess') # wdir + '/' + f'n{n}-id{neper_id}-{dim}D.tess'
+    output_file = os.path.join(wdir, f'n{n}-id{neper_id}-{dim}D.tess') # wdir + '/' + f'n{n}-id{neper_id}-{dim}D.tess'
 
     com_line_list = [
         'neper', '-T', '-n', str(n),
