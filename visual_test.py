@@ -198,9 +198,9 @@ def run_simulation(event):
         with open(seeds_filename, 'a') as file:
             np.savetxt(file, new_seeds, fmt='%.12f')
         
-        # Plot new seeds
-        xs, ys = new_seeds[:, 0].tolist(), new_seeds[:, 1].tolist()
-        complex_new_seeds.data = dict(x=xs, y=ys)
+        # # Plot new seeds
+        # xs, ys = new_seeds[:, 0].tolist(), new_seeds[:, 1].tolist()
+        # complex_new_seeds.data = dict(x=xs, y=ys)
         
         # Generate new complex from seeds.txt
         n += k
@@ -221,17 +221,17 @@ def run_simulation(event):
                 cell = cell_complex._GBs[gb_id]
                 if not cell.is_external:
                     cell.set_special(True)
-        # Plot new complex
-        if initial_complex.dim == 2:
-            ext_ids = cell_complex.get_external_ids('e')
-            int_ids = cell_complex.get_internal_ids('e')
-            spec_ids = cell_complex.get_special_ids()
-            xs, ys = get_xy_for_edges(cell_complex, ext_ids)
-            complex_ext.data = dict(x=xs, y=ys)
-            xs, ys = get_xy_for_edges(cell_complex, int_ids)
-            complex_int.data = dict(x=xs, y=ys)
-            xs, ys = get_xy_for_edges(cell_complex, spec_ids)
-            complex_spec.data = dict(x=xs, y=ys)
+    # Plot final complex
+    if initial_complex.dim == 2:
+        ext_ids = cell_complex.get_external_ids('e')
+        int_ids = cell_complex.get_internal_ids('e')
+        spec_ids = cell_complex.get_special_ids()
+        xs, ys = get_xy_for_edges(cell_complex, ext_ids)
+        complex_ext.data = dict(x=xs, y=ys)
+        xs, ys = get_xy_for_edges(cell_complex, int_ids)
+        complex_int.data = dict(x=xs, y=ys)
+        xs, ys = get_xy_for_edges(cell_complex, spec_ids)
+        complex_spec.data = dict(x=xs, y=ys)
 
 button_start = Button(label="Start simulation", width=200)
 button_start.on_click(run_simulation)
