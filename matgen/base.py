@@ -295,6 +295,7 @@ class GrainBoundary(LowerOrderCell):
         super().__init__(id)
         self.is_special = False
         self.theta = None
+        self.gb_index = None
 
     def set_special(self, is_special: bool = True):
         """
@@ -365,6 +366,28 @@ class GrainBoundary(LowerOrderCell):
             self.set_special(False)
         elif self.theta == -1:
             self.theta = None
+
+    def set_gb_index(self, gb_index: int):
+        """
+        gb_index equals ???
+        check consistency: external has type None
+        """
+        if not self.is_external:
+            self.gb_index = gb_index
+        elif self.is_external:
+            raise ValueError(
+                'External GB cannot have a GB index other than None'
+            )
+
+    @property
+    def new_seed_prob(self):
+        """
+        without coefficient
+        """
+        if self.is_external:
+            return 0
+        else:
+            return (2 * self.gb_index) / (3 * len(self.n_ids))
 
     
 def _create_ax(dim: int = 2, figsize: Tuple = (8,8)) -> Axes:
@@ -616,6 +639,10 @@ class Edge2D(Edge, GrainBoundary):
         super().__init__(id, v_ids)
         self.is_special = False
 
+    @property
+    def tj_ids(self):
+        return self.v_ids
+
 
 class Edge3D(Edge, TripleJunction):
     """
@@ -860,6 +887,10 @@ class Face3D(Face, GrainBoundary):
     def __init__(self, id: int, v_ids: list):
         super().__init__(id, v_ids)
         self.is_special = False
+
+    @property
+    def tj_ids(self):
+        return self.e_ids
 
 
 class Poly(Grain):
@@ -1871,6 +1902,20 @@ class CellComplex:
                         )
                     e.set_junction_type(e.n_spec_faces)
 
+    def set_gb_indexes(self):
+        """
+        """
+        for gb in self._GBs.values():
+            if not gb.is_external:
+                counter = {1: 0, 2: 0, 3: 0}
+                for tj_id in gb.tj_ids:
+                    j_type = self._TJs[tj_id].junction_type
+                    # j_type may be None, 0, 1, 2, 3
+                    if j_type:
+                        counter[j_type] += 1
+                gb_index = counter[1] + 2*counter[2] + 3*counter[3]
+                gb.set_gb_index(gb_index=gb_index)
+
     def set_three_sided_types(self) -> None:
         """
         T_{i + j}
@@ -1913,7 +1958,7 @@ class CellComplex:
             self,
             lower_thrd: float = None,
             upper_thrd: float = None,
-            special_ids: list = [],
+            special_ids: list = None,
             warn_external: bool = True):
         """
         two options for reset:
@@ -1921,12 +1966,11 @@ class CellComplex:
         2. Specify explicitly the list of special GBs
         Options cannot be combained together.
         If special_ids specified, then thresholds are ignored.
-
-        FIXME: for special_ids more effective way is to iterate
-        over special_ids instead of all GBs 
+        GBs that are in special_ids becomes special, that aren't
+        becomes not special. 
         """
         external_ids = []
-        if special_ids:
+        if special_ids is not None:
             for cell in self._GBs.values():
                 if cell.id in special_ids:
                     if cell.is_external:
@@ -1946,6 +1990,7 @@ class CellComplex:
                     raise ValueError('Set theta first!')
                 cell._reset_theta_thrds(lower_thrd, upper_thrd)
         self.set_junction_types()
+        self.set_gb_indexes()
         if self.dim == 2:
             self.set_three_sided_types()
 
