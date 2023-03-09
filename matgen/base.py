@@ -1958,7 +1958,7 @@ class CellComplex:
             self,
             lower_thrd: float = None,
             upper_thrd: float = None,
-            special_ids: list = None,
+            special_ids: list | set = None,
             warn_external: bool = True):
         """
         two options for reset:
