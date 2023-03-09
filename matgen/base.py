@@ -2090,7 +2090,7 @@ class CellComplex:
     def get_new_random_seeds(
         self,
         k: int,
-        spec_prob: float = 0,
+        spec_prob: float = 1,
         exclusion_list: list = [],
         replace: bool = True
     ) -> list:
@@ -2103,37 +2103,48 @@ class CellComplex:
 
         exclusion_list - list of GB ids that cannot produce a new seed 
         """
-        # Get special and non-special GB ids
-        special_ids = self.get_special_ids()
-        nonspecial_ids = self.get_nonspecial_internal_ids()
+        gb_ids = []
+        probs = []
+        for gb_id, gb in self._GBs.items():
+            if not gb.is_external:
+                gb_ids.append(gb_id)
+                probs.append(spec_prob * gb.new_seed_prob)
+        
+        sample_ids = random.choices(population=gb_ids, weights=probs, k=k)
 
-        # Eliminate GB ids from exclusion list
-        special_ids = list(set(special_ids).difference(exclusion_list))
-        nonspecial_ids = list(set(nonspecial_ids).difference(exclusion_list))
+        # # ----------------------------------
+        # # Lagacy version
+        # # Get special and non-special GB ids
+        # special_ids = self.get_special_ids()
+        # nonspecial_ids = self.get_nonspecial_internal_ids()
 
-        # Choose randomly k_spec and k_nonspec
-        rng = np.random.default_rng()
-        k_spec = rng.binomial(k, p=spec_prob)
-        k_nonspec = k - k_spec
+        # # Eliminate GB ids from exclusion list
+        # special_ids = list(set(special_ids).difference(exclusion_list))
+        # nonspecial_ids = list(set(nonspecial_ids).difference(exclusion_list))
 
-        # Choose k random grain boundaries from special and non-special
-        if len(special_ids) >= k_spec and len(nonspecial_ids) >= k_nonspec:
-            sample_ids = rng.choice(
-                special_ids, size=k_spec, replace=replace
-            ).tolist()
-            sample_ids += rng.choice(
-                nonspecial_ids, size=k_nonspec, replace=replace
-            ).tolist()
-        elif len(special_ids) < k_spec:
-            logging.exception(
-                f'Not enough special GBs to produce new {k_spec} seeds'
-            )
-            return []
-        elif len(nonspecial_ids) < k_nonspec:
-            logging.exception(
-                f'Not enough non-special GBs to produce new {k_nonspec} seeds'
-            )
-            return []
+        # # Choose randomly k_spec and k_nonspec
+        # rng = np.random.default_rng()
+        # k_spec = rng.binomial(k, p=spec_prob)
+        # k_nonspec = k - k_spec
+
+        # # Choose k random grain boundaries from special and non-special
+        # if len(special_ids) >= k_spec and len(nonspecial_ids) >= k_nonspec:
+        #     sample_ids = rng.choice(
+        #         special_ids, size=k_spec, replace=replace
+        #     ).tolist()
+        #     sample_ids += rng.choice(
+        #         nonspecial_ids, size=k_nonspec, replace=replace
+        #     ).tolist()
+        # elif len(special_ids) < k_spec:
+        #     logging.exception(
+        #         f'Not enough special GBs to produce new {k_spec} seeds'
+        #     )
+        #     return []
+        # elif len(nonspecial_ids) < k_nonspec:
+        #     logging.exception(
+        #         f'Not enough non-special GBs to produce new {k_nonspec} seeds'
+        #     )
+        #     return []
 
 
 #         # Choose k random grain boundaries from non-special
