@@ -274,18 +274,23 @@ def run_simulation_step(event):
         NUMBER_OF_GRAINS, neper_id=1, dim=initial_complex.dim
     )
     
+    special_ids = []
     # Set special GBs from initial complex
     for cell in cell_complex._GBs.values():
         if set(cell.incident_ids) in pairs_with_special_GB:
-                if not cell.is_external:
-                    cell.set_special(True)
+                special_ids.append(cell.id)
+                # if not cell.is_external:
+                #     cell.set_special(True)
     # Set special GBs for new grains
     for grain_id in range(initial_complex.grainnb + 1, NUMBER_OF_GRAINS + 1):
         gb_ids = cell_complex._grains[grain_id].gb_ids
-        for gb_id in gb_ids:
-            cell = cell_complex._GBs[gb_id]
-            if not cell.is_external:
-                cell.set_special(True)
+        special_ids += gb_ids
+        # for gb_id in gb_ids:
+        #     cell = cell_complex._GBs[gb_id]
+        #     if not cell.is_external:
+        #         cell.set_special(True)
+    cell_complex.reset_special(special_ids=set(special_ids))
+
     # Plot new complex
     if initial_complex.dim == 2:
         ext_ids = cell_complex.get_external_ids('e')
