@@ -368,7 +368,7 @@ spinner_spec_prob = Spinner(
     low=0,  # the lowest possible number to pick
     high=1,  # the highest possible number to pick
     step=0.05,  # the increments by which the number can be adjusted
-    value=0,  # the initial value to display in the widget
+    value=1,  # the initial value to display in the widget
     #width=100,  #  the width of the widget in pixels
     )
 spinner_spec_prob.on_change('value', update_params)
