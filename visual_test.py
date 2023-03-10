@@ -256,7 +256,8 @@ def run_simulation(event):
         # Generate new complex from seeds.txt
         n += k
         # div_progress.text = f'Progress {n}/{n0 + spinner_steps.value}'
-        logging.info(f'Step {step_idx + 1}/{spinner_steps.value}')
+        # logging.info(f'Step {step_idx + 1}/{spinner_steps.value}')
+        print(f'Step {step_idx + 1}/{spinner_steps.value}')
         cell_complex = create_new_complex(
             n, neper_id=1, dim=initial_complex.dim
         )
@@ -493,7 +494,7 @@ plot_wN = figure(
     # x_range=(-0.1, 1.1), y_range=(-0.1, 1.1),
     width=500, height=500
 )
-
+plot_wN.line('x', 'y', source=w_vs_N)
 # layout = layout(
 #     [
 #         [input_wdir],
