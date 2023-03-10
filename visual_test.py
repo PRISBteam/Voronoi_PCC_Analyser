@@ -236,7 +236,7 @@ def run_simulation(event):
     n0 = initial_complex.grainnb 
     n = n0
     k = spinner_new_seeds.value # TODO: k may be different for each step
-    ns = []
+    ps = []
     ws = []
     for step_idx in range(spinner_steps.value):
         # Generate k new random seeds
@@ -278,10 +278,10 @@ def run_simulation(event):
             #     if not cell.is_external:
             #         cell.set_special(True)
         cell_complex.reset_special(special_ids=set(special_ids))
-        ns.append(n)
+        ps.append((n-n0)/n)
         ws.append(omega(cell_complex, n0))
     # Plot final complex
-    w_vs_N.data = dict(x=ns, y=ws)
+    w_vs_p.data = dict(x=ws, y=ps)
     if initial_complex.dim == 2:
         ext_ids = cell_complex.get_external_ids('e')
         int_ids = cell_complex.get_internal_ids('e')
@@ -487,14 +487,15 @@ plot_simul.multi_line('x', 'y', source=complex_int, color='blue')
 plot_simul.multi_line('x', 'y', source=complex_spec, color='red')
 plot_simul.circle('x', 'y', source=complex_new_seeds, size=20, color="navy", alpha=0.5)
 
-w_vs_N = ColumnDataSource(data=dict(x=[], y=[]))
+w_vs_p = ColumnDataSource(data=dict(x=[], y=[]))
 
-plot_wN = figure(
+plot_wp = figure(
     title="w vs N", x_axis_label='x', y_axis_label='y',
-    # x_range=(-0.1, 1.1), y_range=(-0.1, 1.1),
+    # x_range=(-0.1, 1.1), 
+    y_range=(-1, 1),
     width=500, height=500
 )
-plot_wN.line('x', 'y', source=w_vs_N)
+plot_wp.scatter('x', 'y', source=w_vs_p)
 # layout = layout(
 #     [
 #         [input_wdir],
@@ -535,7 +536,7 @@ col3 = column(
 layout = layout(
     [
         [col1, col2, col3],
-        [plot_init, plot_simul, plot_wN]
+        [plot_init, plot_simul, plot_wp]
     ]
 )
 
