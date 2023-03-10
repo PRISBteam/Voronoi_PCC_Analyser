@@ -5,6 +5,7 @@ import io
 import os
 import subprocess
 from base64 import b64decode
+import logging
 
 import numpy as np
 
@@ -15,6 +16,54 @@ from bokeh.models import (
 )
 
 from matgen.base import CellComplex
+
+
+def omega(cell_complex: CellComplex, n0: int):
+    """
+    """ 
+    D0 = 0
+    D1 = 0
+    D2 = 0
+    w = 0
+    number_of_internal_GBs = 0
+
+    for gb in cell_complex._GBs.values():
+        if not gb.is_external:
+            number_of_internal_GBs += 1
+            cell_ids = np.array(gb.incident_ids)
+            d = (cell_ids > n0).sum()
+            if d == 2:
+                D2 += 1
+            elif d == 1:
+                D1 += 1
+            elif d == 0:
+                D0 += 1
+            else:
+                raise ValueError("Number of new grains must be 0, 1 or 2")
+
+    D2 = D2 / number_of_internal_GBs
+    D1 = D1 / number_of_internal_GBs    
+    D0 = D0 / number_of_internal_GBs
+
+    n = cell_complex.grainnb # number of grains
+    m = n - n0 # number of new grains
+    p = m / n # fraction of new grains
+    
+    D0r = (1 - p) * (1 - p)
+    D1r = 2 * (1 - p) * p
+    D2r = p * p
+    
+    if p == 0 or p == 1:
+        w = -9999
+    elif D1 <= D1r:
+        w = 1 - D1 / D1r
+    elif D1 > D1r:
+        w = D0 * D2 / D0r / D2r - 1
+    
+    return w
+
+    # GB_frac = round(len(e_spec) / len(e_int), 3)
+
 
 
 def extract_seeds(complex: CellComplex, seeds_pathname: str):
@@ -187,6 +236,8 @@ def run_simulation(event):
     n0 = initial_complex.grainnb 
     n = n0
     k = spinner_new_seeds.value # TODO: k may be different for each step
+    ns = []
+    ws = []
     for step_idx in range(spinner_steps.value):
         # Generate k new random seeds
         new_seeds = np.array(
@@ -204,7 +255,8 @@ def run_simulation(event):
         
         # Generate new complex from seeds.txt
         n += k
-        div_progress.text = f'Progress {n}/{n0 + spinner_steps.value}'
+        # div_progress.text = f'Progress {n}/{n0 + spinner_steps.value}'
+        logging.info(f'Step {step_idx + 1}/{spinner_steps.value}')
         cell_complex = create_new_complex(
             n, neper_id=1, dim=initial_complex.dim
         )
@@ -225,7 +277,10 @@ def run_simulation(event):
             #     if not cell.is_external:
             #         cell.set_special(True)
         cell_complex.reset_special(special_ids=set(special_ids))
+        ns.append(n)
+        ws.append(omega(cell_complex, n0))
     # Plot final complex
+    w_vs_N.data = dict(x=ns, y=ws)
     if initial_complex.dim == 2:
         ext_ids = cell_complex.get_external_ids('e')
         int_ids = cell_complex.get_internal_ids('e')
@@ -236,6 +291,8 @@ def run_simulation(event):
         complex_int.data = dict(x=xs, y=ys)
         xs, ys = get_xy_for_edges(cell_complex, spec_ids)
         complex_spec.data = dict(x=xs, y=ys)
+    
+
 
 button_start = Button(label="Start simulation", width=200)
 button_start.on_click(run_simulation)
@@ -433,7 +490,7 @@ w_vs_N = ColumnDataSource(data=dict(x=[], y=[]))
 
 plot_wN = figure(
     title="w vs N", x_axis_label='x', y_axis_label='y',
-    x_range=(-0.1, 1.1), y_range=(-0.1, 1.1),
+    # x_range=(-0.1, 1.1), y_range=(-0.1, 1.1),
     width=500, height=500
 )
 
