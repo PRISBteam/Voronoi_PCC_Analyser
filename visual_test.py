@@ -490,7 +490,7 @@ plot_simul.circle('x', 'y', source=complex_new_seeds, size=20, color="navy", alp
 p_vs_w = ColumnDataSource(data=dict(x=[], y=[]))
 
 plot_pw = figure(
-    title="w vs N", x_axis_label='x', y_axis_label='y',
+    title="p vs w", x_axis_label='x', y_axis_label='y',
     x_range=(-1, 1), 
     y_range=(0, 1),
     width=500, height=500
