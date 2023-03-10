@@ -281,7 +281,7 @@ def run_simulation(event):
         ps.append((n-n0)/n)
         ws.append(omega(cell_complex, n0))
     # Plot final complex
-    w_vs_p.data = dict(x=ws, y=ps)
+    p_vs_w.data = dict(x=ws, y=ps)
     if initial_complex.dim == 2:
         ext_ids = cell_complex.get_external_ids('e')
         int_ids = cell_complex.get_internal_ids('e')
@@ -487,15 +487,15 @@ plot_simul.multi_line('x', 'y', source=complex_int, color='blue')
 plot_simul.multi_line('x', 'y', source=complex_spec, color='red')
 plot_simul.circle('x', 'y', source=complex_new_seeds, size=20, color="navy", alpha=0.5)
 
-w_vs_p = ColumnDataSource(data=dict(x=[], y=[]))
+p_vs_w = ColumnDataSource(data=dict(x=[], y=[]))
 
-plot_wp = figure(
+plot_pw = figure(
     title="w vs N", x_axis_label='x', y_axis_label='y',
-    # x_range=(-0.1, 1.1), 
-    y_range=(-1, 1),
+    x_range=(-1, 1), 
+    y_range=(0, 1),
     width=500, height=500
 )
-plot_wp.scatter('x', 'y', source=w_vs_p)
+plot_pw.scatter('x', 'y', source=p_vs_w)
 # layout = layout(
 #     [
 #         [input_wdir],
@@ -536,7 +536,7 @@ col3 = column(
 layout = layout(
     [
         [col1, col2, col3],
-        [plot_init, plot_simul, plot_wp]
+        [plot_init, plot_simul, plot_pw]
     ]
 )
 
