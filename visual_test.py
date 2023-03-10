@@ -282,7 +282,7 @@ def run_simulation(event):
         ws.append(omega(cell_complex, n0))
     # Plot final complex
     p_vs_w.data = dict(x=ws, y=ps)
-    np.savetxt('p_vs_w.txt', np.array([*zip(ws,ps)]), fmt='%.8f', header=['w', 'p'])
+    np.savetxt('p_vs_w.txt', np.array([*zip(ws,ps)]), fmt='%.8f')
     if initial_complex.dim == 2:
         ext_ids = cell_complex.get_external_ids('e')
         int_ids = cell_complex.get_internal_ids('e')
