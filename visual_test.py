@@ -212,15 +212,15 @@ def create_new_complex(
     seeds_filename = os.path.join(wdir, 'seeds.txt')
     output_file = os.path.join(wdir, f'n{n}-id{neper_id}-{dim}D.tess')
 
-    # com_line_list = [
-    #     'neper', '-T', '-n', str(n),
-    #     '-id', str(neper_id), '-dim', str(dim),
-    #     '-morphooptiini', f'coo:file({seeds_filename})',
-    #     '-statcell', 'size',
-    #     '-o', output_file.rstrip('.tess')
-    # ]
+    com_line_list = [
+        'neper', '-T', '-n', str(n),
+        '-id', str(neper_id), '-dim', str(dim),
+        '-morphooptiini', f'coo:file({seeds_filename})',
+        '-statcell', 'size',
+        '-o', output_file.rstrip('.tess')
+    ]
       
-    # run = subprocess.run(com_line_list, capture_output=True)
+    run = subprocess.run(com_line_list, capture_output=True)
     # print(run.stdout)
     cell_complex = CellComplex.from_tess_file(
         output_file, with_cell_size=True)
@@ -282,6 +282,7 @@ def run_simulation(event):
         ws.append(omega(cell_complex, n0))
     # Plot final complex
     p_vs_w.data = dict(x=ws, y=ps)
+    # FIXME: bind folder with results to access from host
     np.savetxt('p_vs_w.txt', np.array([*zip(ws,ps)]), fmt='%.8f')
     if initial_complex.dim == 2:
         ext_ids = cell_complex.get_external_ids('e')
