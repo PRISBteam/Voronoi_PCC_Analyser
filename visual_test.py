@@ -8,6 +8,7 @@ from base64 import b64decode
 import logging
 
 import numpy as np
+import pandas as pd
 
 from bokeh.plotting import figure, curdoc
 from bokeh.layouts import gridplot, layout, column, row
@@ -17,6 +18,8 @@ from bokeh.models import (
 
 from matgen.base import CellComplex
 
+if not os.path.exists('/app/results/'):
+    os.mkdir('/app/results/')
 
 def omega(cell_complex: CellComplex, n0: int):
     """
@@ -98,8 +101,19 @@ def check_wdir(attrname, old, new):
         div_message.text = f'Directory is not empty: {new}'
 
 
-input_wdir = TextInput(title='Save files to', value=os.getcwd())
+input_wdir = TextInput(title='Save .tess files to', value=os.getcwd())
 input_wdir.on_change('value', check_wdir)
+
+
+# Choose results filename (TextInput)
+def check_resfilename(attrname, old, new):
+    """
+    """
+    if os.path.exists(new): # Check directory exists
+        div_message.text = f'File exists: {new}'
+
+input_resfilename = TextInput(title='Save results to', value='/app/results/results.txt')
+input_resfilename.on_change('value', check_resfilename)
 
 
 # Load initial complex (FileInput)
@@ -238,6 +252,7 @@ def run_simulation(event):
     k = spinner_new_seeds.value # TODO: k may be different for each step
     ps = []
     ws = []
+    results = []
     for step_idx in range(spinner_steps.value):
         # Generate k new random seeds
         new_seeds = np.array(
@@ -279,11 +294,31 @@ def run_simulation(event):
             #         cell.set_special(True)
         cell_complex.reset_special(special_ids=set(special_ids))
         ps.append((n-n0)/n)
-        ws.append(omega(cell_complex, n0))
+        w = omega(cell_complex, n0)
+        ws.append(w)
+        state = cell_complex.to_TJset()
+        results.append(
+            (n - n0, (n - n0)/n, w, state.j0, state.j1, state.j2, state.j3, state.p)
+        )
     # Plot final complex
     p_vs_w.data = dict(x=ws, y=ps)
     # FIXME: bind folder with results to access from host
-    np.savetxt('p_vs_w.txt', np.array([*zip(ws,ps)]), fmt='%.8f')
+    # resultspath = os.path.join('/app/results/', resfilename)
+    pd.DataFrame(
+        results,
+        columns=[
+            'new_seeds_number',
+            'new_seeds_frac',
+            'omega',
+            'j0', 
+            'j1',
+            'j2',
+            'j3',
+            'HAGBs_frac'
+        ]
+    ).to_csv(input_resfilename.value, index=False, float_format='%.5f')
+
+    np.savetxt('/app/results/p_vs_w.txt', np.array([*zip(ws,ps)]), fmt='%.8f')
     if initial_complex.dim == 2:
         ext_ids = cell_complex.get_external_ids('e')
         int_ids = cell_complex.get_internal_ids('e')
