@@ -556,6 +556,7 @@ col1 = column(
 )
 col2 = column(
     [
+        input_resfilename,
         spinner_steps,
         spinner_new_seeds,
         spinner_spec_prob,
