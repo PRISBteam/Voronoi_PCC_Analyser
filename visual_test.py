@@ -253,6 +253,8 @@ def run_simulation(event):
     ps = []
     ws = []
     results = []
+    with open('/app/results/results_append.txt', 'w') as file:
+        file.write('m,frac,vol_frac,omega,j0,j1,j2,j3,HAGBs_frac\n')
     for step_idx in range(spinner_steps.value):
         # Generate k new random seeds
         new_seeds = np.array(
@@ -285,7 +287,10 @@ def run_simulation(event):
                     # if not cell.is_external:
                     #     cell.set_special(True)
         # Set special GBs for new grains
+        # And calculate total size of new grains
+        new_grains_total_size = 0
         for grain_id in range(n0 + 1, n + 1):
+            new_grains_total_size += cell_complex._grains[grain_id].size
             gb_ids = cell_complex._grains[grain_id].gb_ids
             special_ids += gb_ids
             # for gb_id in gb_ids:
@@ -293,12 +298,33 @@ def run_simulation(event):
             #     if not cell.is_external:
             #         cell.set_special(True)
         cell_complex.reset_special(special_ids=set(special_ids))
+        initial_grains_total_size = 0
+        for grain_id in range(1, n0 + 1):
+            initial_grains_total_size += cell_complex._grains[grain_id].size
+                
+        vol_fraction = new_grains_total_size / (
+            new_grains_total_size + initial_grains_total_size)
         ps.append((n-n0)/n)
         w = omega(cell_complex, n0)
         ws.append(w)
         state = cell_complex.to_TJset()
+        result = (
+            str(n - n0),
+            f'{(n - n0)/n:.5f}',
+            f'{vol_fraction:.5f}',
+            f'{w:.5f}',
+            f'{state.j0:.5f}',
+            f'{state.j1:.5f}',
+            f'{state.j2:.5f}',
+            f'{state.j3:.5f}',
+            f'{state.p:.5f}'
+        )
+        with open('/app/results/results_append.txt', 'a') as file:
+            file.write(','.join(result) + '\n')
+
         results.append(
-            (n - n0, (n - n0)/n, w, state.j0, state.j1, state.j2, state.j3, state.p)
+            (n - n0, (n - n0)/n, vol_fraction, w,
+             state.j0, state.j1, state.j2, state.j3, state.p)
         )
     # Plot final complex
     p_vs_w.data = dict(x=ws, y=ps)
@@ -309,6 +335,7 @@ def run_simulation(event):
         columns=[
             'new_seeds_number',
             'new_seeds_frac',
+            'vol_fraction',
             'omega',
             'j0', 
             'j1',
