@@ -9,6 +9,7 @@ import logging
 from tqdm import tqdm
 import numpy as np
 import random
+import math
 # import pandas as pd
 
 import matplotlib.pyplot as plt
@@ -384,10 +385,19 @@ class GrainBoundary(LowerOrderCell):
         """
         without coefficient
         """
+        # critical_size = 5
+
+        # if self.eq_diam > critical_size:
+        #     coeff = (1 - (critical_size / self.eq_diam)**3)
+        # else:
+        #     coeff = 0
+
+        coeff = 1
+
         if self.is_external:
             return 0
         else:
-            return (2 * self.gb_index) / (3 * len(self.n_ids))
+            return (2 * self.gb_index) / (3 * len(self.n_ids) * coeff)
 
     
 def _create_ax(dim: int = 2, figsize: Tuple = (8,8)) -> Axes:
@@ -642,6 +652,10 @@ class Edge2D(Edge, GrainBoundary):
     @property
     def tj_ids(self):
         return self.v_ids
+    
+    @property
+    def eq_diam(self):
+        return self.length
 
 
 class Edge3D(Edge, TripleJunction):
@@ -891,6 +905,11 @@ class Face3D(Face, GrainBoundary):
     @property
     def tj_ids(self):
         return self.e_ids
+    
+    @property
+    def eq_diam(self):
+        if self.area is not None:
+            return math.sqrt(4 * self.area / math.pi)
 
 
 class Poly(Grain):
