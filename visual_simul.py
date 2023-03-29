@@ -247,11 +247,14 @@ def create_new_complex(
     # output_file = os.path.join(wdir, f'n{n}-id{neper_id}-{dim}D.tess')
     output_file = os.path.join(wdir, 'final-complex.tess')
 
+    height = spinner_height.value
+    width = spinner_width.value
+
     com_line_list = [
         'neper', '-T', '-n', str(n),
         '-id', str(neper_id), '-dim', str(dim),
         '-morphooptiini', f'coo:file({seeds_filename})',
-        '-domain', 'square(300,300)',
+        '-domain', f'square({height},{width})',
         #'-statcell', 'size',
         '-o', output_file.rstrip('.tess')
     ]
@@ -549,6 +552,25 @@ spinner_cr_size = Spinner(
     )
 spinner_cr_size.on_change('value', update_params)
 
+spinner_height = Spinner(
+    title="Domain_height",  # a string to display above the widget
+    low=0,  # the lowest possible number to pick
+    high=None,  # the highest possible number to pick
+    step=1,  # the increments by which the number can be adjusted
+    value=1,  # the initial value to display in the widget
+    #width=100,  #  the width of the widget in pixels
+    )
+spinner_height.on_change('value', update_params)
+
+spinner_width = Spinner(
+    title="Domain_width",  # a string to display above the widget
+    low=0,  # the lowest possible number to pick
+    high=None,  # the highest possible number to pick
+    step=1,  # the increments by which the number can be adjusted
+    value=1,  # the initial value to display in the widget
+    #width=100,  #  the width of the widget in pixels
+    )
+spinner_width.on_change('value', update_params)
 
 div_params = Div(
     text=f"""You choose:
@@ -629,7 +651,7 @@ col1 = column(
 )
 col2 = column(
     [
-        #input_resfilename,
+        [spinner_height, spinner_width],
         spinner_steps,
         spinner_new_seeds,
         spinner_spec_prob,
