@@ -461,6 +461,7 @@ def update_params(attrname, old, new):
         <br>NUMBER_OF_NEW_SEEDS: {spinner_new_seeds.value}
         <br>SPEC_PROB: {spinner_spec_prob.value}
         <br>MAX_VOLUME_FRACTION: {spinner_max_vol_frac.value}
+        <br>CRITICAL_SIZE: {spinner_cr_size.value}
     """
 
 
@@ -505,12 +506,24 @@ spinner_max_vol_frac = Spinner(
     )
 spinner_max_vol_frac.on_change('value', update_params)
 
+spinner_cr_size = Spinner(
+    title="Critical size",  # a string to display above the widget
+    low=0,  # the lowest possible number to pick
+    high=None,  # the highest possible number to pick
+    step=0.001,  # the increments by which the number can be adjusted
+    value=0.005,  # the initial value to display in the widget
+    #width=100,  #  the width of the widget in pixels
+    )
+spinner_cr_size.on_change('value', update_params)
+
+
 div_params = Div(
     text=f"""You choose:
         <br>NUMBER_OF_STEPS: {spinner_steps.value}
         <br>NUMBER_OF_NEW_SEEDS: {spinner_new_seeds.value}
         <br>SPEC_PROB: {spinner_spec_prob.value}
         <br>MAX_VOLUME_FRACTION: {spinner_max_vol_frac.value}
+        <br>CRITICAL_SIZE: {spinner_cr_size.value}
     """
     #width=200#, height=30
 )

@@ -380,19 +380,15 @@ class GrainBoundary(LowerOrderCell):
                 'External GB cannot have a GB index other than None'
             )
 
-    @property
-    def new_seed_prob(self):
+    def get_new_seed_prob(self, critical_size=0):
         """
-        without coefficient
+        without coefficient etha0
         """
-        # critical_size = 5
 
-        # if self.eq_diam > critical_size:
-        #     coeff = (1 - (critical_size / self.eq_diam)**3)
-        # else:
-        #     coeff = 0
-
-        coeff = 1
+        if self.eq_diam > critical_size:
+            coeff = (1 - (critical_size / self.eq_diam)**3)
+        else:
+            coeff = 0
 
         if self.is_external:
             return 0
@@ -1884,6 +1880,35 @@ class CellComplex:
         j2 = self.get_j_fraction(2)
         j3 = self.get_j_fraction(3)
         return (j0, j1, j2, j3)
+    
+    def set_measures_from_coo(self):
+        """
+        2D case
+        """
+        if self.dim == 3:
+            pass
+        elif self.dim == 2:
+            for face in self._faces.values():
+                points = []
+                for v_id in face.v_ids:
+                    points.append(self._vertices[v_id].coord)
+                face.set_measure(matutils.polygon_area_2D(points))
+            for edge in self._edges.values():
+                points = []
+                for v_id in edge.v_ids:
+                    points.append(self._vertices[v_id].coord)
+                edge.set_measure(matutils.edge_length_2D(points))
+            
+            #     v_ids = c.get_one('f', f_id).v_ids
+#     vs = c.get_many('v', v_ids)
+#     points = np.array([v.coord2D for v in vs])
+#     d = Delaunay(points)
+#     area = 0
+#     for t in d.simplices:
+#         area += _tri_area_2D(points[t])
+#     return area
+
+
 
     def to_TJset(self):
         """
@@ -2109,7 +2134,8 @@ class CellComplex:
     def get_new_random_seeds(
         self,
         k: int,
-        spec_prob: float = 1,
+        critical_size: float = 0.0,
+        spec_prob: float = 1.0,
         exclusion_list: list = [],
         replace: bool = True
     ) -> list:
@@ -2127,7 +2153,7 @@ class CellComplex:
         for gb_id, gb in self._GBs.items():
             if not gb.is_external:
                 gb_ids.append(gb_id)
-                probs.append(spec_prob * gb.new_seed_prob)
+                probs.append(spec_prob * gb.get_new_seed_prob(critical_size))
         
         sample_ids = random.choices(population=gb_ids, weights=probs, k=k)
 
