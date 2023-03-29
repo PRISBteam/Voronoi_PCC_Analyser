@@ -4,7 +4,7 @@ import math
 from typing import Dict, Iterable, List
 import numpy as np
 import random
-from scipy import sparse, linalg, stats
+from scipy import sparse, linalg, stats, spatial
 import logging
 
 # from matgen.base import Grain
@@ -974,48 +974,46 @@ def get_random_point_on_edge(xp, yp):
 #         np.savetxt(filename, [*zip(I, J, V)], fmt='%d')
 
 
-# def _tri_area_2D(points_coo):
-#     """
-#     """
-#     if len(points_coo) != 3:
-#         raise ValueError('Not triangle')
-#     points_coo = np.array(points_coo)
-#     xs = points_coo[:, 0]
-#     ys = points_coo[:, 1]
-#     # S = xs[0] * (ys[1] - ys[2]) +\
-#     #     xs[1] * (ys[2] - ys[0]) +\
-#     #     xs[2] * (ys[0] - ys[1])
+def tri_area_2D(points_coo):
+    """
+    """
+    if len(points_coo) != 3:
+        raise ValueError('Not triangle')
+    points_coo = np.array(points_coo)
+    xs = points_coo[:, 0]
+    ys = points_coo[:, 1]
+    # S = xs[0] * (ys[1] - ys[2]) +\
+    #     xs[1] * (ys[2] - ys[0]) +\
+    #     xs[2] * (ys[0] - ys[1])
     
-#     S = (xs[1] - xs[0]) * (ys[2] - ys[0]) -\
-#         (xs[2] - xs[0]) * (ys[1] - ys[0])
+    S = (xs[1] - xs[0]) * (ys[2] - ys[0]) -\
+        (xs[2] - xs[0]) * (ys[1] - ys[0])
 
-#     return abs(S) / 2
+    return abs(S) / 2
     
-# def face_area_2D(c, f_id):
-#     """
-#     """
-#     v_ids = c.get_one('f', f_id).v_ids
-#     vs = c.get_many('v', v_ids)
-#     points = np.array([v.coord2D for v in vs])
-#     d = Delaunay(points)
-#     area = 0
-#     for t in d.simplices:
-#         area += _tri_area_2D(points[t])
-#     return area
+def polygon_area_2D(points_coo):
+    """
+    """
+    points_coo = np.array(points_coo)
+    d = spatial.Delaunay(points_coo)
+    area = 0
+    for t in d.simplices:
+        area += tri_area_2D(points_coo[t])
+    return area
 
-# def edge_length_2D(c, e_id):
-#     """
-#     change interface?
-#     """
-#     v_ids = c.get_one('e', e_id).v_ids
-#     vs = c.get_many('v', v_ids)
-#     points = np.array([v.coord2D for v in vs])
-    
-#     xs = points[:, 0]
-#     ys = points[:, 1]
+def edge_length_2D(points_coo):
+    """
+    change interface?
+    """
+    # v_ids = c.get_one('e', e_id).v_ids
+    # vs = c.get_many('v', v_ids)
+    # points = np.array([v.coord2D for v in vs])
+    points_coo = np.array(points_coo)
+    xs = points_coo[:, 0]
+    ys = points_coo[:, 1]
 
-#     l2 = (xs[0] - xs[1])*(xs[0] - xs[1]) + (ys[0] - ys[1])*(ys[0] - ys[1])
-#     return sqrt(l2)
+    l2 = (xs[0] - xs[1])*(xs[0] - xs[1]) + (ys[0] - ys[1])*(ys[0] - ys[1])
+    return math.sqrt(l2)
 
 
 # def metastability(S, Smax, Smin, Srand):
