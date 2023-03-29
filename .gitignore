@@ -2,6 +2,7 @@
 Data/
 figures_data/
 test_bugs/
+results/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
