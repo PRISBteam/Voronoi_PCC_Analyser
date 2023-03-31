@@ -140,12 +140,12 @@ def load_initial_complex(attrname, old, new):
         # set measures
         initial_complex.set_measures_from_coo()
         # set special from ori
-        initial_complex.set_theta_from_ori()
-        initial_complex.reset_special(lower_thrd=15, warn_external=False)
+        # initial_complex.set_theta_from_ori()
+        # initial_complex.reset_special(lower_thrd=15, warn_external=False)
         pairs_with_special_GB = []
-        for special_id in initial_complex.get_special_ids():
-            pair = set(initial_complex._GBs[special_id].incident_ids)
-            pairs_with_special_GB.append(pair)
+        # for special_id in initial_complex.get_special_ids():
+        #     pair = set(initial_complex._GBs[special_id].incident_ids)
+        #     pairs_with_special_GB.append(pair)
         NUMBER_OF_GRAINS = initial_complex.grainnb
         div_message.text = f'Complex loaded! Seeds saved: {seeds_pathname}'
     except:
@@ -208,6 +208,7 @@ def load_special(attrname, old, new):
     """
     # decode file content
     file = io.StringIO(b64decode(new).decode(encoding='utf-8'))
+    global pairs_with_special_GB
     try:
         # parse file
         special_ids = np.loadtxt(file, dtype=int).tolist()
@@ -226,7 +227,18 @@ def load_special(attrname, old, new):
         div_message.text = f'Check file with special GB ids!'
     
     if initial_complex.dim == 2:
+        ext_ids = initial_complex.get_external_ids('e')
+        int_ids = initial_complex.get_internal_ids('e')
         spec_ids = initial_complex.get_special_ids()
+
+        ax = initial_complex.plot_edges(ext_ids, color='k')
+        initial_complex.plot_edges(int_ids, color='b', ax=ax)
+        initial_complex.plot_edges(spec_ids, color='r', ax=ax)
+        plt.savefig(
+            os.path.join(input_wdir.value, 'initial-complex.png'),
+            dpi=300
+        )
+
         xs, ys = get_xy_for_edges(initial_complex, spec_ids)
         complex0_spec.data = dict(x=xs, y=ys)
         complex_spec.data = dict(x=xs, y=ys)
@@ -384,6 +396,9 @@ def run_simulation(event):
         ax = cell_complex.plot_edges(ext_ids, color='k')
         cell_complex.plot_edges(int_ids, color='b', ax=ax)
         cell_complex.plot_edges(spec_ids, color='r', ax=ax)
+        cell_complex.plot_faces(
+            [*range(1, n0 + 1)], color='C0', alpha=0.3, ax=ax
+        )
         plt.savefig(os.path.join(wdir, 'final-complex.png'), dpi=300)
 
         xs, ys = get_xy_for_edges(cell_complex, ext_ids)
@@ -651,7 +666,8 @@ col1 = column(
 )
 col2 = column(
     [
-        [spinner_height, spinner_width],
+        spinner_height,
+        spinner_width,
         spinner_steps,
         spinner_new_seeds,
         spinner_spec_prob,
