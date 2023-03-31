@@ -3,6 +3,7 @@ Data/
 figures_data/
 test_bugs/
 results/
+sim_examples/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
