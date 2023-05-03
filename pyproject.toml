@@ -4,15 +4,21 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "PCCanalyser"
-version = "0.0.1"
+version = "0.0.5"
 dependencies = [
     "numpy", "scipy", "tqdm", "jupyterlab", 
-    "matplotlib", "bokeh",
+    "matplotlib",
 ]
 
 [tool.setuptools.packages.find]
 # All the following settings are optional:
 where = ["."]  # ["."] by default
-include = ["matgen"]  # ["*"] by default
-exclude = []  # empty by default
+include = ["*"]  # ["*"] by default
+exclude = ["tutorial"]  # empty by default
 namespaces = false  # true by default
+
+[project.scripts]
+sparsemat = "matgen.sparsemat:main"
+ndisangles = "matgen.ndisangles:main"
+ndisorientquat = "matgen.ndisorientquat:main"
+characterise = "matgen.characterise:main"
