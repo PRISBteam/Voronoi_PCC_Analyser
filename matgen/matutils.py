@@ -1,13 +1,13 @@
 """
 """
 import math
-from typing import Dict, Iterable, List
+from typing import Dict, Iterable, List, Tuple
 import numpy as np
 import random
 from scipy import sparse, linalg, stats, spatial
 import logging
 
-def _get_IJV_from_neighbors(_cells: Dict) -> tuple[List]:
+def _get_IJV_from_neighbors(_cells: Dict) -> Tuple[List]:
     """Get I, J, V lists of the adjacency matrix from a dictionary of cells.
 
     Cells can be vertices, edges, faces or polyhedra of a corresponding
@@ -40,7 +40,7 @@ def _get_IJV_from_neighbors(_cells: Dict) -> tuple[List]:
     return (I, J, V)
 
 
-def _get_IJV_from_incidence(_cells: Dict) -> tuple[List]:
+def _get_IJV_from_incidence(_cells: Dict) -> Tuple[List]:
     """Get I, J, V lists of the incidence matrix from a dictionary of cells.
 
     Cells can be vertices, edges, faces or polyhedra of a corresponding
