@@ -96,76 +96,6 @@ def calculate_L(B1: sparse.coo_matrix, B2: sparse.coo_matrix):
     """
     return B1.transpose() @ B1 + B2 @ B2.transpose()
 
-def get_d_tuple(j_tuple: tuple) -> tuple:
-    """
-    """
-    if j_tuple[0] == 1:
-        return 0, 0, 0
-    else:
-        denom = 1 - j_tuple[0]
-        d1 = j_tuple[1] / denom
-        d2 = j_tuple[2] / denom
-        d3 = j_tuple[3] / denom
-        return d1, d2, d3
-    
-
-def get_j_tuple_random(p: float) -> tuple:
-    """
-    """
-    jr0 = (1 - p)**3
-    jr1 = 3 * p * (1 - p)**2
-    jr2 = 3 * p**2 * (1 - p)
-    jr3 = p**3
-
-    return (jr0, jr1, jr2, jr3)
-
-
-def get_sigma(p: float, j_tuple: tuple) -> float:
-    """
-    sigma differentiates states of segregation from ordering
-    Notes
-    -----
-    See IV.A. Definition of correlation functions in 
-    Frary and Schuh. Phys. Rev. E 76, 041108
-    DOI: 10.1103/PhysRevE.76.041108
-    """
-    if p == 0 or p == 1:
-        return 0
-
-    j_tuple_r = get_j_tuple_random(p)
-    try:
-        j_sigma = (
-            (j_tuple[1] + j_tuple[2]) / (j_tuple[0] + j_tuple[3]) *
-            (j_tuple_r[0] + j_tuple_r[3]) / (j_tuple_r[1] + j_tuple_r[2])
-        )
-    except:
-        return np.nan
-
-    if j_sigma <= 1:
-        return (1 - j_sigma)
-    else:
-        return 1 / j_sigma - 1
-
-
-def get_chi(p: float, j_tuple: tuple) -> float:
-    """
-    differentiates the tendency for bonds to form either compact 
-    or elongated clusters
-    """
-    if p == 0 or p == 1 or (j_tuple[1] == 0 and j_tuple[2] == 0):
-        return 0
-    
-    if j_tuple[1] == 0:
-        return -1
-
-    j_tuple_r = get_j_tuple_random(p)
-    j_chi = j_tuple[2] / j_tuple[1] * j_tuple_r[1] / j_tuple_r[2]
-
-    if j_chi <= 1:
-        return (1 - j_chi)
-    else:
-        return 1 / j_chi - 1
-
 
 def ori_mat(ori: tuple, oridesc: str ='euler-bunge:active') -> np.ndarray:
     """
@@ -840,26 +770,6 @@ def edge_length_2D(points_coo):
 
     l2 = (xs[0] - xs[1])*(xs[0] - xs[1]) + (ys[0] - ys[1])*(ys[0] - ys[1])
     return math.sqrt(l2)
-
-
-# def metastability(S, Smax, Smin, Srand):
-#     """
-#     """    
-#     if S >= Srand and Smax != Srand:
-#         return (S - Srand) / (Smax - Srand)
-#     elif S < Srand and Smin != Srand:
-#         return (S - Srand) / (Srand - Smin)
-
-
-# def S_rand(p):
-#     """
-#     """
-#     jr0 = (1 - p)**3
-#     jr1 = 3 * p * (1 - p)**2
-#     jr2 = 3 * p**2 * (1 - p)
-#     jr3 = p**3
-
-#     return entropy(jr0, jr1, jr2, jr3)
 
 
 # def get_vor_entropy(vor):

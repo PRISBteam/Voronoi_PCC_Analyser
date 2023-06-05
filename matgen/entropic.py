@@ -5,6 +5,7 @@ import math
 from typing import Iterable
 import logging
 import numpy as np
+import pandas as pd
 
 class TripleJunctionSet:
     """
@@ -21,18 +22,59 @@ class TripleJunctionSet:
         
         if not math.isclose(sum(j_tuple), 1):
             logging.warning('TJs fraction sum is not equal to 1')
-        self.j_tuple = j_tuple
         self.j0, self.j1, self.j2, self.j3 = j_tuple
 
+        self.q = 1 - p
+        
+        self.Sp = self.get_Sp()
+        self.Sp_m = self.get_Sp_m()
+        self.Sp_s = self.get_Sp_s()
+        
+        self.p_expected = (self.j1 + 2*self.j2 + 3*self.j3) / 3
+        self.delta_p = abs(self.p_expected - self.p)
+
+        self.S = self.get_S()
+        self.S_m = self.get_S_m()
+        self.S_s = self.get_S_s()
+        self.kappa = self.S_m / self.S_s if self.S_s != 0 else 0
+        self.delta_S = self.Sp - self.S
+
+        self.d1 = self.j1 / (1 - self.j0) if self.j0 != 1 else 0
+        self.d2 = self.j2 / (1 - self.j0) if self.j0 != 1 else 0
+        self.d3 = self.j3 / (1 - self.j0) if self.j0 != 1 else 0
+
+        self.sigma = self.get_sigma()
+        self.chi = self.get_chi()
+
+    def __str__(self):
+        cell_str = (self.__class__.__name__ + 
+                    f"(p={self.p}, j0={self.j0}, j1={self.j1}, " +
+                    f"j2={self.j2}, j3={self.j3})")
+        return cell_str
+    
+    def __repr__(self) -> str:
+        """
+        """
+        return self.__str__()
+
     @property
-    def q(self):
+    def j_tuple(self):
         """
-        q = 1 - p - empiric OGBs fraction
         """
-        return 1 - self.p
+        return (self.j0, self.j1, self.j2, self.j3)
     
     @property
-    def Sp(self):
+    def j_tuple_random(self):
+        """
+        """
+        jr0 = (1 - self.p)**3
+        jr1 = 3 * self.p * (1 - self.p)**2
+        jr2 = 3 * self.p**2 * (1 - self.p)
+        jr3 = self.p**3
+
+        return (jr0, jr1, jr2, jr3)
+
+    def get_Sp(self):
         """
         theoretical trivial entropy for a given p
         """
@@ -42,9 +84,8 @@ class TripleJunctionSet:
         p = self.p
         q = 1 - self.p
         return - (p * math.log2(p) + q * math.log2(q))
-    
-    @property
-    def Sp_m(self):
+
+    def get_Sp_m(self):
         """
         the mean part of theoretical entropy
         """
@@ -52,209 +93,44 @@ class TripleJunctionSet:
             return np.inf
         return - math.log2(self.p * (1 - self.p)) / 2
 
-    @property
-    def Sp_s(self):
+    def get_Sp_s(self):
         """
         the deviatoric part of theoretical entropy
         """
         if self.p == 0 or self.p == 1:
-            return -np.inf
+            return - np.inf
         
         p = self.p
         q = 1 - self.p
         return - (p - q) / 2 * math.log2(p / q)
 
-    @property
-    def p_expected(self):
+    def get_S(self):
         """
+        structural entropy
         """
-        return (self.j1 + 2*self.j2 + 3*self.j3) / 3
-        
-    @property
-    def delta_p(self):
-        """
-        """
-        return abs(self.p_expected - self.p)
+        j_array = np.array(self.j_tuple)
 
-    @property
-    def S(self):
-        """
-        """
-        return matutils.entropy(*self.j_tuple)
-
-    @property
-    def S_m(self):
-        """
-        """
-        if np.any(np.array(self.j_tuple) == 0):
-            return np.inf
-        else:
-            return matutils.entropy_m(*self.j_tuple)
-
-    @property
-    def S_s(self):
-        """
-        """
-        if np.any(np.array(self.j_tuple) == 0):
-            return - np.inf
-        else:
-            return matutils.entropy_s(*self.j_tuple)
-
-    @property
-    def kappa(self):
-        """
-        """
-        if self.S_s == 0:
-            return 0
-        else:
-            return self.S_m / self.S_s
-
-    @property
-    def delta_S(self):
-        """
-        """
-        return self.Sp - self.S
-
-    @property
-    def d_tuple(self):
-        """
-        """
-        return matutils.get_d_tuple(self.j_tuple)
-
-    @property
-    def d1(self):
-        """
-        """
-        return self.d_tuple[0]
-
-    @property
-    def d2(self):
-        """
-        """
-        return self.d_tuple[1]
-
-    @property
-    def d3(self):
-        """
-        """
-        return self.d_tuple[2]
-
-    def get_property(self, attr):
-        """
-        """
-        return getattr(self, attr)
-    
-    def get_properties(self, attr_list: list = []) -> Dict:
-        """
-        """
-        if not attr_list:
-            attr_list = [
-                'p',
-                'q',
-                'Sp',
-                'Sp_m',
-                'Sp_s',
-                'S',
-                'S_m',
-                'S_s',
-                'kappa',
-                'delta_S',
-                'd1',
-                'd2',
-                'd3'
-            ]
-
-        try:
-            return {attr_name: getattr(self, attr_name) for attr_name in attr_list}
-        except:
-            logging.exception('Check properties!')
-
-        # values = [getattr(self, attr_name) for attr_name in attr_list]
-        # return pd.DataFrame([values], columns = attr_list)
-
-
-def entropy(*args):
-    """
-    S
-    """
-    # input arguments may be a scalar, a tuple or several scalars
-    if len(args) == 1 and isinstance(args[0], Iterable):
-        j_array = np.array(args[0])
-    else:
-        j_array = np.array(args)
-
-    # check sum of input parameters
-    if len(j_array) > 1 and not math.isclose(j_array.sum(), 1):
-        logging.warning('Sum is not equal to 1')
-
-    # calculate entropy
-    if len(j_array) == 1:
-        p = j_array[0]
-        if p == 0 or p == 1:
-            return 0
-        elif p > 0 and p < 1:
-            return - (p * math.log2(p) + (1 - p) * math.log2(1 - p))
-    elif len(j_array) > 1:
         nonzeros = j_array[j_array > 0]
         return - np.sum(nonzeros * np.log2(nonzeros))
-    
-def entropy_m(*args):
-    """
-    mean part of S
-    """
-    # input arguments may be a scalar, a tuple or several scalars
-    if len(args) == 1 and isinstance(args[0], Iterable):
-        j_array = np.array(args[0])
-    else:
-        j_array = np.array(args)
 
-    # check sum of input parameters
-    if len(j_array) > 1 and not math.isclose(j_array.sum(), 1):
-        logging.warning('Sum is not equal to 1')
-
-    # check zero elements
-    if np.any(j_array == 0):
-        logging.warning('One or more j is equal to 0')
-        return np.inf
-
-    # calculate mean entropy
-    if len(j_array) == 1:
-        p = j_array[0]
-        if p == 1:
+    def get_S_m(self):
+        """
+        the mean part of the structural entropy
+        """
+        j_array = np.array(self.j_tuple)
+        if np.any(j_array == 0):
             return np.inf
-        elif p > 0 and p < 1:
-            return - math.log2(p * (1 - p)) / 2
-    elif len(j_array) > 1:
+        
         return - np.log2(np.prod(j_array)) / len(j_array)
-    
-def entropy_s(*args):
-    """
-    deviatoric part of S
-    """
-    # input arguments may be a scalar, a tuple or several scalars
-    if len(args) == 1 and isinstance(args[0], Iterable):
-        j_array = np.array(args[0])
-    else:
-        j_array = np.array(args)
 
-    # check sum of input parameters
-    if len(j_array) > 1 and not math.isclose(j_array.sum(), 1):
-        logging.warning('Sum is not equal to 1')
-
-    # check zero elements
-    if np.any(j_array == 0):
-        logging.warning('One or more j is equal to 0')
-        return - np.inf
-    
-    # calculate deviatoric entropy
-    if len(j_array) == 1:
-        p = j_array[0]
-        if p == 1:
+    def get_S_s(self):
+        """
+        the skrew part of the structural entropy
+        """
+        j_array = np.array(self.j_tuple)
+        if np.any(j_array == 0):
             return - np.inf
-        elif p > 0 and p < 1:
-            q = 1 - p
-            return - (p - q) / 2 * math.log2(p / q)
-    elif len(j_array) > 1:
+
         Ss = 0
         for k in range(len(j_array)):
             jk = j_array[k]
@@ -263,3 +139,80 @@ def entropy_s(*args):
                 Ss += (jk - jl) * math.log2(jk / jl)
         Ss = Ss / len(j_array)
         return - Ss
+    
+    def get_sigma(self):
+        """
+        sigma differentiates states of segregation from ordering
+        Notes
+        -----
+        See IV.A. Definition of correlation functions in 
+        Frary and Schuh. Phys. Rev. E 76, 041108
+        DOI: 10.1103/PhysRevE.76.041108
+        """
+        if self.p == 0 or self.p == 1: # J1r = J2r = 0
+            return 0
+        
+        j_tuple = self.j_tuple
+        j_tuple_r = self.j_tuple_random
+
+        if j_tuple[0] == 0 and j_tuple[3] == 0:
+            return -1
+        j_sigma = (
+            (j_tuple[1] + j_tuple[2]) / (j_tuple[0] + j_tuple[3]) *
+            (j_tuple_r[0] + j_tuple_r[3]) / (j_tuple_r[1] + j_tuple_r[2])
+        )
+
+        if j_sigma <= 1:
+            return (1 - j_sigma)
+        else:
+            return 1 / j_sigma - 1
+    
+    def get_chi(self):
+        """
+        differentiates the tendency for bonds to form either compact 
+        or elongated clusters
+        """
+        if self.p == 0 or self.p == 1 or (self.j1 == 0 and self.j2 == 0):
+            return 0
+        
+        if self.j1 == 0:
+            return -1
+
+        j_tuple_r = self.j_tuple_random
+        j_chi = self.j2 / self.j1 * j_tuple_r[1] / j_tuple_r[2]
+
+        if j_chi <= 1:
+            return (1 - j_chi)
+        else:
+            return 1 / j_chi - 1
+
+    @property
+    def S_rand(self):
+        """
+        """
+        j_array = np.array(self.j_tuple_random)
+
+        nonzeros = j_array[j_array > 0]
+        return - np.sum(nonzeros * np.log2(nonzeros))
+
+    def get_metastability(self, Smax, Smin):
+        """
+        """
+        Srand = self.S_rand
+        S = self.S
+        if S >= Srand and Smax != Srand:
+            return (S - Srand) / (Smax - Srand)
+        elif S < Srand and Smin != Srand:
+            return (S - Srand) / (Srand - Smin)
+
+    def get_properties(self, attr_list: list = []) -> dict:
+        """
+        attr_list - custom list of properties to return 
+        """
+        if not attr_list:
+            return self.__dict__
+
+        try:
+            return {attr_name: getattr(self, attr_name) for attr_name in attr_list}
+        except:
+            logging.exception('Check properties!')
