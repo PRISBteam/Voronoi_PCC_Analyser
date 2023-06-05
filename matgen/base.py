@@ -2008,7 +2008,7 @@ class CellComplex:
         two options for reset:
         1. Specify new thresholds if theta is known
         2. Specify explicitly the list of special GBs
-        Options cannot be combained together.
+        Options cannot be combined together.
         If special_ids specified, then thresholds are ignored.
         GBs that are in special_ids becomes special, that aren't
         becomes not special. 
