@@ -96,101 +96,6 @@ def calculate_L(B1: sparse.coo_matrix, B2: sparse.coo_matrix):
     """
     return B1.transpose() @ B1 + B2 @ B2.transpose()
 
-
-def entropy(*args):
-    """
-    S
-    """
-    # input arguments may be a scalar, a tuple or several scalars
-    if len(args) == 1 and isinstance(args[0], Iterable):
-        j_array = np.array(args[0])
-    else:
-        j_array = np.array(args)
-
-    # check sum of input parameters
-    if len(j_array) > 1 and not math.isclose(j_array.sum(), 1):
-        logging.warning('Sum is not equal to 1')
-
-    # calculate entropy
-    if len(j_array) == 1:
-        p = j_array[0]
-        if p == 0 or p == 1:
-            return 0
-        elif p > 0 and p < 1:
-            return - (p * math.log2(p) + (1 - p) * math.log2(1 - p))
-    elif len(j_array) > 1:
-        nonzeros = j_array[j_array > 0]
-        return - np.sum(nonzeros * np.log2(nonzeros))
-
-
-def entropy_m(*args):
-    """
-    mean part of S
-    """
-    # input arguments may be a scalar, a tuple or several scalars
-    if len(args) == 1 and isinstance(args[0], Iterable):
-        j_array = np.array(args[0])
-    else:
-        j_array = np.array(args)
-
-    # check sum of input parameters
-    if len(j_array) > 1 and not math.isclose(j_array.sum(), 1):
-        logging.warning('Sum is not equal to 1')
-
-    # check zero elements
-    if np.any(j_array == 0):
-        logging.warning('One or more j is equal to 0')
-        return np.inf
-
-    # calculate mean entropy
-    if len(j_array) == 1:
-        p = j_array[0]
-        if p == 1:
-            return np.inf
-        elif p > 0 and p < 1:
-            return - math.log2(p * (1 - p)) / 2
-    elif len(j_array) > 1:
-        return - np.log2(np.prod(j_array)) / len(j_array)
-
-
-def entropy_s(*args):
-    """
-    deviatoric part of S
-    """
-    # input arguments may be a scalar, a tuple or several scalars
-    if len(args) == 1 and isinstance(args[0], Iterable):
-        j_array = np.array(args[0])
-    else:
-        j_array = np.array(args)
-
-    # check sum of input parameters
-    if len(j_array) > 1 and not math.isclose(j_array.sum(), 1):
-        logging.warning('Sum is not equal to 1')
-
-    # check zero elements
-    if np.any(j_array == 0):
-        logging.warning('One or more j is equal to 0')
-        return - np.inf
-    
-    # calculate deviatoric entropy
-    if len(j_array) == 1:
-        p = j_array[0]
-        if p == 1:
-            return - np.inf
-        elif p > 0 and p < 1:
-            q = 1 - p
-            return - (p - q) / 2 * math.log2(p / q)
-    elif len(j_array) > 1:
-        Ss = 0
-        for k in range(len(j_array)):
-            jk = j_array[k]
-            for l in range(k + 1, len(j_array)):
-                jl = j_array[l]
-                Ss += (jk - jl) * math.log2(jk / jl)
-        Ss = Ss / len(j_array)
-        return - Ss
-
-
 def get_d_tuple(j_tuple: tuple) -> tuple:
     """
     """
@@ -202,6 +107,64 @@ def get_d_tuple(j_tuple: tuple) -> tuple:
         d2 = j_tuple[2] / denom
         d3 = j_tuple[3] / denom
         return d1, d2, d3
+    
+
+def get_j_tuple_random(p: float) -> tuple:
+    """
+    """
+    jr0 = (1 - p)**3
+    jr1 = 3 * p * (1 - p)**2
+    jr2 = 3 * p**2 * (1 - p)
+    jr3 = p**3
+
+    return (jr0, jr1, jr2, jr3)
+
+
+def get_sigma(p: float, j_tuple: tuple) -> float:
+    """
+    sigma differentiates states of segregation from ordering
+    Notes
+    -----
+    See IV.A. Definition of correlation functions in 
+    Frary and Schuh. Phys. Rev. E 76, 041108
+    DOI: 10.1103/PhysRevE.76.041108
+    """
+    if p == 0 or p == 1:
+        return 0
+
+    j_tuple_r = get_j_tuple_random(p)
+    try:
+        j_sigma = (
+            (j_tuple[1] + j_tuple[2]) / (j_tuple[0] + j_tuple[3]) *
+            (j_tuple_r[0] + j_tuple_r[3]) / (j_tuple_r[1] + j_tuple_r[2])
+        )
+    except:
+        return np.nan
+
+    if j_sigma <= 1:
+        return (1 - j_sigma)
+    else:
+        return 1 / j_sigma - 1
+
+
+def get_chi(p: float, j_tuple: tuple) -> float:
+    """
+    differentiates the tendency for bonds to form either compact 
+    or elongated clusters
+    """
+    if p == 0 or p == 1 or (j_tuple[1] == 0 and j_tuple[2] == 0):
+        return 0
+    
+    if j_tuple[1] == 0:
+        return -1
+
+    j_tuple_r = get_j_tuple_random(p)
+    j_chi = j_tuple[2] / j_tuple[1] * j_tuple_r[1] / j_tuple_r[2]
+
+    if j_chi <= 1:
+        return (1 - j_chi)
+    else:
+        return 1 / j_chi - 1
 
 
 def ori_mat(ori: tuple, oridesc: str ='euler-bunge:active') -> np.ndarray:
