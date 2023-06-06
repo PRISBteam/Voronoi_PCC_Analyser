@@ -4,6 +4,10 @@ Examples
 
     $ python sparsemat.py --file filename.tess --dir my_dir
 
+CLI tool
+
+    $ sparsemat --file filename.tess --dir my_dir
+
 """
 
 import argparse

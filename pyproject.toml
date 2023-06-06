@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "PCCanalyser"
-version = "0.1.2"
+version = "0.5.0"
 dependencies = [
     "numpy", "scipy", "tqdm", "jupyterlab", 
     "matplotlib",
 ]
-description = "Polyhedral Cell Complex (PCC) Analysis tool"
+description = "Polyhedral Cell Complex (PCC) Analysis tools"
 readme = "README.md"
 
 [project.urls]
