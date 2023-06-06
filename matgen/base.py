@@ -283,10 +283,6 @@ class GrainBoundary(LowerOrderCell):
     set_external(is_external)
     set_gb_index(gb_index)
     get_new_seed_prob(critical_size)
-    
-    Notes
-    -----
-
 
     References
     ---------
@@ -385,7 +381,8 @@ class GrainBoundary(LowerOrderCell):
 
     def get_new_seed_prob(self, critical_size=0):
         """
-        without coefficient etha0
+        The probability for nucleation of a new grain on the GB.
+        Without the coefficient of initial probability etha0.
         """
         try:
             if self.eq_diam > critical_size:
@@ -453,6 +450,7 @@ class TripleJunction(LowerOrderCell):
     
 def _create_ax(dim: int = 2, figsize: Tuple = (8,8)) -> Axes:
     """
+    Create axis.
     """
     if dim == 2:
         projection = None
@@ -561,6 +559,35 @@ class Vertex(LowerOrderCell):
 
 class Vertex2D(Vertex, TripleJunction):
     """
+    Vertex (0-cell) of a 2D cell complex.
+
+    Parameters
+    ----------
+    id : int
+        Identifier of the vertex.
+    x: float
+        Vertex x-coordinate.
+    y: float
+        Vertex y-coordinate.
+    z: float, optional
+        Vertex z-coordinate. Default is 0.
+    
+    Attributes
+    ----------
+    id : int
+        Identifier of the vertex.
+    x: float
+        Vertex x-coordinate.
+    y: float
+        Vertex y-coordinate.
+    z: float, optional
+        Vertex z-coordinate.
+    coord: Tuple[float]
+        A tuple of x-, y-, z-coordinates.
+
+    Methods
+    -------
+    plot(ax, figsize, **kwargs)
     """
     def __init__(self, id: int, x: float, y: float, z: float = 0):
         super().__init__(id, x, y, z)
@@ -593,6 +620,11 @@ class Vertex2D(Vertex, TripleJunction):
 
 class Vertex3D(Vertex):
     """
+    Vertex (0-cell) of a 3D cell complex.
+
+    Methods
+    -------
+    plot(ax, figsize, **kwargs)
     """
     def plot(
             self,
@@ -629,7 +661,7 @@ class Edge(LowerOrderCell):
 
     Methods
     -------
-    from_tess_file(file)
+    from_tess_file(file, _vertices)
     """
     def __init__(self, id: int, v_ids: list):
         super().__init__(id)
@@ -695,6 +727,23 @@ class Edge(LowerOrderCell):
 
 class Edge2D(Edge, GrainBoundary):
     """
+    Edge (1-cell) of a 2D cell complex is a grain boundary.
+
+    Parameters
+    ----------
+    id : int
+        Identifier of the edge.
+    v_ids: list
+        A list of two vertex identifiers of the edge.
+    
+    Additional Attributes
+    ----------
+    tj_ids : list
+        Alias for the list of two vertex identifiers of the edge.
+    eq_diam: float
+        Alias for the edge's length.
+
+
     """
     def __init__(self, id: int, v_ids: list):
         super().__init__(id, v_ids)
@@ -711,6 +760,7 @@ class Edge2D(Edge, GrainBoundary):
 
 class Edge3D(Edge, TripleJunction):
     """
+    Edge (1-cell) of a 3D cell complex is a triple junction.
     """
     def __init__(self, id: int, v_ids: list):
         super().__init__(id, v_ids)
@@ -737,24 +787,30 @@ class Face(Cell):
     e_ids : list
         A list of edge identifiers of the face.
     d : float
-
+        Parameter of the equation of the face (see Notes).
     a : float
-
+        Parameter of the equation of the face (see Notes).
     b : float
-
+        Parameter of the equation of the face (see Notes).
     c : float
-
+        Parameter of the equation of the face (see Notes).
     normal : Tuple[float]
-
+        Normal vector of the face (a, b, c).
     area : float, optional
         Area of the face.
 
     Methods
     -------
-    from_tess_file(file)
+    from_tess_file(file, _edges)
     add_edge(e_id)
     add_edges(e_ids)
     add_equation(d, a, b, c)
+
+    Notes
+    -----
+    Parameters d, a, b, c are the parameters of the equation of a face
+    :math:`ax + by + cz = d` with :math:`a^2 + b^2 + c^2 = 1`. See details
+    https://neper.info/doc/fileformat.html
     """
     def __init__(self, id: int, v_ids: list):
         super().__init__(id)
@@ -866,6 +922,7 @@ class Face(Cell):
 
 class Face2D(Face, Grain):
     """
+    Face (2-cell) of a 2D cell complex is a grain.
     """
     def __init__(self, id: int, v_ids: list):
         super().__init__(id, v_ids)
@@ -948,6 +1005,7 @@ class Face2D(Face, Grain):
 
 class Face3D(Face, GrainBoundary):
     """
+    Face (2-cell) of a 3D cell complex is a grain boundary.
     """
     def __init__(self, id: int, v_ids: list):
         super().__init__(id, v_ids)
@@ -989,7 +1047,7 @@ class Poly(Grain):
 
     Methods
     -------
-    from_tess_file(file)
+    from_tess_file(file, _faces)
     add_vertex(v_id)
     add_vertices(v_ids):
     add_edge(e_id)
@@ -1085,6 +1143,7 @@ class Poly(Grain):
     @property
     def vol(self) -> float:
         """
+        Polyhedron volume.
         """
         try:
             return self.measure
@@ -1108,18 +1167,9 @@ def _add_neighbors(_cells: Dict, _incident_cells: Dict):
             _incident_cells[inc_cell_id].add_neighbors(cell.incident_ids)
 
 
-# def _add_neighbors_neighbors(_cells: Dict):
-#     """
-#     """
-#     for cell in _cells.values():
-#         nn_ids = []
-#         for n_id in cell.n_ids:
-#             nn_ids += _cells[n_id].n_ids
-#         cell.add_neighbors_neighbors(nn_ids)
-
-
 def _add_measures(_cells: Dict, measures: list):
     """
+    Add measures to the dict of cells from the list of measures.
     """
     n = len(_cells.keys())
     if n != len(measures):
@@ -1138,6 +1188,9 @@ def _add_thetas(
     upper_thrd: float = None
 ):
     """
+    Add thetas to the dict of cells from the list of thetas.
+    Parameters `lower_thrd` and `upper_thrd` can be used to
+    set special GBs from theta values.
     """
     n = len(_cells.keys())
     if n != len(thetas):
@@ -1181,22 +1234,79 @@ class CellComplex:
     
     Attributes
     ----------
-    dim: int
-    _vertices: Dict
-    _edges: Dict
-    _faces: Dict
-    _polyhedra: Dict, optional
+    dim : int
+        Cell complex dimension (2 or 3).
+    _vertices : dict
+    vertices : list
+    _edges : dict
+    edges : list
+    _faces : dict
+    faces : list
+    _polyhedra : dict
+    polyhedra : list
     crysym : str
-    load_time: float
-
-
+    load_time : float
+    vernb : int
+        Number of vertices.
+    edgenb : int
+        Number of edges.
+    facenb : int
+        Number of faces.
+    polynb : int
+        Number of polyhedra.
+    grainnb : int
+        Number of grains.
+    _GBs : dict
+        Grain boundaries. Keys are grain ids, values are the cells of
+        the corresponding class (edges for 2D, faces for 3D).
+    _TJs : dict
+        Triple junctions. Keys are grain ids, values are the cells of
+        the corresponding class (vertices for 2D, edges for 3D).
+    _grains : dict
+        Grains. Keys are grain ids, values are the cells of
+        the corresponding class (faces for 2D, polyhedra for 3D).
+    _three_sided_grains : dict
+        Grains with 3 sides in 2D cell complex.
+    p : float
+        Special GB fraction.
+    j_tuple : tuple
+        TJ fractions (j0, j1, j2, j3).
+    n_max_order : int
+    
     Methods
     -------
-    from_tess_file(file)
-    add_vertex(v_id)
-    add_vertices(v_ids):
-    add_edge(e_id)
-    add_edges(e_ids)
+    from_tess_file(file, with_cell_size, with_measures, 
+                    with_theta, theta_file, lower_thrd, upper_thrd)
+    get_one(cell_type, cell_id)
+    get_many(cell_type, cell_ids)
+    get_external_ids(cell_type)
+    get_internal_ids(cell_type)
+    get_special_ids()
+    get_nonspecial_internal_ids()
+    plot_vertices(v_ids, ax, figsize, labels, **kwargs)
+    plot_edges(e_ids, ax, figsize, labels, **kwargs)
+    plot_faces(f_ids, ax, figsize, labels, **kwargs)
+    plot_polyhedra(p_ids, ax, figsize, **kwargs)
+    plot_seeds(cell_ids, ax, figsize, **kwargs)
+    get_junction_ids_of_type(junction_type)
+    get_spec_fraction()
+    get_ext_fraction(cell_type)
+    get_j_fraction(junction_type)
+    get_three_sided_distribution()
+    set_measures_from_coo()
+    set_junction_types()
+    set_gb_indexes()
+    set_three_sided_types()
+    reset_special(lower_thrd, upper_thrd, special_ids, warn_external)
+    to_TJset()
+    describe(attr_list)
+    set_theta_from_ori(lower_thrd, upper_thrd)
+    set_thetas(thetas, lower_thrd, upper_thrd)
+    set_theta_from_file(file, lower_thrd, upper_thrd)
+    find_neighbors_of_order(max_order)
+    get_neighbor_dis_angles(order)
+    get_neighbor_counts_of_order(order)
+    get_new_random_seeds(k, critical_size, spec_prob, exclusion_list, replace)
     """
     def __init__(
         self,
@@ -1206,8 +1316,6 @@ class CellComplex:
         _faces: Dict,
         _polyhedra: Dict = None
     ):
-        """
-        """
         self.dim = dim
         self._vertices = _vertices
         self._edges = _edges
@@ -1259,8 +1367,6 @@ class CellComplex:
             _edges = Edge3D.from_tess_file(file, _vertices)
                     
         _add_neighbors(_vertices, _edges)
-        # _add_neighbors_neighbors(_vertices)
-        # _add_neighbors_neighbors(_edges)
 
         if dim == 2:
             _faces = Face2D.from_tess_file(file, _edges)
@@ -1268,12 +1374,10 @@ class CellComplex:
             _faces = Face3D.from_tess_file(file, _edges)
         
         _add_neighbors(_edges, _faces)
-        # _add_neighbors_neighbors(_faces)
 
         if dim == 3:
             _polyhedra = Poly.from_tess_file(file, _faces)
             _add_neighbors(_faces, _polyhedra)
-            # _add_neighbors_neighbors(_polyhedra)
         
         # Set external
         if dim == 2:
@@ -1382,8 +1486,6 @@ class CellComplex:
         return cellcomplex
 
     def __str__(self):
-        """
-        """
         cc_str = f"<class {self.__class__.__name__}> {self.dim}D" +\
         f"\n{self.vernb} vertices" + f"\n{self.edgenb} edges" +\
         f"\n{self.facenb} faces" 
@@ -1392,9 +1494,7 @@ class CellComplex:
             cc_str += f"\n{self.polynb} polyhedra"
         return cc_str
 
-    def __repr__(self) -> str:
-        """
-        """
+    def __repr__(self):
         return self.__str__()
 
     @property
@@ -1419,40 +1519,49 @@ class CellComplex:
     def polyhedra(self):
         """
         """
-        return [p for p in self._polyhedra.values()]
+        if self.dim == 3:
+            return [p for p in self._polyhedra.values()]
 
     @property
     def vernb(self):
         """
+        Number of vertices.
         """
         return len(self._vertices)
 
     @property
     def edgenb(self):
         """
+        Number of edges.
         """
         return len(self._edges)
 
     @property
     def facenb(self):
         """
+        Number of faces.
         """
         return len(self._faces)
 
     @property
     def polynb(self):
         """
+        Number of polyhedra.
         """
-        return len(self._polyhedra)
+        if self.dim == 3:
+            return len(self._polyhedra)
 
     @property
     def grainnb(self):
         """
+        Number of grains.
         """
         return len(self._grains)
 
     def _choose_cell_type(self, cell_type: str | int):
         """
+        Returns a dict with cells corresponding to the cell type.
+        cell_type may be of str or int data type.
         """
         if cell_type in ['v', 'vertex', 0, '0']:
             _cells = self._vertices
@@ -1469,6 +1578,7 @@ class CellComplex:
     @property
     def _GBs(self):
         """
+        Grain boundaries.
         """
         if self.dim == 2:
             _cells = self._choose_cell_type('edge')
@@ -1479,6 +1589,7 @@ class CellComplex:
     @property
     def _TJs(self):
         """
+        Triple junctions.
         """
         if self.dim == 2:
             _cells = self._choose_cell_type('vertex')
@@ -1489,6 +1600,7 @@ class CellComplex:
     @property
     def _grains(self):
         """
+        Grains.
         """
         if self.dim == 2:
             _cells = self._choose_cell_type('face')
@@ -1499,6 +1611,7 @@ class CellComplex:
     @property
     def _three_sided_grains(self):
         """
+        Grains with 3 sides in 2D cell complex.
         """
         if self.dim == 2:
             three_sided = {}
@@ -1509,6 +1622,7 @@ class CellComplex:
 
     def get_one(self, cell_type: str | int, cell_id: int):
         """
+        Get one cell of chosen type with chosen id.
         """
         _cells = self._choose_cell_type(cell_type)
         return _cells[cell_id]
@@ -1541,7 +1655,7 @@ class CellComplex:
 
     def get_nonspecial_internal_ids(self):
         """
-        internal and external can be special
+        internal and external can be nonspecial
         """
         cell_ids = []
         for cell in self._GBs.values():
@@ -1795,24 +1909,8 @@ class CellComplex:
                 for v_id in edge.v_ids:
                     points.append(self._vertices[v_id].coord)
                 edge.set_measure(matutils.edge_length_2D(points))
-            
-            #     v_ids = c.get_one('f', f_id).v_ids
-#     vs = c.get_many('v', v_ids)
-#     points = np.array([v.coord2D for v in vs])
-#     d = Delaunay(points)
-#     area = 0
-#     for t in d.simplices:
-#         area += _tri_area_2D(points[t])
-#     return area
 
-
-
-    def to_TJset(self):
-        """
-        """
-        return TripleJunctionSet(self.p, self.j_tuple)
-
-    def set_junction_types(self) -> None:
+    def set_junction_types(self):
         """
         external has None junction type
         """
@@ -1857,7 +1955,7 @@ class CellComplex:
                 gb_index = counter[1] + 2*counter[2] + 3*counter[3]
                 gb.set_gb_index(gb_index=gb_index)
 
-    def set_three_sided_types(self) -> None:
+    def set_three_sided_types(self):
         """
         T_{i + j}
         i - the number of special GBs (0...6)
@@ -1935,6 +2033,11 @@ class CellComplex:
         if self.dim == 2:
             self.set_three_sided_types()
 
+    def to_TJset(self):
+        """
+        """
+        return TripleJunctionSet(self.p, self.j_tuple)
+    
     def describe(self, attr_list: list = []):
         """
         """

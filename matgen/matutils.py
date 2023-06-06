@@ -79,7 +79,6 @@ def _get_IJV_from_incidence(_cells: Dict) -> Tuple[List]:
 
 def load_matrix_coo(filename, matrix_shape=None) -> sparse.coo_matrix:
     """
-    
     """
     M_sparse = np.loadtxt(filename, dtype='int')
     I = np.array([row[0] for row in M_sparse])
