@@ -1,7 +1,7 @@
-"""Base classes for complex analysis.
+"""Base classes.
 
 """
-from __future__ import annotations # to avoid NameError in type hinting
+from __future__ import annotations
 import io
 import time
 from typing import Dict, Iterable, List, Tuple
@@ -10,7 +10,6 @@ from tqdm import tqdm
 import numpy as np
 import random
 import math
-# import pandas as pd
 
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
@@ -52,7 +51,6 @@ class Cell:
     def __init__(self, id: int):
         self.id = id
         self.n_ids = [] # neighbour ids
-        # self.nn_ids = [] # neighbour of neighbor ids
         self.is_external = False
 
     def __str__(self):
@@ -95,14 +93,6 @@ class Cell:
         s = set(self.n_ids) # eliminate duplicates
         s.difference_update([self.id]) # eliminate self.id
         self.n_ids = list(s)
-
-    # def add_neighbors_neighbors(self, nn_ids: Iterable):
-    #     """
-    #     """
-    #     self.nn_ids += nn_ids
-    #     s = set(self.nn_ids) # eliminate duplicates
-    #     s.difference_update([self.id] + self.n_ids) # eliminate id and n_ids
-    #     self.nn_ids = list(s)
 
     def set_external(self, is_external: bool = True) -> None:
         """Make the cell external (is_external=True) or internal
@@ -255,13 +245,6 @@ class LowerOrderCell(Cell):
         """
         if abs(signed_incident_id) not in self.incident_ids:
             self.signed_incident_ids.append(signed_incident_id)
-    
-    # def add_incident_cells(self, incident_ids: Iterable):
-    #     """
-    #     FIXME: incident_ids may be signed?
-    #     """
-    #     self.incident_ids += incident_ids
-    #     self.incident_ids = list(set(self.incident_ids))
 
     @property
     def degree(self) -> int:
@@ -270,28 +253,46 @@ class LowerOrderCell(Cell):
         return len(self.signed_incident_ids)
 
 
-class TripleJunction(LowerOrderCell):
-    """
-    """
-    def __init__(self, id: int):
-        super().__init__(id)
-        self.junction_type = None
-
-    def set_junction_type(self, junction_type: int):
-        """
-        junction_type equals number of special incident cells
-        check consistency: external has type None
-        """
-        if not self.is_external:
-            self.junction_type = junction_type
-        elif self.is_external:
-            raise ValueError(
-                'External junction cannot have a type other than None'
-            )
-
-
 class GrainBoundary(LowerOrderCell):
     """
+    Grain Boundary (GB). 
+    2D: 1-cells (edges) are considered to be grain biundaries.
+    3D: 2-cells (faces) are considered to be grain boundaries.
+
+    Parameters
+    ----------
+    id : int
+        Identifier of the grain boundary.
+    
+    Attributes
+    ----------
+    id : int
+        Identifier of the grain boundary.
+    is_special: bool
+        Is the grain boundary special?
+    theta: float
+        Disorientation angle between incident grains (in degrees).
+        Theta = -1 for external grain boundaries.
+    gb_index: int
+        Grain boundary index.
+
+    Methods
+    -------
+    set_special(is_special)
+    set_theta(theta, lower_thrd, upper_thrd)
+    set_external(is_external)
+    set_gb_index(gb_index)
+    get_new_seed_prob(critical_size)
+    
+    Notes
+    -----
+
+
+    References
+    ---------
+    Discrete model for discontinuous dynamic recrystallisation in its
+    application to post-dynamic recrystallisation in adiabatic shear
+    bands
     """
     def __init__(self, id: int):
         super().__init__(id)
@@ -301,7 +302,8 @@ class GrainBoundary(LowerOrderCell):
 
     def set_special(self, is_special: bool = True):
         """
-        External cannot be set special
+        Some grain boundaries can be set special.
+        External cells cannot be set special.
         """
         if is_special and not self.is_external:
             self.is_special = is_special
@@ -316,6 +318,7 @@ class GrainBoundary(LowerOrderCell):
         upper_thrd: float = None
     ):
         """
+        Reset is_special with respect to new thresholds for theta.
         """
         if not self.is_external and self.theta:
             if lower_thrd and upper_thrd:
@@ -346,7 +349,6 @@ class GrainBoundary(LowerOrderCell):
         disorientation angle (in degrees)
         theta must be >= 0 ?
         for external cells theta = -1
-        TODO: check if theta is changed
         """
         if theta < 0:
             self.set_external(True)
@@ -360,7 +362,7 @@ class GrainBoundary(LowerOrderCell):
 
     def set_external(self, is_external: bool = True):
         """
-        When set external, it is set not special with theta = -1
+        When set external, it is set non-special and theta = -1
         """
         self.is_external = is_external
         if is_external:
@@ -395,6 +397,56 @@ class GrainBoundary(LowerOrderCell):
             return 0
         else:
             return (2 * self.gb_index) / (3 * len(self.n_ids) * coeff)
+        
+
+class TripleJunction(LowerOrderCell):
+    """
+    Triple junction (TJ). 
+    2D: 0-cells (vertices) are considered to be triple junctions.
+    3D: 1-cells (edges) are considered to be triple junctions.
+
+    Parameters
+    ----------
+    id : int
+        Identifier of the triple junction.
+    
+    Attributes
+    ----------
+    id : int
+        Identifier of the triple junction.
+    junction type: int
+        Junction_type equals the number of special incident grain boundaries.
+
+    Methods
+    -------
+    set_junction_type(junction_type)
+    
+    Notes
+    -----
+    Any binary classification of grain boundaries induces four distinct
+    TJs types: J0, J1, J2 and J3, where Jk is the index enumerating the number
+    of special GBs joint at a specific triple line. The corresponding TJ fractions of
+    different types j0, j1, j2 and j3 are the probabilities that a randomly chosen
+    TJ will possess with the corresponding type.
+
+    References
+    ---------
+    """
+    def __init__(self, id: int):
+        super().__init__(id)
+        self.junction_type = None
+
+    def set_junction_type(self, junction_type: int):
+        """
+        Junction type equals number of special incident cells.
+        External has type None.
+        """
+        if not self.is_external:
+            self.junction_type = junction_type
+        elif self.is_external:
+            raise ValueError(
+                'External junction cannot have a type other than None'
+            )
 
     
 def _create_ax(dim: int = 2, figsize: Tuple = (8,8)) -> Axes:
