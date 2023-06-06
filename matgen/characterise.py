@@ -1,5 +1,5 @@
 """
-TODO: add description
+Module for cell complex characterisation.
 """
 
 import argparse
@@ -9,7 +9,7 @@ import glob
 import logging
 import pandas as pd
 
-from entropic import TripleJunctionSet
+from matgen.entropic import TripleJunctionSet
 
 def main() -> None:
     """

@@ -5,7 +5,7 @@ from typing import Dict, Iterable, List, Tuple
 import numpy as np
 import random
 from scipy import sparse, linalg, stats, spatial
-import logging
+
 
 def _get_IJV_from_neighbors(_cells: Dict) -> Tuple[List]:
     """Get I, J, V lists of the adjacency matrix from a dictionary of cells.
