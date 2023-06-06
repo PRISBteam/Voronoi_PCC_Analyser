@@ -387,11 +387,13 @@ class GrainBoundary(LowerOrderCell):
         """
         without coefficient etha0
         """
-
-        if self.eq_diam > critical_size:
-            coeff = (1 - (critical_size / self.eq_diam)**3)
-        else:
-            coeff = 0
+        try:
+            if self.eq_diam > critical_size:
+                coeff = (1 - (critical_size / self.eq_diam)**3)
+            else:
+                coeff = 0
+        except:
+            coeff = 1
 
         if self.is_external:
             return 0
