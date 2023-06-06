@@ -6,6 +6,10 @@ import io
 import time
 from typing import Dict, Iterable, List, Tuple
 import logging
+logging.basicConfig(
+    format='%(asctime)s %(message)s',
+    datefmt='%H:%M:%S', level=logging.INFO
+)
 from tqdm import tqdm
 import numpy as np
 import random
