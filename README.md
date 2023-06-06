@@ -1,5 +1,37 @@
 # Polyhedral Cell Complex (PCC) Analyser
 
+## Quick start
+
+Installation:
+
+```
+pip install PCCanalyser
+```
+
+Using of classes:
+```
+from matgen.base import CellComplex
+from matgen.entropic import TripleJunctionSet
+```
+
+Command-line interface (CLI) tools:
+
+```
+# generate sparse matrices
+sparsemat --file complex.tess --dir path/to/target/directory
+
+# find disorientation angles between neighbouring grains of orders less than N
+ndisanples --file complex.tess --dir path/to/target/directory --max-order N
+
+# find disorientation angles between neighbouring grains of orders less than N in quaternions
+ndisorientquat --file complex.tess --dir path/to/target/directory --max-order N
+
+# characteristics of a cell complex
+characterise --dir path/to/files
+```
+
+For details see: tutorial/Examples.ipynb
+
 <p> The code addressed the practical needs of creating discrete (combinatorial) cell complexes (DCCs) 
 based on the both regular (cubic or octahedron) and Laguerre-Voronoi tessellations of space provided by the <a href="https://neper.info" target=”_blank”> Neper </a> software. In particular, Voronoi tessellations with the corresponding DCCs provide a very close representation of the real material microstructures and are widely used in molecular dynamics and other types of simulations. Such complexes arise from the tessellations of spatial domains around arbitrary sets of points, which ensure that each 1-cell is in the boundary of exactly three 2-cells and three 3-cells, and each 0-cell is in the boundary of exactly four 1-cells, six 2-cells and four 3-cells. </p>
 

@@ -1,24 +1,25 @@
-"""Stand-alone module to create sparse matrices from Neper output.
+"""Module to create sparse matrices from Neper output.
 
 Examples
 
     $ python sparsemat.py --file filename.tess --dir my_dir
+
+CLI tool
+
+    $ sparsemat --file filename.tess --dir my_dir
 
 """
 
 import argparse
 import os
 import time
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 import numpy as np
 
 from matgen import base, matutils
 
 
-def extract_seeds(
-    filename: str,
-    work_dir: str = '.'
-) -> Dict:
+def extract_seeds(filename: str, work_dir: str = '.') -> Dict:
     """Extract seeds from .tess file and save as seeds.txt.
 
     Parameters
@@ -60,7 +61,7 @@ def _save_A(_cells: Dict, filename_1: str, filename_2: str) -> None:
         A dictionary of cells. Keys - cell ids, values - cell objects
         which have `n_ids` attribute.
     filename
-        Filename of a new file with the adjacency matrix in sparse format.    
+        Filename of a new file with the adjacency matrix in sparse format.
     """
     I, J, V = matutils._get_IJV_from_neighbors(_cells)
     np.savetxt(filename_1, [*zip(I, J, V)], fmt='%d')
@@ -90,7 +91,7 @@ def parse_tess_file(filename) -> Tuple:
     ----------
     filename
         Filepath to .tess file with a tesselation (Neper output).
-    
+
     Returns
     -------
     dim
@@ -121,7 +122,7 @@ def parse_tess_file(filename) -> Tuple:
                     y = float(row[2])
                     z = float(row[3])
                     _vertices[v_id] = base.Vertex(v_id, x, y, z)
-            
+
             if '**edge' in line:
                 n = int(file.readline().rstrip('\n'))
                 for _ in range(n):
@@ -143,7 +144,7 @@ def parse_tess_file(filename) -> Tuple:
                         s = set(v.incident_ids)
                         s.difference_update([e_id])
                         _edges[e_id].add_neighbors(list(s))
-            
+
             if '**face' in line:
                 n = int(file.readline().rstrip('\n'))
                 for i in range(n):
@@ -166,7 +167,7 @@ def parse_tess_file(filename) -> Tuple:
                         else:
                             _edges[abs(e_id)].add_incident_cell(-f_id)
                     face.add_edges(e_ids)
-                    
+
                     row = file.readline().split()
                     face.add_equation(
                         float(row[0]),
@@ -175,7 +176,7 @@ def parse_tess_file(filename) -> Tuple:
                         float(row[3])
                     )
                     _ = file.readline()
-                    
+
                     _faces[f_id] = face
                 # Add neighbors to faces from common edges
                 for e in _edges.values():
@@ -183,7 +184,7 @@ def parse_tess_file(filename) -> Tuple:
                         s = set(e.incident_ids)
                         s.difference_update([f_id])
                         _faces[f_id].add_neighbors(list(s))
-            
+
             if '**polyhedron' in line:
                 n = int(file.readline().rstrip('\n'))
                 for i in range(n):
@@ -257,7 +258,7 @@ def save_matrices(filename, work_dir: str = '.') -> None:
         B_filenames = ['B1.txt', 'B2.txt', 'B3.txt']
         AC_filenames = ['AC3.txt', 'AC2.txt', 'AC1.txt', 'AC0.txt']
         BC_filenames = ['BC3.txt', 'BC2.txt', 'BC1.txt']
-    
+
     for A_filename, AC_filename, _cells in zip(
         A_filenames, AC_filenames, cell_dicts
     ):
@@ -266,9 +267,9 @@ def save_matrices(filename, work_dir: str = '.') -> None:
         _save_A(_cells, filename_voro, filename_delau)
 
     for B_filename, BC_filename, _cells in zip(
-        B_filenames,BC_filenames, cell_dicts[:-1]
+        B_filenames, BC_filenames, cell_dicts[:-1]
     ):
-        filename_voro= os.path.join(work_dir, B_filename)
+        filename_voro = os.path.join(work_dir, B_filename)
         filename_delau = os.path.join(work_dir, BC_filename)
         _save_B(_cells, filename_voro, filename_delau)
 
@@ -292,7 +293,7 @@ def save_matrices(filename, work_dir: str = '.') -> None:
         v = _vertices[i]
         seeds_delau.append((v.x, v.y, v.z))
     np.savetxt(seeds_delau_filename, seeds_delau, fmt='%.12f')
-        
+
     normals_filename = os.path.join(work_dir, 'voro_normals.txt')
     _faces = cell_dicts[2]
     with open(normals_filename, 'w') as file:
@@ -316,8 +317,8 @@ def main() -> None:
     """
     """
     start = time.time()
-    
-    parser = argparse.ArgumentParser()
+
+    parser = argparse.ArgumentParser(description='Create sparse matrices from Neper output')
 
     parser.add_argument(
         "--file",

@@ -50,7 +50,7 @@ def main() -> None:
         default=1,
         type=int,
         dest='min_order',
-        help="Maximum order of neighbors"
+        help="Minimum order of neighbors"
     )
 
     args = parser.parse_args()

@@ -1,5 +1,5 @@
 import pytest
-import sparsemat
+import matgen.sparsemat as sparsemat
 
 def test_extract_seeds():
     """
