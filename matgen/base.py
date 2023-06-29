@@ -399,7 +399,7 @@ class GrainBoundary(LowerOrderCell):
         if self.is_external:
             return 0
         else:
-            return (2 * self.gb_index) / (3 * len(self.n_ids) * coeff)
+            return (2 * self.gb_index) / (3 * len(self.n_ids)) * coeff
         
 
 class TripleJunction(LowerOrderCell):

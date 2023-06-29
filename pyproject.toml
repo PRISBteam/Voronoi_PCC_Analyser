@@ -4,13 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "PCCanalyser"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
     "numpy >= 1.21.5", "scipy >= 1.7.3", "tqdm >= 4.64.1",
     "jupyterlab >= 3.4.4", "matplotlib >= 3.5.2",
 ]
 description = "Polyhedral Cell Complex (PCC) Analysis tools"
 readme = "README.md"
+authors = [{ name = "Oleg Bushuev" },]
 
 [project.urls]
 documentation = "https://github.com/PRISBteam/Voronoi_PCC_Analyser"
