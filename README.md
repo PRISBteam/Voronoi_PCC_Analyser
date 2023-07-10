@@ -21,7 +21,7 @@ Command-line interface (CLI) tools:
 sparsemat --file complex.tess --dir path/to/target/directory
 
 # find disorientation angles between neighbouring grains of orders less than N
-ndisanples --file complex.tess --dir path/to/target/directory --max-order N
+ndisangles --file complex.tess --dir path/to/target/directory --max-order N
 
 # find disorientation angles between neighbouring grains of orders less than N in quaternions
 ndisorientquat --file complex.tess --dir path/to/target/directory --max-order N
