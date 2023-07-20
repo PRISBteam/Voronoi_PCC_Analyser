@@ -3,7 +3,6 @@ Module for cell complex characterisation.
 """
 
 import argparse
-import os
 import time
 import glob
 import logging

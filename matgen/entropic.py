@@ -5,7 +5,6 @@ import math
 from typing import Iterable
 import logging
 import numpy as np
-import pandas as pd
 
 class TripleJunctionSet:
     """
