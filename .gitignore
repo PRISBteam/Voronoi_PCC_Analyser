@@ -1,4 +1,5 @@
 .vscode/
+.DS_Store
 Data/
 figures_data/
 test_bugs/
@@ -133,4 +134,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-.DS_Store
+
