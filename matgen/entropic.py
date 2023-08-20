@@ -2,15 +2,87 @@
 Software module for the Entropic analysis paper
 """
 import math
-from typing import Iterable
 import logging
 import numpy as np
 
-class TripleJunctionSet:
+class EntropicMixin:
+    """
+    """
+    def __repr__(self) -> str:
+        """
+        """
+        return self.__str__()
+    
+    def get_triv_entropy(self, p):
+        """
+        theoretical trivial entropy
+        """
+        if p == 0 or p == 1:
+            return 0
+        q = 1 - p
+        return - (p * math.log2(p) + q * math.log2(q))
+    
+    def get_entropy(self, tuple_):
+        """
+        config entropy
+        """
+        array_ = np.array(tuple_)
+        nonzeros = array_[array_ > 0]
+        return - np.sum(nonzeros * np.log2(nonzeros))
+    
+    def get_mean_part(self, tuple_):
+        """
+        the mean part of the config entropy
+        """
+        array_ = np.array(tuple_)
+        if np.any(array_ == 0):
+            return np.inf        
+        return - np.log2(np.prod(array_)) / len(array_)
+
+    def get_deviat_part(self, tuple_):
+        """
+        the deviatoric part of the config entropy
+        """
+        array_ = np.array(tuple_)
+        if np.any(array_ == 0):
+            return - np.inf
+        Ss = 0
+        for k in range(len(array_)):
+            jk = array_[k]
+            for l in range(k + 1, len(array_)):
+                jl = array_[l]
+                Ss += (jk - jl) * math.log2(jk / jl)
+        Ss = Ss / len(array_)
+        return - Ss
+
+    def get_metastability(self, Smax, Smin):
+        """
+        """
+        Srand = self.S_rand
+        S = self.S
+        if S >= Srand and Smax != Srand:
+            return (S - Srand) / (Smax - Srand)
+        elif S < Srand and Smin != Srand:
+            return (S - Srand) / (Srand - Smin)
+    
+    def get_properties(self, attr_list: list = []) -> dict:
+        """
+        attr_list - custom list of properties to return 
+        """
+        if not attr_list:
+            return self.__dict__
+
+        try:
+            return {attr_name: getattr(self, attr_name) for attr_name in attr_list}
+        except:
+            logging.exception('Check properties!')
+
+
+class TripleJunctionSet(EntropicMixin):
     """
     structure representation
     """
-    def __init__(self, p, j_tuple) -> None:
+    def __init__(self, p, j_tuple):
         """
         p - empiric SGBs fraction
         j_tuple - TJ fractions j0, j1, j2, j3
@@ -34,7 +106,7 @@ class TripleJunctionSet:
 
         self.S = self.get_S()
         self.S_m = self.get_S_m()
-        self.S_s = self.get_S_s()
+        self.S_d = self.get_S_d()
         self.kappa = self.S_m / self.S_s if self.S_s != 0 else 0
         self.delta_S = self.Sp - self.S
 
@@ -122,7 +194,7 @@ class TripleJunctionSet:
         
         return - np.log2(np.prod(j_array)) / len(j_array)
 
-    def get_S_s(self):
+    def get_S_d(self):
         """
         the skrew part of the structural entropy
         """
@@ -189,29 +261,95 @@ class TripleJunctionSet:
     def S_rand(self):
         """
         """
-        j_array = np.array(self.j_tuple_random)
+        # j_array = np.array(self.j_tuple_random)
 
-        nonzeros = j_array[j_array > 0]
-        return - np.sum(nonzeros * np.log2(nonzeros))
+        # nonzeros = j_array[j_array > 0]
+        # return - np.sum(nonzeros * np.log2(nonzeros))
+        return self.get_entropy(self.j_tuple_random)
 
-    def get_metastability(self, Smax, Smin):
+
+class GrainGammaSet(EntropicMixin):
+    """
+    structure representation
+    __dict__ doesn't show properties, but attributes
+    """
+    def __init__(self, g, gamma_tuple):
+        if g > 1 or g < 0:
+            logging.warning('g1 is not valid (must be < 1 and > 0)')
+        self.g = g
+
+        if not math.isclose(sum(gamma_tuple), 1):
+            logging.warning('TJs fraction sum is not equal to 1')
+        self.gamma0, self.gamma1, self.gamma2 = gamma_tuple
+
+        self.delta1 = self.gamma1/(1 - self.gamma0) if self.gamma0 != 1 else 0
+        self.delta2 = self.gamma2/(1 - self.gamma0) if self.gamma0 != 1 else 0
+
+        self.S_g = self.get_S_g()
+        self.S = self.get_S()
+        self.S_m = self.get_S_m()
+        self.S_d = self.get_S_d()
+        self.kappa = self.S_m / self.S_d if self.S_d != 0 else 0
+        self.delta_S = self.S - self.S_rand
+
+    def __str__(self):
+        cell_str = (self.__class__.__name__ + 
+                    f"(g={self.g}, gamma0={self.gamma0}, " +
+                    f"gamma1={self.gamma1}, gamma2={self.gamma2})")
+        return cell_str
+
+    @property
+    def gamma_tuple(self):
         """
         """
-        Srand = self.S_rand
-        S = self.S
-        if S >= Srand and Smax != Srand:
-            return (S - Srand) / (Smax - Srand)
-        elif S < Srand and Smin != Srand:
-            return (S - Srand) / (Srand - Smin)
-
-    def get_properties(self, attr_list: list = []) -> dict:
+        return (self.gamma0, self.gamma1, self.gamma2)
+    
+    @property
+    def gamma_tuple_random(self):
         """
-        attr_list - custom list of properties to return 
         """
-        if not attr_list:
-            return self.__dict__
+        gammar0 = (1 - self.g)**2
+        gammar1 = 2 * self.g * (1 - self.g1)
+        gammar2 = self.g**2
+        return (gammar0, gammar1, gammar2)
 
-        try:
-            return {attr_name: getattr(self, attr_name) for attr_name in attr_list}
-        except:
-            logging.exception('Check properties!')
+    def get_omega(self):
+        """
+        """
+        if self.g == 0 or self.g == 1:
+            w = 0 # TODO: check
+        elif self.gamma1 <= self.gammar1:
+            w = 1 - self.gamma1 / self.gammar1
+        elif self.gamma1 > self.gammar1:
+            w = self.gamma0 * self.gamma2 / self.gammar0 / self.gammar2 - 1
+        return w
+
+    def get_S_g(self):
+        """
+        theoretical trivial entropy for a given g
+        """
+        return self.get_triv_entropy(self.g)
+
+    def get_S(self):
+        """
+        configurational entropy
+        """
+        return self.get_entropy(self.gamma_tuple)
+    
+    def get_S_m(self):
+        """
+        the mean part of the configurational entropy
+        """
+        return self.get_mean_part(self.gamma_tuple)
+
+    def get_S_d(self):
+        """
+        the deviat part of the configurational entropy
+        """
+        return self.get_deviat_part(self.gamma_tuple)
+    
+    @property
+    def S_rand(self):
+        """
+        """
+        return self.get_entropy(self.gamma_tuple_random)
