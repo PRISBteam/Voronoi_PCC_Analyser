@@ -20,7 +20,7 @@ from matplotlib.axes import Axes
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from matgen import matutils
-from matgen.entropic import TripleJunctionSet
+from matgen.entropic import TripleJunctionSet, GrainGammaSet
 
 
 class Cell:
@@ -1303,6 +1303,7 @@ class CellComplex:
     set_three_sided_types()
     reset_special(lower_thrd, upper_thrd, special_ids, warn_external)
     to_TJset()
+    to_GGset()
     describe(attr_list)
     set_theta_from_ori(lower_thrd, upper_thrd)
     set_thetas(thetas, lower_thrd, upper_thrd)
@@ -1896,6 +1897,10 @@ class CellComplex:
         j3 = self.get_j_fraction(3)
         return (j0, j1, j2, j3)
     
+    @property
+    def g1(self):
+        pass   
+    
     def set_measures_from_coo(self):
         """
         2D case
@@ -2041,6 +2046,11 @@ class CellComplex:
         """
         """
         return TripleJunctionSet(self.p, self.j_tuple)
+    
+    def to_GGset(self):
+        """
+        """
+        return GrainGammaSet(self.g1, self.gamma_tuple)
     
     def describe(self, attr_list: list = []):
         """
