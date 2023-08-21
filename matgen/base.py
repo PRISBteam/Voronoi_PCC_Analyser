@@ -133,6 +133,8 @@ class Grain(Cell):
     crysym: str
         Grain crystal symmetry (see Crystal Symmetries section of Neper
         documentation).
+    is_covered:
+        Is the grain covered with special grain boundaries?
     oridesc: str
         A descriptor of used to parameterize the crystal orientations. See
         Rotations and Orientations section of Neper documentation for the
@@ -147,6 +149,7 @@ class Grain(Cell):
     set_crystal_ori(crysym, oridesc, ori_components)
     set_seed(seed_coord)
     dis_angle(other)
+    set_covered(is_covered)
     """
 
     def __init__(self, id: int):
@@ -155,6 +158,7 @@ class Grain(Cell):
         self.oridesc = None
         self.ori = None
         self.crysym = None
+        self.is_covered = False
 
     def set_crystal_ori(
         self,
@@ -191,7 +195,13 @@ class Grain(Cell):
         try:
             return self.measure
         except AttributeError:
-            return None 
+            return None
+
+    def set_covered(self, is_covered: bool = True):
+        """
+        Some grains can be covered with special GBs.
+        """
+        self.is_covered = is_covered
 
 
 class LowerOrderCell(Cell):
@@ -279,7 +289,9 @@ class GrainBoundary(LowerOrderCell):
         Theta = -1 for external grain boundaries.
     gb_index: int
         Grain boundary index.
-
+    gamma_type: int
+        Gamma type of the grain boundary.
+    
     Methods
     -------
     set_special(is_special)
@@ -287,6 +299,7 @@ class GrainBoundary(LowerOrderCell):
     set_external(is_external)
     set_gb_index(gb_index)
     get_new_seed_prob(critical_size)
+    set_gamma_type(gamma_type)
 
     References
     ---------
@@ -299,6 +312,7 @@ class GrainBoundary(LowerOrderCell):
         self.is_special = False
         self.theta = None
         self.gb_index = None
+        self.gamma_type = None
 
     def set_special(self, is_special: bool = True):
         """
@@ -400,6 +414,18 @@ class GrainBoundary(LowerOrderCell):
             return 0
         else:
             return (2 * self.gb_index) / (3 * len(self.n_ids)) * coeff
+        
+    def set_gamma_type(self, gamma_type: int):
+        """
+        Gamma type equals the number of adjacent covered grains
+        (can be 0, 1 or 2). External has type None.
+        """
+        if not self.is_external:
+            self.gamma_type = gamma_type
+        elif self.is_external:
+            raise ValueError(
+                'External GB cannot have a type other than None'
+            )
         
 
 class TripleJunction(LowerOrderCell):
@@ -1300,6 +1326,8 @@ class CellComplex:
     set_measures_from_coo()
     set_junction_types()
     set_gb_indexes()
+    set_covered_grains()
+    set_gamma_types()
     set_three_sided_types()
     reset_special(lower_thrd, upper_thrd, special_ids, warn_external)
     to_TJset()
@@ -1483,6 +1511,8 @@ class CellComplex:
         # If lower or upper threshold are known or both
         if lower_thrd or upper_thrd:
             cellcomplex.set_junction_types()
+            cellcomplex.set_covered_grains()
+            cellcomplex.set_gamma_types()
             if cellcomplex.dim == 2:
                 cellcomplex.set_three_sided_types()
 
@@ -1964,6 +1994,34 @@ class CellComplex:
                 gb_index = counter[1] + 2*counter[2] + 3*counter[3]
                 gb.set_gb_index(gb_index=gb_index)
 
+    def set_covered_grains(self):
+        """
+        """
+        for grain in self._grains.values():
+            is_covered = True
+            for gb in grain.gb_ids:
+                if not gb.is_special:
+                    is_covered = False
+                    break
+            grain.set_covered(is_covered)    
+    
+    def set_gamma_types(self):
+        """
+        external has None gamma type
+        """
+        for gb in self._GBs.values():
+            if not gb.is_external:
+                gamma_type = 0
+                for grain in gb.incident_ids:
+                    if grain.is_covered:
+                        gamma_type += 1
+                if gamma_type > 2:
+                    logging.warning(
+                        f'{gb} is incident to ' +
+                        f'{gamma_type} covered grains'
+                    )
+                gb.set_gamma_type(gamma_type)
+
     def set_three_sided_types(self):
         """
         T_{i + j}
@@ -2038,6 +2096,8 @@ class CellComplex:
                     raise ValueError('Set theta first!')
                 cell._reset_theta_thrds(lower_thrd, upper_thrd)
         self.set_junction_types()
+        self.set_covered_grains()
+        self.set_gamma_types()
         self.set_gb_indexes()
         if self.dim == 2:
             self.set_three_sided_types()
