@@ -3,6 +3,7 @@
 Data/
 figures_data/
 test_bugs/
+README-build.md
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
