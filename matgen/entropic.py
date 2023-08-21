@@ -275,7 +275,7 @@ class GrainGammaSet(EntropicMixin):
     """
     def __init__(self, g, gamma_tuple):
         if g > 1 or g < 0:
-            logging.warning('g1 is not valid (must be < 1 and > 0)')
+            logging.warning('g fraction is not valid (must be < 1 and > 0)')
         self.g = g
 
         if not math.isclose(sum(gamma_tuple), 1):
@@ -309,7 +309,7 @@ class GrainGammaSet(EntropicMixin):
         """
         """
         gammar0 = (1 - self.g)**2
-        gammar1 = 2 * self.g * (1 - self.g1)
+        gammar1 = 2 * self.g * (1 - self.g)
         gammar2 = self.g**2
         return (gammar0, gammar1, gammar2)
 
