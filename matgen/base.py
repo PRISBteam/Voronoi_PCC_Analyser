@@ -1301,6 +1301,10 @@ class CellComplex:
         Special GB fraction.
     j_tuple : tuple
         TJ fractions (j0, j1, j2, j3).
+    g_fraction : float
+        G fraction.
+    gamma_tuple: tuple
+        Gamma fractions(0, 1, 2).
     n_max_order : int
     
     Methods
@@ -1312,6 +1316,7 @@ class CellComplex:
     get_external_ids(cell_type)
     get_internal_ids(cell_type)
     get_special_ids()
+    get_covered_ids()
     get_nonspecial_internal_ids()
     plot_vertices(v_ids, ax, figsize, labels, **kwargs)
     plot_edges(e_ids, ax, figsize, labels, **kwargs)
@@ -1319,9 +1324,12 @@ class CellComplex:
     plot_polyhedra(p_ids, ax, figsize, **kwargs)
     plot_seeds(cell_ids, ax, figsize, **kwargs)
     get_junction_ids_of_type(junction_type)
+    get_gb_ids_of_gamma_type(gamma_type) 
     get_spec_fraction()
+    get_g_fraction()
     get_ext_fraction(cell_type)
     get_j_fraction(junction_type)
+    get_gamma_fraction(gamma_type)
     get_three_sided_distribution()
     set_measures_from_coo()
     set_junction_types()
@@ -1688,6 +1696,12 @@ class CellComplex:
         """
         return [cell.id for cell in self._GBs.values() if cell.is_special]
 
+    def get_covered_ids(self):
+        """
+        grains
+        """
+        return [cell.id for cell in self._grains.values() if cell.is_covered]
+
     def get_nonspecial_internal_ids(self):
         """
         internal and external can be nonspecial
@@ -1865,6 +1879,15 @@ class CellComplex:
                 junction_ids.append(cell.id)
         return junction_ids
 
+    def get_gb_ids_of_gamma_type(self, gamma_type: int) -> list:
+        """
+        """
+        gb_ids = []
+        for cell in self._GBs.values():
+            if cell.gamma_type == gamma_type:
+                gb_ids.append(cell.id)
+        return gb_ids
+
     def get_spec_fraction(self):
         """
         number_of_special / number_of_internal
@@ -1879,6 +1902,16 @@ class CellComplex:
         else:
             p = n_spec / n_int
             return p
+
+    def get_g_fraction(self):
+        """
+        number_of_covered_grains / number_of_grains
+        """
+        n_spec = len(self.get_covered_ids())
+        n_total = len(self._grains)
+        if n_total == 0:
+            return 0
+        return n_spec / n_total
 
     def get_ext_fraction(self, cell_type: str | int):
         """
@@ -1904,6 +1937,21 @@ class CellComplex:
             frac = n_junc / n_int
             return frac
 
+    def get_gamma_fraction(self, gamma_type: int):
+        """
+        number_of_gamma_of_type / number_of_internal
+        """
+        n_gamma = len(self.get_gb_ids_of_gamma_type(gamma_type))
+        if self.dim == 2:
+            n_int = len(self.get_internal_ids('e'))
+        elif self.dim == 3:
+            n_int = len(self.get_internal_ids('f'))
+        if n_int == 0:
+            return 0
+        else:
+            frac = n_gamma / n_int
+            return frac
+
     def get_three_sided_distribution(self):
         """
         dictionary {type: fraction}
@@ -1926,11 +1974,18 @@ class CellComplex:
         j2 = self.get_j_fraction(2)
         j3 = self.get_j_fraction(3)
         return (j0, j1, j2, j3)
+
+    @property
+    def g_fraction(self):
+        return self.get_g_fraction()
     
     @property
-    def g1(self):
-        pass   
-    
+    def gamma_tuple(self):
+        gamma0 = self.get_gamma_fraction(0)
+        gamma1 = self.get_gamma_fraction(1)
+        gamma2 = self.get_gamma_fraction(2)
+        return (gamma0, gamma1, gamma2)
+
     def set_measures_from_coo(self):
         """
         2D case
