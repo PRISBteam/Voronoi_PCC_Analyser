@@ -2165,7 +2165,7 @@ class CellComplex:
     def to_GGset(self):
         """
         """
-        return GrainGammaSet(self.g1, self.gamma_tuple)
+        return GrainGammaSet(self.g_fraction, self.gamma_tuple)
     
     def describe(self, attr_list: list = []):
         """
