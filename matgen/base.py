@@ -2054,8 +2054,8 @@ class CellComplex:
         """
         for grain in self._grains.values():
             is_covered = True
-            for gb in grain.gb_ids:
-                if not gb.is_special:
+            for gb_id in grain.gb_ids:
+                if not self._GBs[gb_id].is_special:
                     is_covered = False
                     break
             grain.set_covered(is_covered)    
@@ -2067,8 +2067,8 @@ class CellComplex:
         for gb in self._GBs.values():
             if not gb.is_external:
                 gamma_type = 0
-                for grain in gb.incident_ids:
-                    if grain.is_covered:
+                for grain_id in gb.incident_ids:
+                    if self._grains[grain_id].is_covered:
                         gamma_type += 1
                 if gamma_type > 2:
                     logging.warning(
