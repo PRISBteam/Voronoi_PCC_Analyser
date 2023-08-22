@@ -107,7 +107,7 @@ class TripleJunctionSet(EntropicMixin):
         self.S = self.get_S()
         self.S_m = self.get_S_m()
         self.S_d = self.get_S_d()
-        self.kappa = self.S_m / self.S_s if self.S_s != 0 else 0
+        self.kappa = self.S_m / self.S_d if self.S_d != 0 else 0
         self.delta_S = self.Sp - self.S
 
         self.d1 = self.j1 / (1 - self.j0) if self.j0 != 1 else 0
