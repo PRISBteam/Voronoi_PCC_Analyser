@@ -1712,6 +1712,28 @@ class CellComplex:
                 cell_ids.append(cell.id)
         return cell_ids
 
+    def get_connectivity_matrix(self):
+        """
+        """
+        gamma_counter = [[0, 0, 0] for _ in range(3)]
+        seen = set()
+        for gb in list(self._GBs.values()):
+            if not gb.is_external:
+                for n_id in gb.n_ids:
+                    if n_id not in seen:
+                        type1 = gb.gamma_type
+                        type2 = self._GBs[n_id].gamma_type
+                        if type2 is not None:
+                            i = min(type1, type2) 
+                            j = max(type1, type2)
+                            gamma_counter[i][j] += 1
+            seen.add(gb.id)
+        gamma_counter = np.array(gamma_counter)
+        gamma_counter = gamma_counter / gamma_counter.sum()
+        gamma_counter[2, 1] = gamma_counter[1, 2]
+        return gamma_counter[1:, 1:]
+    
+
     def plot_vertices(
         self,
         v_ids: list = [],
