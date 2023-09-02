@@ -20,7 +20,7 @@ from matplotlib.axes import Axes
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from matgen import matutils
-from matgen.entropic import TripleJunctionSet
+from matgen.entropic import TripleJunctionSet, GrainGammaSet
 
 
 class Cell:
@@ -133,6 +133,8 @@ class Grain(Cell):
     crysym: str
         Grain crystal symmetry (see Crystal Symmetries section of Neper
         documentation).
+    is_covered:
+        Is the grain covered with special grain boundaries?
     oridesc: str
         A descriptor of used to parameterize the crystal orientations. See
         Rotations and Orientations section of Neper documentation for the
@@ -147,6 +149,7 @@ class Grain(Cell):
     set_crystal_ori(crysym, oridesc, ori_components)
     set_seed(seed_coord)
     dis_angle(other)
+    set_covered(is_covered)
     """
 
     def __init__(self, id: int):
@@ -155,6 +158,7 @@ class Grain(Cell):
         self.oridesc = None
         self.ori = None
         self.crysym = None
+        self.is_covered = False
 
     def set_crystal_ori(
         self,
@@ -191,7 +195,13 @@ class Grain(Cell):
         try:
             return self.measure
         except AttributeError:
-            return None 
+            return None
+
+    def set_covered(self, is_covered: bool = True):
+        """
+        Some grains can be covered with special GBs.
+        """
+        self.is_covered = is_covered
 
 
 class LowerOrderCell(Cell):
@@ -279,7 +289,9 @@ class GrainBoundary(LowerOrderCell):
         Theta = -1 for external grain boundaries.
     gb_index: int
         Grain boundary index.
-
+    gamma_type: int
+        Gamma type of the grain boundary.
+    
     Methods
     -------
     set_special(is_special)
@@ -287,6 +299,7 @@ class GrainBoundary(LowerOrderCell):
     set_external(is_external)
     set_gb_index(gb_index)
     get_new_seed_prob(critical_size)
+    set_gamma_type(gamma_type)
 
     References
     ---------
@@ -299,6 +312,7 @@ class GrainBoundary(LowerOrderCell):
         self.is_special = False
         self.theta = None
         self.gb_index = None
+        self.gamma_type = None
 
     def set_special(self, is_special: bool = True):
         """
@@ -400,6 +414,18 @@ class GrainBoundary(LowerOrderCell):
             return 0
         else:
             return (2 * self.gb_index) / (3 * len(self.n_ids)) * coeff
+        
+    def set_gamma_type(self, gamma_type: int):
+        """
+        Gamma type equals the number of adjacent covered grains
+        (can be 0, 1 or 2). External has type None.
+        """
+        if not self.is_external:
+            self.gamma_type = gamma_type
+        elif self.is_external:
+            raise ValueError(
+                'External GB cannot have a type other than None'
+            )
         
 
 class TripleJunction(LowerOrderCell):
@@ -1275,6 +1301,10 @@ class CellComplex:
         Special GB fraction.
     j_tuple : tuple
         TJ fractions (j0, j1, j2, j3).
+    g_fraction : float
+        G fraction.
+    gamma_tuple: tuple
+        Gamma fractions(0, 1, 2).
     n_max_order : int
     
     Methods
@@ -1286,6 +1316,7 @@ class CellComplex:
     get_external_ids(cell_type)
     get_internal_ids(cell_type)
     get_special_ids()
+    get_covered_ids()
     get_nonspecial_internal_ids()
     plot_vertices(v_ids, ax, figsize, labels, **kwargs)
     plot_edges(e_ids, ax, figsize, labels, **kwargs)
@@ -1293,16 +1324,22 @@ class CellComplex:
     plot_polyhedra(p_ids, ax, figsize, **kwargs)
     plot_seeds(cell_ids, ax, figsize, **kwargs)
     get_junction_ids_of_type(junction_type)
+    get_gb_ids_of_gamma_type(gamma_type) 
     get_spec_fraction()
+    get_g_fraction()
     get_ext_fraction(cell_type)
     get_j_fraction(junction_type)
+    get_gamma_fraction(gamma_type)
     get_three_sided_distribution()
     set_measures_from_coo()
     set_junction_types()
     set_gb_indexes()
+    set_covered_grains()
+    set_gamma_types()
     set_three_sided_types()
     reset_special(lower_thrd, upper_thrd, special_ids, warn_external)
     to_TJset()
+    to_GGset()
     describe(attr_list)
     set_theta_from_ori(lower_thrd, upper_thrd)
     set_thetas(thetas, lower_thrd, upper_thrd)
@@ -1482,6 +1519,8 @@ class CellComplex:
         # If lower or upper threshold are known or both
         if lower_thrd or upper_thrd:
             cellcomplex.set_junction_types()
+            cellcomplex.set_covered_grains()
+            cellcomplex.set_gamma_types()
             if cellcomplex.dim == 2:
                 cellcomplex.set_three_sided_types()
 
@@ -1657,6 +1696,12 @@ class CellComplex:
         """
         return [cell.id for cell in self._GBs.values() if cell.is_special]
 
+    def get_covered_ids(self):
+        """
+        grains
+        """
+        return [cell.id for cell in self._grains.values() if cell.is_covered]
+
     def get_nonspecial_internal_ids(self):
         """
         internal and external can be nonspecial
@@ -1666,6 +1711,28 @@ class CellComplex:
             if not cell.is_special and not cell.is_external:
                 cell_ids.append(cell.id)
         return cell_ids
+
+    def get_connectivity_matrix(self):
+        """
+        """
+        gamma_counter = [[0, 0, 0] for _ in range(3)]
+        seen = set()
+        for gb in list(self._GBs.values()):
+            if not gb.is_external:
+                for n_id in gb.n_ids:
+                    if n_id not in seen:
+                        type1 = gb.gamma_type
+                        type2 = self._GBs[n_id].gamma_type
+                        if type2 is not None:
+                            i = min(type1, type2) 
+                            j = max(type1, type2)
+                            gamma_counter[i][j] += 1
+            seen.add(gb.id)
+        gamma_counter = np.array(gamma_counter)
+        gamma_counter = gamma_counter / gamma_counter.sum()
+        gamma_counter[2, 1] = gamma_counter[1, 2]
+        return gamma_counter[1:, 1:]
+    
 
     def plot_vertices(
         self,
@@ -1834,6 +1901,15 @@ class CellComplex:
                 junction_ids.append(cell.id)
         return junction_ids
 
+    def get_gb_ids_of_gamma_type(self, gamma_type: int) -> list:
+        """
+        """
+        gb_ids = []
+        for cell in self._GBs.values():
+            if cell.gamma_type == gamma_type:
+                gb_ids.append(cell.id)
+        return gb_ids
+
     def get_spec_fraction(self):
         """
         number_of_special / number_of_internal
@@ -1848,6 +1924,16 @@ class CellComplex:
         else:
             p = n_spec / n_int
             return p
+
+    def get_g_fraction(self):
+        """
+        number_of_covered_grains / number_of_grains
+        """
+        n_spec = len(self.get_covered_ids())
+        n_total = len(self._grains)
+        if n_total == 0:
+            return 0
+        return n_spec / n_total
 
     def get_ext_fraction(self, cell_type: str | int):
         """
@@ -1873,6 +1959,21 @@ class CellComplex:
             frac = n_junc / n_int
             return frac
 
+    def get_gamma_fraction(self, gamma_type: int):
+        """
+        number_of_gamma_of_type / number_of_internal
+        """
+        n_gamma = len(self.get_gb_ids_of_gamma_type(gamma_type))
+        if self.dim == 2:
+            n_int = len(self.get_internal_ids('e'))
+        elif self.dim == 3:
+            n_int = len(self.get_internal_ids('f'))
+        if n_int == 0:
+            return 0
+        else:
+            frac = n_gamma / n_int
+            return frac
+
     def get_three_sided_distribution(self):
         """
         dictionary {type: fraction}
@@ -1895,7 +1996,18 @@ class CellComplex:
         j2 = self.get_j_fraction(2)
         j3 = self.get_j_fraction(3)
         return (j0, j1, j2, j3)
+
+    @property
+    def g_fraction(self):
+        return self.get_g_fraction()
     
+    @property
+    def gamma_tuple(self):
+        gamma0 = self.get_gamma_fraction(0)
+        gamma1 = self.get_gamma_fraction(1)
+        gamma2 = self.get_gamma_fraction(2)
+        return (gamma0, gamma1, gamma2)
+
     def set_measures_from_coo(self):
         """
         2D case
@@ -1958,6 +2070,34 @@ class CellComplex:
                         counter[j_type] += 1
                 gb_index = counter[1] + 2*counter[2] + 3*counter[3]
                 gb.set_gb_index(gb_index=gb_index)
+
+    def set_covered_grains(self):
+        """
+        """
+        for grain in self._grains.values():
+            is_covered = True
+            for gb_id in grain.gb_ids:
+                if not self._GBs[gb_id].is_special:
+                    is_covered = False
+                    break
+            grain.set_covered(is_covered)    
+    
+    def set_gamma_types(self):
+        """
+        external has None gamma type
+        """
+        for gb in self._GBs.values():
+            if not gb.is_external:
+                gamma_type = 0
+                for grain_id in gb.incident_ids:
+                    if self._grains[grain_id].is_covered:
+                        gamma_type += 1
+                if gamma_type > 2:
+                    logging.warning(
+                        f'{gb} is incident to ' +
+                        f'{gamma_type} covered grains'
+                    )
+                gb.set_gamma_type(gamma_type)
 
     def set_three_sided_types(self):
         """
@@ -2033,6 +2173,8 @@ class CellComplex:
                     raise ValueError('Set theta first!')
                 cell._reset_theta_thrds(lower_thrd, upper_thrd)
         self.set_junction_types()
+        self.set_covered_grains()
+        self.set_gamma_types()
         self.set_gb_indexes()
         if self.dim == 2:
             self.set_three_sided_types()
@@ -2041,6 +2183,11 @@ class CellComplex:
         """
         """
         return TripleJunctionSet(self.p, self.j_tuple)
+    
+    def to_GGset(self):
+        """
+        """
+        return GrainGammaSet(self.g_fraction, self.gamma_tuple)
     
     def describe(self, attr_list: list = []):
         """
