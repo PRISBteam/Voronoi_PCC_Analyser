@@ -1,4 +1,4 @@
-# Polyhedral Cell Complex (PCC) Analyser
+# Polytopal Cell Complex (PCC) Analyser
 
 ## Quick start
 
